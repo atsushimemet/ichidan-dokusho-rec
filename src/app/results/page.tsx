@@ -96,14 +96,14 @@ export default function ResultsPage() {
             </div>
           )}
 
-          <div className="flex justify-center space-x-4">
+          <div className="flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4">
             <Link href="/questions">
-              <Button variant="outline">
+              <Button variant="outline" className="w-full sm:w-auto text-sm sm:text-base px-6 sm:px-8 py-3">
                 🔄 もう一度質問に答える
               </Button>
             </Link>
             <Link href="/">
-              <Button variant="secondary">
+              <Button variant="secondary" className="w-full sm:w-auto text-sm sm:text-base px-6 sm:px-8 py-3">
                 🏠 ホームに戻る
               </Button>
             </Link>
@@ -260,9 +260,9 @@ export default function ResultsPage() {
           <p className="text-ios-gray-600">
             気になる本は見つかりましたか？
           </p>
-          <div className="flex justify-center space-x-4">
+          <div className="flex justify-center">
             <Link href="/questions">
-              <Button variant="primary">
+              <Button variant="primary" className="w-full sm:w-auto text-sm sm:text-base px-6 sm:px-8 py-3">
                 🔄 別の条件で探す
               </Button>
             </Link>

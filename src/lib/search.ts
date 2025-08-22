@@ -168,12 +168,12 @@ export async function getPopularTags(limit?: number): Promise<Array<{ tag: strin
 }
 
 /**
- * ジャンルタグと著者タグを分けて取得する
- * @returns ジャンルタグと著者タグの配列
+ * ジャンルタグと著者名を分けて取得する
+ * @returns ジャンルタグと著者名の配列
  */
 export async function getSeparatedTags(): Promise<{
   genreTags: Array<{ tag: string; count: number }>;
-  authorTags: Array<{ tag: string; count: number }>;
+  authorNames: Array<{ author: string; count: number }>;
 }> {
   try {
     const { data, error } = await supabase
@@ -187,20 +187,17 @@ export async function getSeparatedTags(): Promise<{
 
     // ジャンルタグの出現回数をカウント
     const genreTagCounts: Record<string, number> = {};
-    const authorTagCounts: Record<string, number> = {};
+    const authorNameCounts: Record<string, number> = {};
     
     (data || []).forEach(book => {
       // ジャンルタグのカウント
       (book.genre_tags || []).forEach(tag => {
-        // 著者名でないタグのみをジャンルタグとして扱う
-        if (!isAuthorTag(tag)) {
-          genreTagCounts[tag] = (genreTagCounts[tag] || 0) + 1;
-        }
+        genreTagCounts[tag] = (genreTagCounts[tag] || 0) + 1;
       });
       
       // 著者名のカウント
       if (book.author) {
-        authorTagCounts[book.author] = (authorTagCounts[book.author] || 0) + 1;
+        authorNameCounts[book.author] = (authorNameCounts[book.author] || 0) + 1;
       }
     });
 
@@ -209,14 +206,14 @@ export async function getSeparatedTags(): Promise<{
       .map(([tag, count]) => ({ tag, count }))
       .sort((a, b) => b.count - a.count);
 
-    // 著者タグを出現回数順にソート
-    const sortedAuthorTags = Object.entries(authorTagCounts)
-      .map(([tag, count]) => ({ tag, count }))
+    // 著者名を出現回数順にソート
+    const sortedAuthorNames = Object.entries(authorNameCounts)
+      .map(([author, count]) => ({ author, count }))
       .sort((a, b) => b.count - a.count);
 
     return {
       genreTags: sortedGenreTags,
-      authorTags: sortedAuthorTags
+      authorNames: sortedAuthorNames
     };
   } catch (error) {
     console.error('タグ分離取得エラー:', error);
@@ -320,19 +317,4 @@ function getCategoryDescription(category: string): string {
   return descriptions[category] || '';
 }
 
-/**
- * タグが著者名かどうかを判定する
- * @param tag タグ名
- * @returns 著者名の場合true
- */
-function isAuthorTag(tag: string): boolean {
-  // 著者名として扱われるタグのリスト
-  const authorTags = [
-    '江副浩正', '藤田晋', '堀江貴文', '三木谷浩史', '山田進太郎', '熊谷正寿',
-    '柳井正', '見城徹', '草彅剛', 'ピーターティール', '岸見一郎', 'スティーブン・R・コヴィー',
-    'デール・カーネギー', '吉野源三郎', 'ハンス・ロスリング', 'ユヴァル・ノア・ハラリ',
-    '伊藤羊一', 'リンダ・グラットン', '宇野康秀'
-  ];
-  
-  return authorTags.includes(tag);
-}
+

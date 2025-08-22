@@ -14,7 +14,7 @@ export default function SearchPage() {
   const [availableTags, setAvailableTags] = useState<string[]>([]);
   const [popularTags, setPopularTags] = useState<Array<{ tag: string; count: number }>>([]);
   const [genreTags, setGenreTags] = useState<Array<{ tag: string; count: number }>>([]);
-  const [authorTags, setAuthorTags] = useState<Array<{ tag: string; count: number }>>([]);
+  const [authorNames, setAuthorNames] = useState<Array<{ author: string; count: number }>>([]);
   const [tagCategories, setTagCategories] = useState<Array<{
     category: string;
     description: string;
@@ -51,10 +51,10 @@ export default function SearchPage() {
       setAvailableTags(tags);
       setPopularTags(popular);
       
-      // ジャンルタグと著者タグを分けて取得
+      // ジャンルタグと著者名を分けて取得
       const separatedTags = await getSeparatedTags();
       setGenreTags(separatedTags.genreTags);
-      setAuthorTags(separatedTags.authorTags);
+      setAuthorNames(separatedTags.authorNames);
       
       // タグ分類を取得
       const categories = await getTagCategories();
@@ -213,13 +213,23 @@ export default function SearchPage() {
                   value={filters.maxPages?.toString() || ''}
                   onChange={(e) => handleFilterChange('maxPages', e.target.value ? parseInt(e.target.value) : undefined)}
                 />
-                <Input
-                  label="最大価格"
-                  type="number"
-                  placeholder="3000"
-                  value={filters.maxPrice?.toString() || ''}
-                  onChange={(e) => handleFilterChange('maxPrice', e.target.value ? parseInt(e.target.value) : undefined)}
-                />
+                <div>
+                  <label className="block text-sm font-medium text-ios-gray-700 mb-2">
+                    最大価格
+                  </label>
+                  <select
+                    value={filters.maxPrice?.toString() || ''}
+                    onChange={(e) => handleFilterChange('maxPrice', e.target.value ? parseInt(e.target.value) : undefined)}
+                    className="w-full px-4 py-3 rounded-xl border border-ios-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-ios-blue/50 focus:border-ios-blue"
+                  >
+                    <option value="">制限なし</option>
+                    <option value="1000">1000円以下</option>
+                    <option value="2000">2000円以下</option>
+                    <option value="3000">3000円以下</option>
+                    <option value="4000">4000円以下</option>
+                    <option value="5000">5000円超</option>
+                  </select>
+                </div>
               </div>
 
               {/* タグフィルター */}
@@ -278,35 +288,47 @@ export default function SearchPage() {
             <h3 className="text-lg font-semibold text-ios-gray-800 mb-3">{category.category}</h3>
             <p className="text-ios-gray-600 text-sm mb-3">{category.description}</p>
             <div className="flex flex-wrap gap-2">
-              {category.tags.map(({ tag, count }) => {
-                // 人物タグの場合は著者検索、それ以外はタグ検索
-                const isPersonTag = category.category === '人物タグ';
-                const isSelected = isPersonTag 
-                  ? filters.author === tag 
-                  : filters.tags?.includes(tag);
-                const handleClick = isPersonTag 
-                  ? () => handleAuthorClick(tag)
-                  : () => handlePopularTagClick(tag);
-                const bgColor = isPersonTag ? 'ios-green' : 'ios-blue';
-                
-                return (
-                  <button
-                    key={tag}
-                    onClick={handleClick}
-                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors cursor-pointer ${
-                      isSelected
-                        ? `bg-${bgColor} text-white shadow-md`
-                        : 'bg-ios-gray-100 text-ios-gray-700 hover:bg-ios-gray-200 hover:shadow-sm'
-                    }`}
-                    title={`${tag}${isPersonTag ? 'の書籍' : 'ジャンルの書籍'}を検索 (${count}冊)`}
-                  >
-                    {tag} ({count})
-                  </button>
-                );
-              })}
+              {category.tags.map(({ tag, count }) => (
+                <button
+                  key={tag}
+                  onClick={() => handlePopularTagClick(tag)}
+                  className={`px-3 py-1 rounded-full text-sm font-medium transition-colors cursor-pointer ${
+                    filters.tags?.includes(tag)
+                      ? 'bg-ios-blue text-white shadow-md'
+                      : 'bg-ios-gray-100 text-ios-gray-700 hover:bg-ios-gray-200 hover:shadow-sm'
+                  }`}
+                  title={`${tag}ジャンルの書籍を検索 (${count}冊)`}
+                >
+                  {tag} ({count})
+                </button>
+              ))}
             </div>
           </Card>
         ))}
+
+        {/* 著者別表示 */}
+        {authorNames.length > 0 && (
+          <Card variant="default" className="p-6 mb-6">
+            <h3 className="text-lg font-semibold text-ios-gray-800 mb-3">著者別</h3>
+            <p className="text-ios-gray-600 text-sm mb-3">著者名をクリックすると、その著者の書籍が表示されます</p>
+            <div className="flex flex-wrap gap-2">
+              {authorNames.map(({ author, count }) => (
+                <button
+                  key={author}
+                  onClick={() => handleAuthorClick(author)}
+                  className={`px-3 py-1 rounded-full text-sm font-medium transition-colors cursor-pointer ${
+                    filters.author === author
+                      ? 'bg-ios-green text-white shadow-md'
+                      : 'bg-ios-gray-100 text-ios-gray-700 hover:bg-ios-gray-200 hover:shadow-sm'
+                  }`}
+                  title={`${author}の書籍を検索 (${count}冊)`}
+                >
+                  {author} ({count})
+                </button>
+              ))}
+            </div>
+          </Card>
+        )}
 
         {/* 検索結果 */}
         <div className="mb-6" id="search-results">

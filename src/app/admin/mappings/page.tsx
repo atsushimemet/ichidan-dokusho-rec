@@ -6,7 +6,7 @@ import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 import { QuestionMapping, GenreTag } from '@/types';
 import { questions } from '@/data/questions';
 
@@ -48,8 +48,6 @@ export default function MappingsManagementPage() {
         return;
       }
 
-      const supabase = createClient(supabaseUrl, supabaseAnonKey);
-      
       // マッピングデータ取得
       const { data: mappingsData, error: mappingsError } = await supabase
         .from('question_mappings')
@@ -130,8 +128,6 @@ export default function MappingsManagementPage() {
     }
 
     try {
-      const supabase = createClient(supabaseUrl, supabaseAnonKey);
-      
       const mappingData = {
         question_id: formData.question_id,
         question_type: formData.question_type,
@@ -189,8 +185,6 @@ export default function MappingsManagementPage() {
     }
 
     try {
-      const supabase = createClient(supabaseUrl, supabaseAnonKey);
-      
       const { error } = await supabase
         .from('question_mappings')
         .delete()

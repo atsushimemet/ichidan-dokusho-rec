@@ -6,7 +6,7 @@ import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 import { Book } from '@/types';
 import { getReadabilityLevel } from '@/lib/utils';
 
@@ -77,9 +77,6 @@ export default function AdminPage() {
         return;
       }
 
-      // Supabaseクライアントを動的に作成
-      const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
       const { data, error } = await supabase
         .from('books')
         .select('*')
@@ -125,7 +122,6 @@ export default function AdminPage() {
         return;
       }
 
-      const supabase = createClient(supabaseUrl, supabaseAnonKey);
       const { data, error } = await supabase
         .from('genre_tags')
         .select('name')
@@ -165,8 +161,6 @@ export default function AdminPage() {
     }
 
     try {
-      const supabase = createClient(supabaseUrl, supabaseAnonKey);
-      
       const bookData = {
         title: formData.title,
         author: formData.author,
@@ -236,8 +230,6 @@ export default function AdminPage() {
     }
 
     try {
-      const supabase = createClient(supabaseUrl, supabaseAnonKey);
-      
       const { error } = await supabase
         .from('books')
         .delete()

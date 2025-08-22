@@ -6,7 +6,7 @@ import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 import { GenreTag } from '@/types';
 
 export default function TagsManagementPage() {
@@ -78,7 +78,6 @@ export default function TagsManagementPage() {
         return;
       }
 
-      const supabase = createClient(supabaseUrl, supabaseAnonKey);
       const { data, error } = await supabase
         .from('genre_tags')
         .select('*')
@@ -140,8 +139,6 @@ export default function TagsManagementPage() {
         return;
       }
 
-      const supabase = createClient(supabaseUrl, supabaseAnonKey);
-      
       const { error } = await supabase
         .from('genre_tags')
         .delete()
@@ -170,8 +167,6 @@ export default function TagsManagementPage() {
         return;
       }
 
-      const supabase = createClient(supabaseUrl, supabaseAnonKey);
-      
       const tagData = {
         name: formData.name,
         description: formData.description || null,

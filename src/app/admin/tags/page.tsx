@@ -7,10 +7,16 @@ import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { supabase } from '@/lib/supabase';
+import { getTagCategories } from '@/lib/search';
 import { GenreTag } from '@/types';
 
 export default function TagsManagementPage() {
   const [tags, setTags] = useState<GenreTag[]>([]);
+  const [tagCategories, setTagCategories] = useState<Array<{
+    category: string;
+    description: string;
+    tags: Array<{ tag: string; count: number }>;
+  }>>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -42,6 +48,7 @@ export default function TagsManagementPage() {
     // ページ遷移時にスクロール位置を最上部に設定
     window.scrollTo(0, 0);
     loadTags();
+    loadTagCategories();
   }, []);
 
   const loadTags = async () => {
@@ -97,6 +104,19 @@ export default function TagsManagementPage() {
         stack: err instanceof Error ? err.stack : undefined,
         error: err
       });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadTagCategories = async () => {
+    try {
+      const categories = await getTagCategories();
+      setTagCategories(categories);
+    } catch (err) {
+      console.error('タグ分類データの読み込みエラー:', err);
+    }
+  };
       setError('タグデータの読み込みに失敗しました。モックデータを表示しています。');
       setTags([
         {
@@ -374,73 +394,80 @@ export default function TagsManagementPage() {
             </form>
           </Card>
         ) : (
-          /* タグ一覧 */
+          /* タグ一覧（分類別） */
           <div className="space-y-8">
-            {categories.map(category => {
-              const categoryTags = groupedTags[category.value] || [];
-              if (categoryTags.length === 0) return null;
+            {tagCategories.map(category => {
+              if (category.tags.length === 0) return null;
               
               return (
-                <div key={category.value}>
+                <div key={category.category}>
                   <h2 className="text-xl font-bold text-ios-gray-800 mb-4">
-                    📁 {category.label} ({categoryTags.length}件)
+                    📁 {category.category} ({category.tags.length}件)
                   </h2>
+                  <p className="text-sm text-ios-gray-600 mb-4">
+                    {category.description}
+                  </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {categoryTags.map((tag) => (
-                      <Card key={tag.id} variant="default" className="overflow-hidden hover:shadow-ios-xl transition-all duration-300 flex flex-col h-full">
-                        <div className="p-4 flex flex-col h-full">
-                          <div className="flex-grow">
-                            <div className="flex justify-between items-start mb-2">
-                              <h3 className="font-bold text-ios-gray-800">
-                                {tag.name}
-                              </h3>
-                              <span className="text-xs text-ios-gray-500">
-                                #{tag.display_order}
-                              </span>
-                            </div>
-
-                            {tag.description && (
-                              <p className="text-sm text-ios-gray-600 mb-2">
-                                {tag.description}
-                              </p>
-                            )}
-
-                            {/* 質問で使用されているかどうかの表示 */}
-                            {questionGenres.includes(tag.name) && (
-                              <div className="mb-2">
-                                <span className="text-xs bg-ios-blue/10 text-ios-blue px-2 py-1 rounded-md">
-                                  📝 質問項目で使用中
+                    {category.tags.map((tagInfo) => {
+                      const tag = tags.find(t => t.name === tagInfo.tag);
+                      if (!tag) return null;
+                      
+                      return (
+                        <Card key={tag.id} variant="default" className="overflow-hidden hover:shadow-ios-xl transition-all duration-300 flex flex-col h-full">
+                          <div className="p-4 flex flex-col h-full">
+                            <div className="flex-grow">
+                              <div className="flex justify-between items-start mb-2">
+                                <h3 className="font-bold text-ios-gray-800">
+                                  {tag.name}
+                                </h3>
+                                <span className="text-xs text-ios-gray-500">
+                                  {tagInfo.count}冊
                                 </span>
                               </div>
-                            )}
 
-                            <div className="text-xs text-ios-gray-500">
-                              作成日: {new Date(tag.created_at).toLocaleDateString('ja-JP')}
+                              {tag.description && (
+                                <p className="text-sm text-ios-gray-600 mb-2">
+                                  {tag.description}
+                                </p>
+                              )}
+
+                              {/* 質問で使用されているかどうかの表示 */}
+                              {questionGenres.includes(tag.name) && (
+                                <div className="mb-2">
+                                  <span className="text-xs bg-ios-blue/10 text-ios-blue px-2 py-1 rounded-md">
+                                    📝 質問項目で使用中
+                                  </span>
+                                </div>
+                              )}
+
+                              <div className="text-xs text-ios-gray-500">
+                                作成日: {new Date(tag.created_at).toLocaleDateString('ja-JP')}
+                              </div>
+                            </div>
+
+                            {/* 編集・削除ボタン */}
+                            <div className="mt-3 flex space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEdit(tag)}
+                                className="flex-1 px-3"
+                              >
+                                ✏️
+                              </Button>
+                              <Button
+                                variant="danger"
+                                size="sm"
+                                onClick={() => handleDelete(tag.id)}
+                                className="flex-1 px-3"
+                              >
+                                🗑️
+                              </Button>
                             </div>
                           </div>
-
-                          {/* 編集・削除ボタン */}
-                          <div className="mt-3 flex space-x-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEdit(tag)}
-                              className="flex-1 px-3"
-                            >
-                              ✏️
-                            </Button>
-                            <Button
-                              variant="danger"
-                              size="sm"
-                              onClick={() => handleDelete(tag.id)}
-                              className="flex-1 px-3"
-                            >
-                              🗑️
-                            </Button>
-                          </div>
-                        </div>
-                      </Card>
-                    ))}
+                        </Card>
+                      );
+                    })}
                   </div>
                 </div>
               );

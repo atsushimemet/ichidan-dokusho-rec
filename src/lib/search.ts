@@ -225,6 +225,102 @@ export async function getSeparatedTags(): Promise<{
 }
 
 /**
+ * タグ分類を取得する
+ * @returns タグ分類の配列
+ */
+export async function getTagCategories(): Promise<Array<{
+  category: string;
+  description: string;
+  tags: Array<{ tag: string; count: number }>;
+}>> {
+  try {
+    // タグ分類マッピングを取得
+    const { data: mappings, error: mappingsError } = await supabase
+      .from('tag_category_mappings')
+      .select('tag_name, category_name, display_order')
+      .order('category_name, display_order');
+
+    if (mappingsError) {
+      console.error('タグ分類マッピング取得エラー:', mappingsError);
+      throw mappingsError;
+    }
+
+    // 全タグの出現回数を取得
+    const { data: books, error: booksError } = await supabase
+      .from('books')
+      .select('genre_tags');
+
+    if (booksError) {
+      console.error('書籍データ取得エラー:', booksError);
+      throw booksError;
+    }
+
+    // タグの出現回数をカウント
+    const tagCounts: Record<string, number> = {};
+    (books || []).forEach(book => {
+      (book.genre_tags || []).forEach(tag => {
+        tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+      });
+    });
+
+    // 分類ごとにタグをグループ化
+    const categoryGroups: Record<string, Array<{ tag: string; count: number; displayOrder: number }>> = {};
+    
+    (mappings || []).forEach(mapping => {
+      const tag = mapping.tag_name;
+      const category = mapping.category_name;
+      const count = tagCounts[tag] || 0;
+      
+      if (!categoryGroups[category]) {
+        categoryGroups[category] = [];
+      }
+      
+      categoryGroups[category].push({
+        tag,
+        count,
+        displayOrder: mapping.display_order
+      });
+    });
+
+    // 分類ごとにソートして結果を返す
+    const result = Object.entries(categoryGroups).map(([category, tags]) => ({
+      category,
+      description: getCategoryDescription(category),
+      tags: tags
+        .sort((a, b) => a.displayOrder - b.displayOrder)
+        .map(({ tag, count }) => ({ tag, count }))
+    }));
+
+    return result;
+  } catch (error) {
+    console.error('タグ分類取得エラー:', error);
+    throw error;
+  }
+}
+
+/**
+ * 分類の説明を取得する
+ * @param category 分類名
+ * @returns 説明
+ */
+function getCategoryDescription(category: string): string {
+  const descriptions: Record<string, string> = {
+    'ジャンルタグ': '書籍のジャンルを表すタグ',
+    '知識・教養タグ': '知識や教養に関連するタグ',
+    'スキル・能力タグ': 'スキルや能力向上に関連するタグ',
+    '自己成長タグ': '自己成長やメンタルヘルスに関連するタグ',
+    'リラックス・娯楽タグ': 'リラックスや娯楽に関連するタグ',
+    '人物タグ': '特定の人物に関連するタグ',
+    '企業・組織タグ': '企業や組織に関連するタグ',
+    '技術・ITタグ': '技術やITに関連するタグ',
+    '社会・問題タグ': '社会問題や社会現象に関連するタグ',
+    'その他タグ': 'その他の分類に属さないタグ'
+  };
+  
+  return descriptions[category] || '';
+}
+
+/**
  * タグが著者名かどうかを判定する
  * @param tag タグ名
  * @returns 著者名の場合true

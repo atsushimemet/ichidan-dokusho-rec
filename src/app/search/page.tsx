@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
-import { searchBooks, getAvailableTags, getPopularTags, getSeparatedTags, SearchFilters } from '@/lib/search';
+import { searchBooks, getAvailableTags, getPopularTags, getSeparatedTags, getTagCategories, SearchFilters } from '@/lib/search';
 import { Book } from '@/lib/supabase';
 import { getReadabilityLevel } from '@/lib/utils';
 
@@ -15,6 +15,11 @@ export default function SearchPage() {
   const [popularTags, setPopularTags] = useState<Array<{ tag: string; count: number }>>([]);
   const [genreTags, setGenreTags] = useState<Array<{ tag: string; count: number }>>([]);
   const [authorTags, setAuthorTags] = useState<Array<{ tag: string; count: number }>>([]);
+  const [tagCategories, setTagCategories] = useState<Array<{
+    category: string;
+    description: string;
+    tags: Array<{ tag: string; count: number }>;
+  }>>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
@@ -50,6 +55,10 @@ export default function SearchPage() {
       const separatedTags = await getSeparatedTags();
       setGenreTags(separatedTags.genreTags);
       setAuthorTags(separatedTags.authorTags);
+      
+      // タグ分類を取得
+      const categories = await getTagCategories();
+      setTagCategories(categories);
       
       await performSearch();
     } catch (err) {
@@ -263,49 +272,41 @@ export default function SearchPage() {
           )}
         </Card>
 
-        {/* ジャンルタグ */}
-        <Card variant="default" className="p-6 mb-6">
-          <h3 className="text-lg font-semibold text-ios-gray-800 mb-3">ジャンルタグ</h3>
-          <p className="text-ios-gray-600 text-sm mb-3">ジャンルタグをクリックすると、そのジャンルの書籍が表示されます</p>
-          <div className="flex flex-wrap gap-2">
-            {genreTags.map(({ tag, count }) => (
-              <button
-                key={tag}
-                onClick={() => handlePopularTagClick(tag)}
-                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors cursor-pointer ${
-                  filters.tags?.includes(tag)
-                    ? 'bg-ios-blue text-white shadow-md'
-                    : 'bg-ios-gray-100 text-ios-gray-700 hover:bg-ios-gray-200 hover:shadow-sm'
-                }`}
-                title={`${tag}ジャンルの書籍を検索 (${count}冊)`}
-              >
-                {tag} ({count})
-              </button>
-            ))}
-          </div>
-        </Card>
-
-        {/* 著者タグ */}
-        <Card variant="default" className="p-6 mb-6">
-          <h3 className="text-lg font-semibold text-ios-gray-800 mb-3">著者別</h3>
-          <p className="text-ios-gray-600 text-sm mb-3">著者名をクリックすると、その著者の書籍が表示されます</p>
-          <div className="flex flex-wrap gap-2">
-            {authorTags.map(({ tag, count }) => (
-              <button
-                key={tag}
-                onClick={() => handleAuthorClick(tag)}
-                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors cursor-pointer ${
-                  filters.author === tag
-                    ? 'bg-ios-green text-white shadow-md'
-                    : 'bg-ios-gray-100 text-ios-gray-700 hover:bg-ios-gray-200 hover:shadow-sm'
-                }`}
-                title={`${tag}の書籍を検索 (${count}冊)`}
-              >
-                {tag} ({count})
-              </button>
-            ))}
-          </div>
-        </Card>
+        {/* タグ分類別表示 */}
+        {tagCategories.map(category => (
+          <Card key={category.category} variant="default" className="p-6 mb-6">
+            <h3 className="text-lg font-semibold text-ios-gray-800 mb-3">{category.category}</h3>
+            <p className="text-ios-gray-600 text-sm mb-3">{category.description}</p>
+            <div className="flex flex-wrap gap-2">
+              {category.tags.map(({ tag, count }) => {
+                // 人物タグの場合は著者検索、それ以外はタグ検索
+                const isPersonTag = category.category === '人物タグ';
+                const isSelected = isPersonTag 
+                  ? filters.author === tag 
+                  : filters.tags?.includes(tag);
+                const handleClick = isPersonTag 
+                  ? () => handleAuthorClick(tag)
+                  : () => handlePopularTagClick(tag);
+                const bgColor = isPersonTag ? 'ios-green' : 'ios-blue';
+                
+                return (
+                  <button
+                    key={tag}
+                    onClick={handleClick}
+                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors cursor-pointer ${
+                      isSelected
+                        ? `bg-${bgColor} text-white shadow-md`
+                        : 'bg-ios-gray-100 text-ios-gray-700 hover:bg-ios-gray-200 hover:shadow-sm'
+                    }`}
+                    title={`${tag}${isPersonTag ? 'の書籍' : 'ジャンルの書籍'}を検索 (${count}冊)`}
+                  >
+                    {tag} ({count})
+                  </button>
+                );
+              })}
+            </div>
+          </Card>
+        ))}
 
         {/* 検索結果 */}
         <div className="mb-6" id="search-results">

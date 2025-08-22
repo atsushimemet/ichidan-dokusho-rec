@@ -145,14 +145,30 @@ export default function ResultsPage() {
                   
                   {/* ジャンルタグ（固定高さ） */}
                   <div className="flex flex-wrap gap-1 mb-2 h-7 overflow-hidden">
-                    {result.book.genre_tags.slice(0, 3).map((tag, tagIndex) => (
-                      <span 
-                        key={tagIndex}
-                        className="bg-ios-purple/10 text-ios-purple text-xs px-2 py-1 rounded-md"
-                      >
-                        {tag}
-                      </span>
-                    ))}
+                    {result.book.genre_tags.slice(0, 3).map((tag, tagIndex) => {
+                      // タグの分類に応じて色を変更
+                      const getTagColor = (tagName: string) => {
+                        const personTags = ['江副浩正', '藤田晋', '堀江貴文', '宇野康秀', '三木谷浩史', '山田進太郎', '熊谷正寿', '柳井正', '見城徹', '草彅剛', 'ピーターティール', '岸見一郎', 'スティーブン・R・コヴィー', 'デール・カーネギー', '吉野源三郎', 'ハンス・ロスリング', 'ユヴァル・ノア・ハラリ', '伊藤羊一', 'リンダ・グラットン', '小澤隆生', '蛯谷 敏'];
+                        const companyTags = ['リクルート', 'サイバーエージェント', 'ライブドア', '楽天', 'メルカリ', 'GMO', 'ファーストリテイリング', 'LINEヤフー', 'ビズリーチ', 'Apple', 'パタゴニア', 'PayPal', 'Harvard Business Review', 'PMI'];
+                        
+                        if (personTags.includes(tagName)) {
+                          return 'bg-ios-green/10 text-ios-green';
+                        } else if (companyTags.includes(tagName)) {
+                          return 'bg-ios-orange/10 text-ios-orange';
+                        } else {
+                          return 'bg-ios-purple/10 text-ios-purple';
+                        }
+                      };
+                      
+                      return (
+                        <span 
+                          key={tagIndex}
+                          className={`text-xs px-2 py-1 rounded-md ${getTagColor(tag)}`}
+                        >
+                          {tag}
+                        </span>
+                      );
+                    })}
                   </div>
 
                   {/* 説明（固定高さ） */}

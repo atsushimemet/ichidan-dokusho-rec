@@ -151,7 +151,6 @@ export default function TagsManagementPage() {
         )}
 
         {/* タグ一覧 */}
-          /* タグ一覧 */
           <div className="space-y-8">
             {categories.map(category => {
               const categoryTags = groupedTags[category.value] || [];

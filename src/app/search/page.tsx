@@ -87,6 +87,14 @@ export default function SearchPage() {
     }));
   };
 
+  const handlePopularTagClick = (tag: string) => {
+    // 人気タグをクリックした時は、そのタグのみで検索
+    setFilters({ tags: [tag] });
+    setCurrentPage(1);
+    // 即座に検索実行
+    setTimeout(() => performSearch(), 0);
+  };
+
   const clearFilters = () => {
     setFilters({});
     setCurrentPage(1);
@@ -204,16 +212,25 @@ export default function SearchPage() {
               {/* タグフィルター */}
               <div className="mb-4">
                 <h3 className="text-lg font-semibold text-ios-gray-800 mb-3">タグで絞り込み</h3>
+                <p className="text-ios-gray-600 text-sm mb-3">複数のタグを選択できます</p>
                 <div className="flex flex-wrap gap-2">
                   {availableTags.map(tag => (
                     <button
                       key={tag}
-                      onClick={() => handleTagToggle(tag)}
-                      className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                      onClick={() => {
+                        handleTagToggle(tag);
+                        // タグ選択後、少し遅延してから検索実行
+                        setTimeout(() => {
+                          setCurrentPage(1);
+                          performSearch();
+                        }, 100);
+                      }}
+                      className={`px-3 py-1 rounded-full text-sm font-medium transition-colors cursor-pointer ${
                         filters.tags?.includes(tag)
-                          ? 'bg-ios-blue text-white'
-                          : 'bg-ios-gray-100 text-ios-gray-700 hover:bg-ios-gray-200'
+                          ? 'bg-ios-blue text-white shadow-md'
+                          : 'bg-ios-gray-100 text-ios-gray-700 hover:bg-ios-gray-200 hover:shadow-sm'
                       }`}
+                      title={`${tag}で絞り込み`}
                     >
                       {tag}
                     </button>
@@ -245,16 +262,18 @@ export default function SearchPage() {
         {/* 人気タグ */}
         <Card variant="default" className="p-6 mb-6">
           <h3 className="text-lg font-semibold text-ios-gray-800 mb-3">人気のタグ</h3>
+          <p className="text-ios-gray-600 text-sm mb-3">タグをクリックすると、そのタグを持つ書籍が表示されます</p>
           <div className="flex flex-wrap gap-2">
             {popularTags.map(({ tag, count }) => (
               <button
                 key={tag}
-                onClick={() => handleTagToggle(tag)}
-                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                onClick={() => handlePopularTagClick(tag)}
+                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors cursor-pointer ${
                   filters.tags?.includes(tag)
-                    ? 'bg-ios-blue text-white'
-                    : 'bg-ios-gray-100 text-ios-gray-700 hover:bg-ios-gray-200'
+                    ? 'bg-ios-blue text-white shadow-md'
+                    : 'bg-ios-gray-100 text-ios-gray-700 hover:bg-ios-gray-200 hover:shadow-sm'
                 }`}
+                title={`${tag}を持つ書籍を検索 (${count}冊)`}
               >
                 {tag} ({count})
               </button>
@@ -269,8 +288,26 @@ export default function SearchPage() {
               検索結果 ({totalCount}件)
             </h2>
             {filters.tags && filters.tags.length > 0 && (
-              <div className="text-sm text-ios-gray-600">
-                選択中: {filters.tags.join(', ')}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-ios-gray-600">選択中:</span>
+                <div className="flex flex-wrap gap-1">
+                  {filters.tags.map(tag => (
+                    <button
+                      key={tag}
+                      onClick={() => {
+                        handleTagToggle(tag);
+                        setTimeout(() => {
+                          setCurrentPage(1);
+                          performSearch();
+                        }, 100);
+                      }}
+                      className="px-2 py-1 bg-ios-blue text-white text-xs rounded-full hover:bg-ios-blue/80 transition-colors flex items-center gap-1"
+                      title={`${tag}を削除`}
+                    >
+                      {tag} ×
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -305,12 +342,14 @@ export default function SearchPage() {
                       </p>
                       <div className="flex flex-wrap gap-1 mb-2">
                         {book.genre_tags.map(tag => (
-                          <span
+                          <button
                             key={tag}
-                            className="px-2 py-1 bg-ios-blue/10 text-ios-blue text-xs rounded-full"
+                            onClick={() => handlePopularTagClick(tag)}
+                            className="px-2 py-1 bg-ios-blue/10 text-ios-blue text-xs rounded-full hover:bg-ios-blue/20 transition-colors cursor-pointer"
+                            title={`${tag}で検索`}
                           >
                             {tag}
-                          </span>
+                          </button>
                         ))}
                       </div>
                       {book.description && (

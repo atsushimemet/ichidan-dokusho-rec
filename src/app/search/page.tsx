@@ -422,7 +422,9 @@ export default function SearchPage() {
                 setTimeout(() => {
                   const element = document.getElementById('search-results');
                   if (element) {
-                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    const rect = element.getBoundingClientRect();
+                    const scrollTop = window.pageYOffset + rect.top - 20; // 20pxの余白を追加
+                    window.scrollTo({ top: scrollTop, behavior: 'smooth' });
                   }
                 }, 100);
               }}
@@ -444,7 +446,9 @@ export default function SearchPage() {
                 setTimeout(() => {
                   const element = document.getElementById('search-results');
                   if (element) {
-                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    const rect = element.getBoundingClientRect();
+                    const scrollTop = window.pageYOffset + rect.top - 20; // 20pxの余白を追加
+                    window.scrollTo({ top: scrollTop, behavior: 'smooth' });
                   }
                 }, 100);
               }}

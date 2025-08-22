@@ -118,6 +118,18 @@ export default function SearchPage() {
     setTimeout(() => performSearch(), 0);
   };
 
+  const handleQuickTagClick = (tag: string) => {
+    // クイックタグをクリックした時は、既存のタグを追加/削除して即座に検索
+    const newTags = filters.tags?.includes(tag)
+      ? filters.tags.filter(t => t !== tag)
+      : [...(filters.tags || []), tag];
+    
+    setFilters(prev => ({ ...prev, tags: newTags }));
+    setCurrentPage(1);
+    // 即座に検索実行
+    setTimeout(() => performSearch(), 0);
+  };
+
 
   const clearFilters = () => {
     setFilters({});
@@ -243,7 +255,7 @@ export default function SearchPage() {
                             <button
                               key={tag}
                               onClick={() => {
-                                handlePopularTagClick(tag);
+                                handleQuickTagClick(tag);
                               }}
                               className={`px-3 py-1 rounded-full text-sm font-medium transition-colors cursor-pointer ${
                                 filters.tags?.includes(tag)
@@ -263,7 +275,7 @@ export default function SearchPage() {
                       <button
                         key={tag}
                         onClick={() => {
-                          handlePopularTagClick(tag);
+                          handleQuickTagClick(tag);
                         }}
                         className={`px-3 py-1 rounded-full text-sm font-medium transition-colors cursor-pointer ${
                           filters.tags?.includes(tag)
@@ -288,12 +300,7 @@ export default function SearchPage() {
                     <button
                       key={tag}
                       onClick={() => {
-                        handleTagToggle(tag);
-                        // タグ選択後、少し遅延してから検索実行
-                        setTimeout(() => {
-                          setCurrentPage(1);
-                          performSearch();
-                        }, 100);
+                        handleQuickTagClick(tag);
                       }}
                       className={`px-3 py-1 rounded-full text-sm font-medium transition-colors cursor-pointer ${
                         filters.tags?.includes(tag)
@@ -345,11 +352,7 @@ export default function SearchPage() {
                     <button
                       key={tag}
                       onClick={() => {
-                        handleTagToggle(tag);
-                        setTimeout(() => {
-                          setCurrentPage(1);
-                          performSearch();
-                        }, 100);
+                        handleQuickTagClick(tag);
                       }}
                       className="px-2 py-1 bg-ios-blue text-white text-xs rounded-full hover:bg-ios-blue/80 transition-colors flex items-center gap-1"
                       title={`${tag}を削除`}

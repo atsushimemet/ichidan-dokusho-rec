@@ -21,6 +21,110 @@
 - デバイス: PC、タブレット、スマートフォン
 - URL: http://localhost:3003
 
+### 1.5 Supabase設定準備
+
+#### 1.5.1 必要な環境変数
+以下の環境変数を`.env.local`ファイルに設定してください：
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+#### 1.5.2 Supabaseプロジェクト設定手順
+1. **Supabaseプロジェクトの作成**
+   - [Supabase](https://supabase.com)にアクセス
+   - アカウント作成・ログイン
+   - 新しいプロジェクトを作成
+
+2. **データベーススキーマの設定**
+   - SQL Editorで以下のスキーマを実行：
+   ```sql
+   -- 書籍テーブル
+   CREATE TABLE books (
+     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+     title TEXT NOT NULL,
+     author TEXT NOT NULL,
+     genre_tags TEXT[] NOT NULL,
+     amazon_link TEXT NOT NULL,
+     summary_link TEXT,
+     cover_image_url TEXT,
+     description TEXT,
+     page_count INTEGER,
+     price DECIMAL(10,2),
+     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+   );
+
+   -- ジャンルタグテーブル
+   CREATE TABLE genre_tags (
+     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+     name TEXT NOT NULL UNIQUE,
+     description TEXT,
+     category TEXT NOT NULL DEFAULT 'genre',
+     display_order INTEGER NOT NULL DEFAULT 1,
+     is_active BOOLEAN NOT NULL DEFAULT true,
+     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+   );
+
+   -- 質問マッピングテーブル
+   CREATE TABLE question_mappings (
+     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+     question_id TEXT NOT NULL,
+     question_type TEXT NOT NULL,
+     option_value TEXT NOT NULL,
+     mapped_tags TEXT[] NOT NULL,
+     weight DECIMAL(3,1) NOT NULL DEFAULT 1.0,
+     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+   );
+   ```
+
+3. **初期データの投入**
+   - ジャンルタグの初期データ：
+   ```sql
+   INSERT INTO genre_tags (name, description, category, display_order) VALUES
+   ('自己啓発', '成功法則、習慣形成、モチベーション', 'genre', 1),
+   ('ビジネス', '経営、マーケティング、投資', 'genre', 2),
+   ('心理学', '人間心理、コミュニケーション', 'genre', 3),
+   ('哲学', '人生論、価値観、思考法', 'genre', 4),
+   ('歴史', '世界史、日本史、社会問題', 'genre', 5),
+   ('科学', 'IT、テクノロジー、自然科学', 'genre', 6),
+   ('健康', '健康法、料理、ライフハック', 'genre', 7),
+   ('小説', '純文学、エンタメ小説', 'genre', 8);
+   ```
+
+4. **認証設定**
+   - Authentication > Settingsでメール認証を有効化
+   - 管理者アカウントを作成：
+   ```sql
+   INSERT INTO auth.users (email, encrypted_password, email_confirmed_at, created_at, updated_at)
+   VALUES ('noap3b69n@gmail.com', crypt('19930322', gen_salt('bf')), NOW(), NOW(), NOW());
+   ```
+
+#### 1.5.3 環境変数の取得方法
+1. SupabaseプロジェクトのSettings > API
+2. Project URLをコピーして`NEXT_PUBLIC_SUPABASE_URL`に設定
+3. anon public keyをコピーして`NEXT_PUBLIC_SUPABASE_ANON_KEY`に設定
+
+#### 1.5.4 動作確認
+- 環境変数設定後、アプリケーションを再起動
+- 管理画面でログインができることを確認
+- 書籍・タグ・マッピングの追加・編集・削除ができることを確認
+
+#### 1.5.5 Supabase設定確認テストケース
+**テスト手順:**
+1. 環境変数が正しく設定されていることを確認
+2. Supabaseプロジェクトにアクセスしてテーブルが作成されていることを確認
+3. 初期データが投入されていることを確認
+
+**期待結果:**
+- [ ] 環境変数`NEXT_PUBLIC_SUPABASE_URL`と`NEXT_PUBLIC_SUPABASE_ANON_KEY`が設定されている
+- [ ] `books`、`genre_tags`、`question_mappings`テーブルが作成されている
+- [ ] ジャンルタグの初期データ（8件）が投入されている
+- [ ] 管理者アカウント（noap3b69n@gmail.com）が作成されている
+
 ---
 
 ## 2. 一般ユーザー機能テスト

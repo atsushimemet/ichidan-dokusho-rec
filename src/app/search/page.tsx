@@ -118,16 +118,30 @@ export default function SearchPage() {
     setTimeout(() => performSearch(), 0);
   };
 
-  const handleQuickTagClick = (tag: string) => {
+  const handleQuickTagClick = async (tag: string) => {
     // クイックタグをクリックした時は、既存のタグを追加/削除して即座に検索
     const newTags = filters.tags?.includes(tag)
       ? filters.tags.filter(t => t !== tag)
       : [...(filters.tags || []), tag];
     
-    setFilters(prev => ({ ...prev, tags: newTags }));
+    const newFilters = { ...filters, tags: newTags };
+    setFilters(newFilters);
     setCurrentPage(1);
-    // 即座に検索実行
-    setTimeout(() => performSearch(), 0);
+    
+    // 新しいフィルターで即座に検索実行
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const result = await searchBooks(newFilters, 1, pageSize);
+      setBooks(result.books);
+      setTotalCount(result.totalCount);
+    } catch (err) {
+      console.error('検索エラー:', err);
+      setError('検索に失敗しました');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
 

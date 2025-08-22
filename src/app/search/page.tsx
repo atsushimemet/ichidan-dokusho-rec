@@ -56,9 +56,15 @@ export default function SearchPage() {
       setGenreTags(separatedTags.genreTags);
       setAuthorNames(separatedTags.authorNames);
       
-      // タグ分類を取得
-      const categories = await getTagCategories();
-      setTagCategories(categories);
+      // タグ分類を取得（一時的に無効化）
+      try {
+        const categories = await getTagCategories();
+        setTagCategories(categories);
+      } catch (err) {
+        console.error('タグ分類取得エラー:', err);
+        // エラーの場合は空の配列を設定
+        setTagCategories([]);
+      }
       
       await performSearch();
     } catch (err) {
@@ -283,28 +289,55 @@ export default function SearchPage() {
         </Card>
 
         {/* タグ分類別表示 */}
-        {tagCategories.map(category => (
-          <Card key={category.category} variant="default" className="p-6 mb-6">
-            <h3 className="text-lg font-semibold text-ios-gray-800 mb-3">{category.category}</h3>
-            <p className="text-ios-gray-600 text-sm mb-3">{category.description}</p>
-            <div className="flex flex-wrap gap-2">
-              {category.tags.map(({ tag, count }) => (
-                <button
-                  key={tag}
-                  onClick={() => handlePopularTagClick(tag)}
-                  className={`px-3 py-1 rounded-full text-sm font-medium transition-colors cursor-pointer ${
-                    filters.tags?.includes(tag)
-                      ? 'bg-ios-blue text-white shadow-md'
-                      : 'bg-ios-gray-100 text-ios-gray-700 hover:bg-ios-gray-200 hover:shadow-sm'
-                  }`}
-                  title={`${tag}ジャンルの書籍を検索 (${count}冊)`}
-                >
-                  {tag} ({count})
-                </button>
-              ))}
-            </div>
-          </Card>
-        ))}
+        {tagCategories.length > 0 ? (
+          tagCategories.map(category => (
+            <Card key={category.category} variant="default" className="p-6 mb-6">
+              <h3 className="text-lg font-semibold text-ios-gray-800 mb-3">{category.category}</h3>
+              <p className="text-ios-gray-600 text-sm mb-3">{category.description}</p>
+              <div className="flex flex-wrap gap-2">
+                {category.tags.map(({ tag, count }) => (
+                  <button
+                    key={tag}
+                    onClick={() => handlePopularTagClick(tag)}
+                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors cursor-pointer ${
+                      filters.tags?.includes(tag)
+                        ? 'bg-ios-blue text-white shadow-md'
+                        : 'bg-ios-gray-100 text-ios-gray-700 hover:bg-ios-gray-200 hover:shadow-sm'
+                    }`}
+                    title={`${tag}ジャンルの書籍を検索 (${count}冊)`}
+                  >
+                    {tag} ({count})
+                  </button>
+                ))}
+              </div>
+            </Card>
+          ))
+        ) : (
+          /* フォールバック: 従来のタグ表示 */
+          <>
+            {/* ジャンルタグ */}
+            <Card variant="default" className="p-6 mb-6">
+              <h3 className="text-lg font-semibold text-ios-gray-800 mb-3">ジャンルタグ</h3>
+              <p className="text-ios-gray-600 text-sm mb-3">ジャンルタグをクリックすると、そのジャンルの書籍が表示されます</p>
+              <div className="flex flex-wrap gap-2">
+                {genreTags.map(({ tag, count }) => (
+                  <button
+                    key={tag}
+                    onClick={() => handlePopularTagClick(tag)}
+                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors cursor-pointer ${
+                      filters.tags?.includes(tag)
+                        ? 'bg-ios-blue text-white shadow-md'
+                        : 'bg-ios-gray-100 text-ios-gray-700 hover:bg-ios-gray-200 hover:shadow-sm'
+                    }`}
+                    title={`${tag}ジャンルの書籍を検索 (${count}冊)`}
+                  >
+                    {tag} ({count})
+                  </button>
+                ))}
+              </div>
+            </Card>
+          </>
+        )}
 
         {/* 著者別表示 */}
         {authorNames.length > 0 && (

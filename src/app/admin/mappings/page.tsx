@@ -32,6 +32,8 @@ export default function MappingsManagementPage() {
   ];
 
   useEffect(() => {
+    // ページ遷移時にスクロール位置を最上部に設定
+    window.scrollTo(0, 0);
     loadData();
   }, []);
 

@@ -31,6 +31,8 @@ export default function AdminPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    // ページ遷移時にスクロール位置を最上部に設定
+    window.scrollTo(0, 0);
     loadData();
   }, []);
 

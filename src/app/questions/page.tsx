@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
@@ -67,6 +67,11 @@ export default function QuestionsPage() {
       }, 200);
     }
   };
+
+  useEffect(() => {
+    // ページ遷移時にスクロール位置を最上部に設定
+    window.scrollTo(0, 0);
+  }, []);
 
   const canProceed = () => {
     if (currentQuestion.id === 'purpose') {

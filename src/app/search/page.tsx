@@ -23,6 +23,8 @@ export default function SearchPage() {
   const pageSize = 12;
 
   useEffect(() => {
+    // ページ遷移時にスクロール位置を最上部に設定
+    window.scrollTo(0, 0);
     loadInitialData();
   }, []);
 

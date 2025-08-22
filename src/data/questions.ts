@@ -88,31 +88,5 @@ export const questions: Question[] = [
         icon: '📖'
       }
     ]
-  },
-  {
-    id: 'difficulty',
-    title: '読みやすさの希望は？',
-    description: 'どのくらいの読みやすさの本を希望しますか？',
-    type: 'single',
-    options: [
-      {
-        value: 'beginner',
-        label: '読みやすい本',
-        description: '初心者向け、分かりやすい表現',
-        icon: '🌟'
-      },
-      {
-        value: 'intermediate',
-        label: '標準的な本',
-        description: 'ある程度の読書経験が必要',
-        icon: '📈'
-      },
-      {
-        value: 'advanced',
-        label: '専門的な本',
-        description: '深い内容、高度な議論',
-        icon: '🎓'
-      }
-    ]
   }
 ];

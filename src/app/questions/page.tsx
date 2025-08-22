@@ -22,8 +22,6 @@ export default function QuestionsPage() {
   const handleSingleSelect = (value: string) => {
     if (currentQuestion.id === 'purpose') {
       setResponses(prev => ({ ...prev, purpose: value }));
-    } else if (currentQuestion.id === 'difficulty') {
-      setResponses(prev => ({ ...prev, difficulty_preference: value as 'beginner' | 'intermediate' | 'advanced' }));
     }
     
     // 自動で次の質問に進む（遅延あり）
@@ -54,8 +52,7 @@ export default function QuestionsPage() {
       // 回答完了、結果ページへ遷移
       const queryParams = new URLSearchParams({
         purpose: responses.purpose || '',
-        genres: (responses.genre_preference || []).join(','),
-        difficulty: responses.difficulty_preference || 'beginner'
+        genres: (responses.genre_preference || []).join(',')
       });
       router.push(`/results?${queryParams.toString()}`);
     }
@@ -76,8 +73,6 @@ export default function QuestionsPage() {
       return responses.purpose;
     } else if (currentQuestion.id === 'genre') {
       return responses.genre_preference && responses.genre_preference.length > 0;
-    } else if (currentQuestion.id === 'difficulty') {
-      return responses.difficulty_preference;
     }
     return false;
   };
@@ -113,7 +108,7 @@ export default function QuestionsPage() {
             <div className={`grid gap-4 ${currentQuestion.type === 'multiple' ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-2'}`}>
               {currentQuestion.options.map((option) => {
                 const isSelected = currentQuestion.type === 'single' 
-                  ? (currentQuestion.id === 'purpose' ? responses.purpose === option.value : responses.difficulty_preference === option.value)
+                  ? responses.purpose === option.value
                   : responses.genre_preference?.includes(option.value);
 
                 return (

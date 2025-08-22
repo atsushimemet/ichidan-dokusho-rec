@@ -21,17 +21,15 @@ export default function ResultsPage() {
         // URLパラメータから回答を取得
         const purpose = searchParams.get('purpose');
         const genres = searchParams.get('genres');
-        const difficulty = searchParams.get('difficulty');
 
-        if (!purpose || !genres || !difficulty) {
+        if (!purpose || !genres) {
           router.push('/questions');
           return;
         }
 
         const responses: QuestionResponse = {
           purpose,
-          genre_preference: genres ? genres.split(',').filter(g => g) : [],
-          difficulty_preference: difficulty as 'beginner' | 'intermediate' | 'advanced'
+          genre_preference: genres ? genres.split(',').filter(g => g) : []
         };
 
         // レコメンデーションを取得
@@ -52,8 +50,7 @@ export default function ResultsPage() {
         // エラー時もモックデータを表示
         const responses: QuestionResponse = {
           purpose: searchParams.get('purpose') || 'growth',
-          genre_preference: searchParams.get('genres')?.split(',').filter(g => g) || ['自己啓発'],
-          difficulty_preference: (searchParams.get('difficulty') as 'beginner' | 'intermediate' | 'advanced') || 'beginner'
+          genre_preference: searchParams.get('genres')?.split(',').filter(g => g) || ['自己啓発']
         };
         const mockResults = RecommendationEngine.getMockRecommendations(responses);
         setRecommendations(mockResults);
@@ -115,11 +112,11 @@ export default function ResultsPage() {
             <Card 
               key={result.book.id} 
               variant="default" 
-              className="overflow-hidden hover:shadow-ios-xl transition-all duration-300"
+              className="overflow-hidden hover:shadow-ios-xl transition-all duration-300 flex flex-col h-full"
             >
-              <div className="p-6">
+              <div className="p-5 flex flex-col h-full">
                 {/* スコアバッジ */}
-                <div className="flex justify-between items-start mb-4">
+                <div className="flex justify-between items-start mb-3">
                   <div className="bg-ios-blue text-white text-sm font-bold px-3 py-1 rounded-full">
                     #{index + 1}
                   </div>
@@ -128,9 +125,9 @@ export default function ResultsPage() {
                   </div>
                 </div>
 
-                {/* 書籍情報 */}
-                <div className="mb-4">
-                  <h3 className="text-xl font-bold text-ios-gray-800 mb-2 overflow-hidden"
+                {/* 書籍情報（固定高さ） */}
+                <div className="mb-3">
+                  <h3 className="text-lg font-bold text-ios-gray-800 mb-2 h-12 overflow-hidden leading-tight"
                       style={{
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
@@ -138,12 +135,12 @@ export default function ResultsPage() {
                       }}>
                     {result.book.title}
                   </h3>
-                  <p className="text-ios-gray-600 mb-3">
+                  <p className="text-ios-gray-600 mb-2 h-5 text-sm">
                     著者: {result.book.author}
                   </p>
                   
-                  {/* ジャンルタグ */}
-                  <div className="flex flex-wrap gap-1 mb-3">
+                  {/* ジャンルタグ（固定高さ） */}
+                  <div className="flex flex-wrap gap-1 mb-2 h-7 overflow-hidden">
                     {result.book.genre_tags.slice(0, 3).map((tag, tagIndex) => (
                       <span 
                         key={tagIndex}
@@ -154,73 +151,86 @@ export default function ResultsPage() {
                     ))}
                   </div>
 
-                  {/* 説明 */}
-                  {result.book.description && (
-                    <p className="text-sm text-ios-gray-600 mb-4 overflow-hidden"
-                       style={{
-                         display: '-webkit-box',
-                         WebkitLineClamp: 3,
-                         WebkitBoxOrient: 'vertical'
-                       }}>
-                      {result.book.description}
-                    </p>
-                  )}
-                </div>
-
-                {/* マッチ理由 */}
-                {result.match_reasons.length > 0 && (
-                  <div className="mb-4">
-                    <h4 className="text-sm font-semibold text-ios-gray-700 mb-2">
-                      おすすめの理由:
-                    </h4>
-                    <ul className="text-sm text-ios-gray-600 space-y-1">
-                      {result.match_reasons.map((reason, reasonIndex) => (
-                        <li key={reasonIndex} className="flex items-center">
-                          <span className="text-ios-green mr-2">✓</span>
-                          {reason}
-                        </li>
-                      ))}
-                    </ul>
+                  {/* 説明（固定高さ） */}
+                  <div className="h-16 mb-3">
+                    {result.book.description && (
+                      <p className="text-sm text-ios-gray-600 overflow-hidden h-full leading-relaxed"
+                         style={{
+                           display: '-webkit-box',
+                           WebkitLineClamp: 3,
+                           WebkitBoxOrient: 'vertical'
+                         }}>
+                        {result.book.description}
+                      </p>
+                    )}
                   </div>
-                )}
-
-                {/* メタ情報 */}
-                <div className="flex justify-between items-center text-sm text-ios-gray-500 mb-4">
-                  <span>
-                    難易度: {
-                      result.book.difficulty_level === 'beginner' ? '初級' :
-                      result.book.difficulty_level === 'intermediate' ? '中級' : '上級'
-                    }
-                  </span>
-                  {result.book.reading_time_hours && (
-                    <span>約{result.book.reading_time_hours}時間</span>
-                  )}
                 </div>
 
-                {/* アクションボタン */}
-                <div className="flex space-x-2">
-                  <a
-                    href={result.book.amazon_link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1"
-                  >
-                    <Button variant="primary" className="w-full text-sm">
-                      📚 Amazonで見る
-                    </Button>
-                  </a>
-                  {result.book.summary_link && (
+                {/* フレキシブルスペース */}
+                <div className="flex-grow">
+                  {/* マッチ理由（固定高さ） */}
+                  <div className="h-18 mb-3">
+                    {result.match_reasons.length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-semibold text-ios-gray-700 mb-1">
+                          おすすめの理由:
+                        </h4>
+                        <ul className="text-sm text-ios-gray-600 space-y-0.5 overflow-hidden">
+                          {result.match_reasons.slice(0, 2).map((reason, reasonIndex) => (
+                            <li key={reasonIndex} className="flex items-center">
+                              <span className="text-ios-green mr-2">✓</span>
+                              {reason}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* 下部固定要素 */}
+                <div className="mt-auto">
+                  {/* メタ情報 */}
+                  <div className="flex justify-between items-center text-sm text-ios-gray-500 mb-3 h-4">
+                    {result.book.page_count && (
+                      <span>{result.book.page_count}ページ</span>
+                    )}
+                    {result.book.price && (
+                      <span>¥{result.book.price.toLocaleString()}</span>
+                    )}
+                  </div>
+
+                  {/* アクションボタン */}
+                  <div className="flex space-x-2">
                     <a
-                      href={result.book.summary_link}
+                      href={result.book.amazon_link}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex-1"
                     >
-                      <Button variant="outline" className="w-full text-sm">
-                        📝 要約を読む
+                      <Button variant="primary" className="w-full text-sm">
+                        📚 Amazonで見る
                       </Button>
                     </a>
-                  )}
+                    {result.book.summary_link ? (
+                      <a
+                        href={result.book.summary_link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1"
+                      >
+                        <Button variant="outline" className="w-full text-sm">
+                          📝 要約を読む
+                        </Button>
+                      </a>
+                    ) : (
+                      <div className="flex-1">
+                        <Button variant="outline" className="w-full text-sm opacity-50" disabled>
+                          📝 要約なし
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </Card>

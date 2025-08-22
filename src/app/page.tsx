@@ -4,71 +4,134 @@ export default function Home() {
   return (
     <main className="min-h-screen">
       {/* Hero Section */}
-      <div className="relative min-h-screen flex items-center justify-center px-4">
-        <div className="max-w-4xl mx-auto text-center space-y-8">
+      <section className="relative min-h-screen flex items-center justify-center px-6 py-24">
+        <div className="max-w-6xl mx-auto text-center space-y-16">
           {/* メインタイトル */}
-          <div className="space-y-4 fade-in">
-            <h1 className="text-4xl md:text-6xl font-bold text-ios-gray-800 leading-tight">
+          <div className="space-y-8 fade-in">
+            <h1 className="text-5xl md:text-7xl font-bold text-ios-gray-800 leading-tight">
               あなたにぴったりの
               <span className="holographic-text block">一冊を見つけよう</span>
             </h1>
-            <p className="text-xl md:text-2xl text-ios-gray-600 max-w-2xl mx-auto">
-              3つの質問に答えるだけで、あなたの嗜好に合った最適な書籍をレコメンドします
+            <p className="text-2xl md:text-3xl text-ios-gray-600 max-w-4xl mx-auto leading-relaxed">
+              たった2つの質問に答えるだけで、あなたの嗜好に合った最適な書籍をレコメンドします
             </p>
-          </div>
-
-          {/* 説明カード */}
-          <div className="glass rounded-3xl p-8 max-w-2xl mx-auto slide-up">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-              <div className="space-y-2">
-                <div className="text-3xl">📚</div>
-                <h3 className="font-semibold text-ios-gray-800">簡単3質問</h3>
-                <p className="text-sm text-ios-gray-600">わずか3つの質問に答えるだけ</p>
-              </div>
-              <div className="space-y-2">
-                <div className="text-3xl">🎯</div>
-                <h3 className="font-semibold text-ios-gray-800">精密レコメンド</h3>
-                <p className="text-sm text-ios-gray-600">あなたの嗜好に合わせた厳選</p>
-              </div>
-              <div className="space-y-2">
-                <div className="text-3xl">⚡</div>
-                <h3 className="font-semibold text-ios-gray-800">即座に結果</h3>
-                <p className="text-sm text-ios-gray-600">すぐに最適な本が見つかる</p>
-              </div>
-            </div>
           </div>
 
           {/* CTAボタン */}
           <div className="scale-in">
             <Link
               href="/questions"
-              className="btn-primary text-lg px-12 py-4 inline-block"
+              className="btn-primary text-xl px-16 py-5 inline-block shadow-2xl hover:shadow-3xl transition-all duration-300"
             >
-              質問に答えて本を探す
+              📚 質問に答えて本を探す
             </Link>
           </div>
+        </div>
+      </section>
 
-          {/* 統計情報 */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto mt-16">
-            <div className="card-ios p-6 text-center">
-              <div className="text-2xl font-bold text-ios-blue">1000+</div>
-              <div className="text-sm text-ios-gray-600">厳選書籍</div>
+      {/* Features Section */}
+      <section className="py-24 px-6 bg-white">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-ios-gray-800 mb-6">
+              シンプルなステップで理想の一冊へ
+            </h2>
+            <p className="text-xl text-ios-gray-600 max-w-3xl mx-auto">
+              複雑な設定は一切不要。簡単な質問に答えるだけで、AIがあなたに最適な書籍を推薦します。
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center p-8 rounded-2xl bg-gradient-to-br from-ios-blue/5 to-ios-blue/10 slide-up">
+              <div className="text-6xl mb-6">🎯</div>
+              <h3 className="text-2xl font-bold text-ios-gray-800 mb-4">目的を選ぶ</h3>
+              <p className="text-ios-gray-600 leading-relaxed">
+                知識を広げたい、スキルアップしたい、自己成長したいなど、あなたの読書目的を教えてください。
+              </p>
             </div>
-            <div className="card-ios p-6 text-center">
-              <div className="text-2xl font-bold text-ios-green">95%</div>
-              <div className="text-sm text-ios-gray-600">満足度</div>
+            <div className="text-center p-8 rounded-2xl bg-gradient-to-br from-ios-purple/5 to-ios-purple/10 slide-up" style={{animationDelay: '0.2s'}}>
+              <div className="text-6xl mb-6">📚</div>
+              <h3 className="text-2xl font-bold text-ios-gray-800 mb-4">ジャンルを選ぶ</h3>
+              <p className="text-ios-gray-600 leading-relaxed">
+                自己啓発、ビジネス、心理学、哲学など、興味のあるジャンルを自由に選択できます。
+              </p>
             </div>
-            <div className="card-ios p-6 text-center">
-              <div className="text-2xl font-bold text-ios-purple">10秒</div>
-              <div className="text-sm text-ios-gray-600">平均回答時間</div>
-            </div>
-            <div className="card-ios p-6 text-center">
-              <div className="text-2xl font-bold text-ios-orange">24/7</div>
-              <div className="text-sm text-ios-gray-600">いつでも利用</div>
+            <div className="text-center p-8 rounded-2xl bg-gradient-to-br from-ios-green/5 to-ios-green/10 slide-up" style={{animationDelay: '0.4s'}}>
+              <div className="text-6xl mb-6">✨</div>
+              <h3 className="text-2xl font-bold text-ios-gray-800 mb-4">推薦を受け取る</h3>
+              <p className="text-ios-gray-600 leading-relaxed">
+                AIがあなたの回答を分析し、最適な書籍をマッチングスコアとともに推薦します。
+              </p>
             </div>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-24 px-6 bg-gradient-to-br from-ios-blue/5 via-white to-ios-purple/5">
+        <div className="max-w-6xl mx-auto text-center">
+          <h2 className="text-4xl md:text-5xl font-bold text-ios-gray-800 mb-16">
+            信頼される数字
+          </h2>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div className="card-ios p-8 text-center">
+              <div className="text-4xl font-bold text-ios-blue mb-2">1000+</div>
+              <div className="text-lg text-ios-gray-600">厳選書籍</div>
+              <div className="text-sm text-ios-gray-500 mt-2">各分野の専門家が推薦</div>
+            </div>
+            <div className="card-ios p-8 text-center">
+              <div className="text-4xl font-bold text-ios-green mb-2">95%</div>
+              <div className="text-lg text-ios-gray-600">満足度</div>
+              <div className="text-sm text-ios-gray-500 mt-2">ユーザー調査に基づく</div>
+            </div>
+            <div className="card-ios p-8 text-center">
+              <div className="text-4xl font-bold text-ios-purple mb-2">30秒</div>
+              <div className="text-lg text-ios-gray-600">平均回答時間</div>
+              <div className="text-sm text-ios-gray-500 mt-2">簡単・スピーディー</div>
+            </div>
+            <div className="card-ios p-8 text-center">
+              <div className="text-4xl font-bold text-ios-orange mb-2">24/7</div>
+              <div className="text-lg text-ios-gray-600">いつでも利用</div>
+              <div className="text-sm text-ios-gray-500 mt-2">年中無休で利用可能</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-24 px-6 bg-gradient-to-r from-ios-blue to-ios-purple text-white">
+        <div className="max-w-4xl mx-auto text-center space-y-8">
+          <h2 className="text-4xl md:text-5xl font-bold leading-tight">
+            あなたの次の一冊を
+            <span className="block">今すぐ見つけませんか？</span>
+          </h2>
+          <p className="text-xl opacity-90 max-w-2xl mx-auto">
+            たった2分で、あなたの人生を変える一冊に出会えるかもしれません。
+          </p>
+          <div>
+            <Link
+              href="/questions"
+              className="inline-block bg-white text-ios-blue text-xl font-bold px-12 py-4 rounded-full hover:bg-gray-50 transition-all duration-300 shadow-2xl"
+            >
+              → 今すぐ始める
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-12 px-6 bg-ios-gray-800 text-white">
+        <div className="max-w-6xl mx-auto text-center">
+          <div className="text-3xl font-bold mb-4">📚 一冊読書</div>
+          <p className="text-ios-gray-300 mb-6">
+            あなたにぴったりの一冊を見つける、AIパーソナライズド書籍レコメンデーションサービス
+          </p>
+          <div className="text-sm text-ios-gray-400">
+            © 2024 一冊読書. All rights reserved.
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }

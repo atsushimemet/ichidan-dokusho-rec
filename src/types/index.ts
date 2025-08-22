@@ -8,8 +8,8 @@ export interface Book {
   summary_link?: string;
   cover_image_url?: string;
   description?: string;
-  difficulty_level: 'beginner' | 'intermediate' | 'advanced';
-  reading_time_hours?: number;
+  page_count?: number;
+  price?: number;
   created_at: string;
   updated_at: string;
 }
@@ -18,7 +18,6 @@ export interface Book {
 export interface QuestionResponse {
   purpose: string;
   genre_preference: string[];
-  difficulty_preference: 'beginner' | 'intermediate' | 'advanced';
 }
 
 // レコメンド結果の型定義
@@ -43,4 +42,29 @@ export interface Question {
   description: string;
   type: 'single' | 'multiple';
   options: QuestionOption[];
+}
+
+// タグマスター型定義
+export interface GenreTag {
+  id: string;
+  name: string;
+  description?: string;
+  category: string;
+  purpose_mapping: string[];
+  display_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// 質問マッピング型定義
+export interface QuestionMapping {
+  id: string;
+  question_id: string;
+  question_type: 'single' | 'multiple';
+  option_value: string;
+  mapped_tags: string[];
+  weight: number;
+  created_at: string;
+  updated_at: string;
 }

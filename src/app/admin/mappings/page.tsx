@@ -257,21 +257,23 @@ export default function MappingsManagementPage() {
         <div className="max-w-7xl mx-auto">
         {/* ヘッダー */}
         <div className="mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-ios-gray-800">
-              質問マッピング管理
-            </h1>
-            <p className="text-ios-gray-600 mt-2">
-              目的とジャンルの選択肢とタグのマッピングを管理し、レコメンドロジックを調整できます
-            </p>
-            <div className="flex space-x-4 mt-4">
+          <div className="flex justify-between items-start">
+            <div className="flex-1">
+              <h1 className="text-3xl font-bold text-ios-gray-800">
+                質問マッピング管理
+              </h1>
+              <p className="text-ios-gray-600 mt-2">
+                目的とジャンルの選択肢とタグのマッピングを管理し、レコメンドロジックを調整できます
+              </p>
+            </div>
+            <div className="flex space-x-4 flex-shrink-0 w-48 justify-end">
               <Link href="/admin">
-                <Button variant="outline" size="sm" className="px-3">
+                <Button variant="outline" size="sm" className="px-3 w-10">
                   ←
                 </Button>
               </Link>
               <Link href="/admin/tags">
-                <Button variant="secondary" size="sm" className="px-3">
+                <Button variant="secondary" size="sm" className="px-3 w-10">
                   🏷️
                 </Button>
               </Link>
@@ -279,7 +281,7 @@ export default function MappingsManagementPage() {
                 variant="primary"
                 size="sm"
                 onClick={() => setShowForm(!showForm)}
-                className="px-3"
+                className="px-3 w-10"
               >
                 {showForm ? '←' : '🔗'}
               </Button>

@@ -309,7 +309,7 @@ export default function AdminPage() {
         {/* ヘッダー */}
         <div className="mb-8">
           <div className="flex justify-between items-start">
-            <div>
+            <div className="flex-1">
               <h1 className="text-3xl font-bold text-ios-gray-800">
                 管理画面
               </h1>
@@ -317,19 +317,19 @@ export default function AdminPage() {
                 レコメンドシステムの各種データを管理できます
               </p>
             </div>
-            <div className="flex space-x-4">
+            <div className="flex space-x-4 flex-shrink-0 w-48 justify-end">
               <Link href="/admin/tags">
-                <Button variant="secondary" size="sm" className="px-3">
+                <Button variant="secondary" size="sm" className="px-3 w-10">
                   🏷️
                 </Button>
               </Link>
               <Link href="/admin/mappings">
-                <Button variant="secondary" size="sm" className="px-3">
+                <Button variant="secondary" size="sm" className="px-3 w-10">
                   🔗
                 </Button>
               </Link>
               <Link href="/">
-                <Button variant="outline" size="sm" className="px-3">
+                <Button variant="outline" size="sm" className="px-3 w-10">
                   🏠
                 </Button>
               </Link>
@@ -337,7 +337,7 @@ export default function AdminPage() {
                 variant="primary"
                 size="sm"
                 onClick={() => setShowForm(!showForm)}
-                className="px-3"
+                className="px-3 w-10"
               >
                 {showForm ? '←' : '📚'}
               </Button>

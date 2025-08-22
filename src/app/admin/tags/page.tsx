@@ -240,34 +240,34 @@ export default function TagsManagementPage() {
         {/* ヘッダー */}
         <div className="mb-8">
           <div className="flex justify-between items-start">
-            <div>
+            <div className="flex-1">
               <h1 className="text-3xl font-bold text-ios-gray-800">
                 タグマスター管理
               </h1>
               <p className="text-ios-gray-600 mt-2">
                 システムで使用されるすべてのタグを管理できます
               </p>
-              <div className="flex space-x-4 mt-4">
-                <Link href="/admin">
-                  <Button variant="outline" size="sm" className="px-3">
-                    ←
-                  </Button>
-                </Link>
-                <Link href="/admin/mappings">
-                  <Button variant="secondary" size="sm" className="px-3">
-                    🔗
-                  </Button>
-                </Link>
-              </div>
             </div>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => setShowForm(!showForm)}
-              className="px-3"
-            >
-              {showForm ? '←' : '🏷️'}
-            </Button>
+            <div className="flex space-x-4 flex-shrink-0 w-48 justify-end">
+              <Link href="/admin">
+                <Button variant="outline" size="sm" className="px-3 w-10">
+                  ←
+                </Button>
+              </Link>
+              <Link href="/admin/mappings">
+                <Button variant="secondary" size="sm" className="px-3 w-10">
+                  🔗
+                </Button>
+              </Link>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setShowForm(!showForm)}
+                className="px-3 w-10"
+              >
+                {showForm ? '←' : '🏷️'}
+              </Button>
+            </div>
           </div>
         </div>
 

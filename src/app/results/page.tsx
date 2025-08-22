@@ -16,6 +16,9 @@ export default function ResultsPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // ページの一番上にスクロール
+    window.scrollTo(0, 0);
+    
     const loadRecommendations = async () => {
       try {
         // URLパラメータから回答を取得

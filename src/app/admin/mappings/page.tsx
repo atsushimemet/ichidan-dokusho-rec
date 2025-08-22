@@ -286,8 +286,9 @@ export default function MappingsManagementPage() {
           <Button
             variant="primary"
             onClick={() => setShowForm(!showForm)}
+            className="px-3"
           >
-            {showForm ? '一覧に戻る' : '🔗 新しいマッピングを追加'}
+            {showForm ? '←' : '🔗'}
           </Button>
         </div>
 

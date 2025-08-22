@@ -46,6 +46,12 @@ export default function AdminPage() {
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
       
+      console.log('Supabase設定確認:', {
+        url: supabaseUrl ? `${supabaseUrl.substring(0, 20)}...` : '未設定',
+        hasKey: !!supabaseAnonKey,
+        keyLength: supabaseAnonKey ? supabaseAnonKey.length : 0
+      });
+      
       if (!supabaseUrl || !supabaseAnonKey || supabaseUrl === 'your_supabase_url') {
         setError('Supabaseが設定されていません。モックデータを表示しています。');
         setBooks([
@@ -77,15 +83,23 @@ export default function AdminPage() {
         return;
       }
 
+      console.log('Supabaseクエリ実行開始');
       const { data, error } = await supabase
         .from('books')
         .select('*')
         .order('created_at', { ascending: false });
 
+      console.log('Supabaseクエリ結果:', { data: data?.length || 0, error });
+      
       if (error) throw error;
       setBooks(data || []);
     } catch (err) {
       console.error('書籍データの読み込みエラー:', err);
+      console.error('エラーの詳細:', {
+        message: err instanceof Error ? err.message : 'Unknown error',
+        stack: err instanceof Error ? err.stack : undefined,
+        error: err
+      });
       setError('書籍データの読み込みに失敗しました。モックデータを表示しています。');
       
       // モックデータを表示
@@ -122,16 +136,24 @@ export default function AdminPage() {
         return;
       }
 
+      console.log('タグクエリ実行開始');
       const { data, error } = await supabase
         .from('genre_tags')
         .select('name')
         .eq('is_active', true)
         .order('category, display_order');
 
+      console.log('タグクエリ結果:', { data: data?.length || 0, error });
+      
       if (error) throw error;
       setAvailableTags((data || []).map(tag => tag.name));
     } catch (err) {
       console.error('タグデータの読み込みエラー:', err);
+      console.error('エラーの詳細:', {
+        message: err instanceof Error ? err.message : 'Unknown error',
+        stack: err instanceof Error ? err.stack : undefined,
+        error: err
+      });
       // フォールバック
       setAvailableTags([
         '自己啓発', 'ビジネス', '心理学', '哲学', '歴史', '科学', '健康', '小説',

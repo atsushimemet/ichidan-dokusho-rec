@@ -78,15 +78,23 @@ export default function TagsManagementPage() {
         return;
       }
 
+      console.log('タグマスタークエリ実行開始');
       const { data, error } = await supabase
         .from('genre_tags')
         .select('*')
         .order('category, display_order');
 
+      console.log('タグマスタークエリ結果:', { data: data?.length || 0, error });
+      
       if (error) throw error;
       setTags(data || []);
     } catch (err) {
       console.error('タグデータの読み込みエラー:', err);
+      console.error('エラーの詳細:', {
+        message: err instanceof Error ? err.message : 'Unknown error',
+        stack: err instanceof Error ? err.stack : undefined,
+        error: err
+      });
       setError('タグデータの読み込みに失敗しました。モックデータを表示しています。');
       setTags([
         {

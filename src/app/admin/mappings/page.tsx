@@ -262,7 +262,7 @@ export default function MappingsManagementPage() {
       <div className="min-h-screen bg-gradient-to-br from-ios-blue/5 via-white to-ios-purple/5 px-4 py-8">
         <div className="max-w-7xl mx-auto">
         {/* ヘッダー */}
-        <div className="flex justify-between items-center mb-8">
+        <div className="mb-8">
           <div>
             <h1 className="text-3xl font-bold text-ios-gray-800">
               質問マッピング管理
@@ -281,15 +281,16 @@ export default function MappingsManagementPage() {
                   🏷️
                 </Button>
               </Link>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setShowForm(!showForm)}
+                className="px-3"
+              >
+                {showForm ? '←' : '🔗'}
+              </Button>
             </div>
           </div>
-          <Button
-            variant="primary"
-            onClick={() => setShowForm(!showForm)}
-            className="px-3"
-          >
-            {showForm ? '←' : '🔗'}
-          </Button>
         </div>
 
         {/* エラー・成功メッセージ */}

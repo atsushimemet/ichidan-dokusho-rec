@@ -266,7 +266,7 @@ export default function MappingsManagementPage() {
                 目的とジャンルの選択肢とタグのマッピングを管理し、レコメンドロジックを調整できます
               </p>
             </div>
-            <div className="flex space-x-4 flex-shrink-0 w-48 justify-end">
+            <div className="flex space-x-4 flex-shrink-0 w-64 justify-end">
               <Link href="/admin">
                 <Button variant="outline" size="sm" className="px-3 w-10">
                   ←
@@ -275,6 +275,16 @@ export default function MappingsManagementPage() {
               <Link href="/admin/tags">
                 <Button variant="secondary" size="sm" className="px-3 w-10">
                   🏷️
+                </Button>
+              </Link>
+              <Link href="/">
+                <Button variant="outline" size="sm" className="px-3 w-10">
+                  🏠
+                </Button>
+              </Link>
+              <Link href="/admin">
+                <Button variant="primary" size="sm" className="px-3 w-10">
+                  📚
                 </Button>
               </Link>
               <Button

@@ -317,7 +317,7 @@ export default function AdminPage() {
                 レコメンドシステムの各種データを管理できます
               </p>
             </div>
-            <div className="flex space-x-4 flex-shrink-0 w-48 justify-end">
+            <div className="flex space-x-4 flex-shrink-0 w-64 justify-end">
               <Link href="/admin/tags">
                 <Button variant="secondary" size="sm" className="px-3 w-10">
                   🏷️

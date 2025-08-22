@@ -248,7 +248,7 @@ export default function TagsManagementPage() {
                 システムで使用されるすべてのタグを管理できます
               </p>
             </div>
-            <div className="flex space-x-4 flex-shrink-0 w-48 justify-end">
+            <div className="flex space-x-4 flex-shrink-0 w-64 justify-end">
               <Link href="/admin">
                 <Button variant="outline" size="sm" className="px-3 w-10">
                   ←
@@ -257,6 +257,16 @@ export default function TagsManagementPage() {
               <Link href="/admin/mappings">
                 <Button variant="secondary" size="sm" className="px-3 w-10">
                   🔗
+                </Button>
+              </Link>
+              <Link href="/">
+                <Button variant="outline" size="sm" className="px-3 w-10">
+                  🏠
+                </Button>
+              </Link>
+              <Link href="/admin">
+                <Button variant="primary" size="sm" className="px-3 w-10">
+                  📚
                 </Button>
               </Link>
               <Button

@@ -8,6 +8,7 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { createClient } from '@supabase/supabase-js';
 import { Book } from '@/types';
+import { getReadabilityLevel } from '@/lib/utils';
 
 export default function AdminPage() {
   const [books, setBooks] = useState<Book[]>([]);
@@ -506,6 +507,18 @@ export default function AdminPage() {
                     {book.summary_link && (
                       <div className="text-ios-blue">
                         📝 要約リンク: <a href={book.summary_link} target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">表示</a>
+                      </div>
+                    )}
+                    {book.page_count && (
+                      <div>
+                        {(() => {
+                          const readability = getReadabilityLevel(book.page_count);
+                          return (
+                            <span className={`text-xs font-medium ${readability.color}`}>
+                              📖 {readability.label}
+                            </span>
+                          );
+                        })()}
                       </div>
                     )}
                   </div>

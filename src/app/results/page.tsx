@@ -7,6 +7,7 @@ import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import { RecommendationEngine } from '@/lib/recommendation';
 import { RecommendationResult, QuestionResponse } from '@/types';
+import { getReadabilityLevel } from '@/lib/utils';
 
 export default function ResultsPage() {
   const searchParams = useSearchParams();
@@ -202,6 +203,20 @@ export default function ResultsPage() {
                       <span>¥{result.book.price.toLocaleString()}</span>
                     )}
                   </div>
+                  
+                  {/* 読みやすさレベル */}
+                  {result.book.page_count && (
+                    <div className="mb-3">
+                      {(() => {
+                        const readability = getReadabilityLevel(result.book.page_count);
+                        return (
+                          <div className={`text-xs font-medium ${readability.color} bg-${readability.color.replace('text-', '')}/10 px-2 py-1 rounded-md inline-block`}>
+                            📖 {readability.label}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
 
                   {/* アクションボタン */}
                   <div className="flex space-x-2">
@@ -212,7 +227,7 @@ export default function ResultsPage() {
                       className="flex-1"
                     >
                       <Button variant="primary" className="w-full text-sm">
-                        📚 Amazonで見る
+                        📚 Amazon
                       </Button>
                     </a>
                     {result.book.summary_link ? (

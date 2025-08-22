@@ -464,82 +464,99 @@ export default function AdminPage() {
           /* 書籍一覧 */
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
             {books.map((book) => (
-              <Card key={book.id} variant="default" className="p-6">
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-lg font-bold text-ios-gray-800 mb-1">
+              <Card key={book.id} variant="default" className="overflow-hidden hover:shadow-ios-xl transition-all duration-300 flex flex-col h-full">
+                <div className="p-5 flex flex-col h-full">
+                  {/* 書籍情報（固定高さ） */}
+                  <div className="mb-3">
+                    <h3 className="text-lg font-bold text-ios-gray-800 mb-2 h-12 overflow-hidden leading-tight"
+                        style={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical'
+                        }}>
                       {book.title}
                     </h3>
-                    <p className="text-ios-gray-600">
+                    <p className="text-ios-gray-600 mb-2 h-5 text-sm">
                       著者: {book.author}
                     </p>
+                    
+                    {/* ジャンルタグ（固定高さ） */}
+                    <div className="flex flex-wrap gap-1 mb-2 h-7 overflow-hidden">
+                      {book.genre_tags.map((tag, index) => (
+                        <span 
+                          key={index}
+                          className="bg-ios-purple/10 text-ios-purple text-xs px-2 py-1 rounded-md"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* 説明（固定高さ） */}
+                    <div className="h-16 mb-3">
+                      {book.description && (
+                        <p className="text-sm text-ios-gray-600 overflow-hidden h-full leading-relaxed"
+                           style={{
+                             display: '-webkit-box',
+                             WebkitLineClamp: 3,
+                             WebkitBoxOrient: 'vertical'
+                           }}>
+                          {book.description}
+                        </p>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="flex flex-wrap gap-1">
-                    {book.genre_tags.map((tag, index) => (
-                      <span 
-                        key={index}
-                        className="bg-ios-purple/10 text-ios-purple text-xs px-2 py-1 rounded-md"
+                  {/* フレキシブルスペース */}
+                  <div className="flex-grow">
+                    {/* メタ情報（固定高さ） */}
+                    <div className="text-sm text-ios-gray-500 space-y-1 mb-3">
+                      {book.page_count && (
+                        <div>ページ数: {book.page_count}ページ</div>
+                      )}
+                      {book.price && (
+                        <div>価格: ¥{book.price.toLocaleString()}</div>
+                      )}
+                      {book.summary_link && (
+                        <div className="text-ios-blue">
+                          📝 要約リンク: <a href={book.summary_link} target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">表示</a>
+                        </div>
+                      )}
+                      {book.page_count && (
+                        <div>
+                          {(() => {
+                            const readability = getReadabilityLevel(book.page_count);
+                            return (
+                              <span className={`text-xs font-medium ${readability.color}`}>
+                                📖 {readability.label}
+                              </span>
+                            );
+                          })()}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 下部固定要素 */}
+                  <div className="mt-auto">
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEdit(book)}
+                        className="flex-1 px-3"
                       >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-
-                  {book.description && (
-                    <p className="text-sm text-ios-gray-600 overflow-hidden"
-                       style={{
-                         display: '-webkit-box',
-                         WebkitLineClamp: 3,
-                         WebkitBoxOrient: 'vertical'
-                       }}>
-                      {book.description}
-                    </p>
-                  )}
-
-                  <div className="text-sm text-ios-gray-500 space-y-1">
-                    {book.page_count && (
-                      <div>ページ数: {book.page_count}ページ</div>
-                    )}
-                    {book.price && (
-                      <div>価格: ¥{book.price.toLocaleString()}</div>
-                    )}
-                    {book.summary_link && (
-                      <div className="text-ios-blue">
-                        📝 要約リンク: <a href={book.summary_link} target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">表示</a>
-                      </div>
-                    )}
-                    {book.page_count && (
-                      <div>
-                        {(() => {
-                          const readability = getReadabilityLevel(book.page_count);
-                          return (
-                            <span className={`text-xs font-medium ${readability.color}`}>
-                              📖 {readability.label}
-                            </span>
-                          );
-                        })()}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEdit(book)}
-                      className="flex-1 px-3"
-                    >
-                      ✏️
-                    </Button>
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={() => handleDelete(book.id)}
-                      className="flex-1 px-3"
-                    >
-                      🗑️
-                    </Button>
+                        ✏️
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={() => handleDelete(book.id)}
+                        className="flex-1 px-3"
+                      >
+                        🗑️
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </Card>

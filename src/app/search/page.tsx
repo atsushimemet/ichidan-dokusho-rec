@@ -229,10 +229,60 @@ export default function SearchPage() {
                 </div>
               </div>
 
-              {/* タグフィルター */}
+              {/* 人気タグフィルター */}
               <div className="mb-4">
-                <h3 className="text-lg font-semibold text-ios-gray-800 mb-3">タグで絞り込み</h3>
-                <p className="text-ios-gray-600 text-sm mb-3">複数のタグを選択できます</p>
+                <h3 className="text-lg font-semibold text-ios-gray-800 mb-3">人気タグ</h3>
+                <p className="text-ios-gray-600 text-sm mb-3">人気タグからクイック検索できます</p>
+                <div className="flex flex-wrap gap-2">
+                  {tagCategories.length > 0 ? (
+                    tagCategories.map(category => (
+                      <div key={category.category} className="w-full mb-4">
+                        <h4 className="text-sm font-medium text-ios-gray-700 mb-2">{category.category}</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {category.tags.slice(0, 10).map(({ tag, count }) => (
+                            <button
+                              key={tag}
+                              onClick={() => {
+                                handlePopularTagClick(tag);
+                              }}
+                              className={`px-3 py-1 rounded-full text-sm font-medium transition-colors cursor-pointer ${
+                                filters.tags?.includes(tag)
+                                  ? 'bg-ios-blue text-white shadow-md'
+                                  : 'bg-ios-gray-100 text-ios-gray-700 hover:bg-ios-gray-200 hover:shadow-sm'
+                              }`}
+                              title={`${tag}ジャンルの書籍を検索 (${count}冊)`}
+                            >
+                              {tag} ({count})
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    genreTags.slice(0, 20).map(({ tag, count }) => (
+                      <button
+                        key={tag}
+                        onClick={() => {
+                          handlePopularTagClick(tag);
+                        }}
+                        className={`px-3 py-1 rounded-full text-sm font-medium transition-colors cursor-pointer ${
+                          filters.tags?.includes(tag)
+                            ? 'bg-ios-blue text-white shadow-md'
+                            : 'bg-ios-gray-100 text-ios-gray-700 hover:bg-ios-gray-200 hover:shadow-sm'
+                        }`}
+                        title={`${tag}ジャンルの書籍を検索 (${count}冊)`}
+                      >
+                        {tag} ({count})
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+              
+              {/* 詳細タグフィルター */}
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-ios-gray-800 mb-3">詳細タグ絞り込み</h3>
+                <p className="text-ios-gray-600 text-sm mb-3">複数のタグを選択して詳細検索できます</p>
                 <div className="flex flex-wrap gap-2">
                   {availableTags.map(tag => (
                     <button
@@ -279,56 +329,6 @@ export default function SearchPage() {
           )}
         </Card>
 
-        {/* タグ分類別表示 */}
-        {tagCategories.length > 0 ? (
-          tagCategories.map(category => (
-            <Card key={category.category} variant="default" className="p-6 mb-6">
-              <h3 className="text-lg font-semibold text-ios-gray-800 mb-3">{category.category}</h3>
-              <p className="text-ios-gray-600 text-sm mb-3">{category.description}</p>
-              <div className="flex flex-wrap gap-2">
-                {category.tags.map(({ tag, count }) => (
-                  <button
-                    key={tag}
-                    onClick={() => handlePopularTagClick(tag)}
-                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors cursor-pointer ${
-                      filters.tags?.includes(tag)
-                        ? 'bg-ios-blue text-white shadow-md'
-                        : 'bg-ios-gray-100 text-ios-gray-700 hover:bg-ios-gray-200 hover:shadow-sm'
-                    }`}
-                    title={`${tag}ジャンルの書籍を検索 (${count}冊)`}
-                  >
-                    {tag} ({count})
-                  </button>
-                ))}
-              </div>
-            </Card>
-          ))
-        ) : (
-          /* フォールバック: 従来のタグ表示 */
-          <>
-            {/* ジャンルタグ */}
-            <Card variant="default" className="p-6 mb-6">
-              <h3 className="text-lg font-semibold text-ios-gray-800 mb-3">ジャンルタグ</h3>
-              <p className="text-ios-gray-600 text-sm mb-3">ジャンルタグをクリックすると、そのジャンルの書籍が表示されます</p>
-              <div className="flex flex-wrap gap-2">
-                {genreTags.map(({ tag, count }) => (
-                  <button
-                    key={tag}
-                    onClick={() => handlePopularTagClick(tag)}
-                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors cursor-pointer ${
-                      filters.tags?.includes(tag)
-                        ? 'bg-ios-blue text-white shadow-md'
-                        : 'bg-ios-gray-100 text-ios-gray-700 hover:bg-ios-gray-200 hover:shadow-sm'
-                    }`}
-                    title={`${tag}ジャンルの書籍を検索 (${count}冊)`}
-                  >
-                    {tag} ({count})
-                  </button>
-                ))}
-              </div>
-            </Card>
-          </>
-        )}
 
 
         {/* 検索結果 */}

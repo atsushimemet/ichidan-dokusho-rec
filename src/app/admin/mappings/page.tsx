@@ -257,8 +257,8 @@ export default function MappingsManagementPage() {
         <div className="max-w-7xl mx-auto">
         {/* ヘッダー */}
         <div className="mb-8">
-          <div className="flex justify-between items-start">
-            <div className="flex-1">
+          <div>
+            <div className="mb-4">
               <h1 className="text-3xl font-bold text-ios-gray-800">
                 質問マッピング管理
               </h1>
@@ -266,7 +266,7 @@ export default function MappingsManagementPage() {
                 目的とジャンルの選択肢とタグのマッピングを管理し、レコメンドロジックを調整できます
               </p>
             </div>
-            <div className="flex space-x-4 flex-shrink-0 w-64 justify-end">
+            <div className="flex space-x-4 justify-end">
               <Link href="/admin">
                 <Button variant="outline" size="sm" className="px-3 w-10">
                   ←

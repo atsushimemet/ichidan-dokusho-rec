@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
-import { searchBooks, getAvailableTags, getPopularTags, SearchFilters } from '@/lib/search';
+import { searchBooks, getAvailableTags, getPopularTags, getSeparatedTags, SearchFilters } from '@/lib/search';
 import { Book } from '@/lib/supabase';
 import { getReadabilityLevel } from '@/lib/utils';
 
@@ -13,6 +13,8 @@ export default function SearchPage() {
   const [books, setBooks] = useState<Book[]>([]);
   const [availableTags, setAvailableTags] = useState<string[]>([]);
   const [popularTags, setPopularTags] = useState<Array<{ tag: string; count: number }>>([]);
+  const [genreTags, setGenreTags] = useState<Array<{ tag: string; count: number }>>([]);
+  const [authorTags, setAuthorTags] = useState<Array<{ tag: string; count: number }>>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
@@ -37,12 +39,18 @@ export default function SearchPage() {
   const loadInitialData = async () => {
     try {
       setIsLoading(true);
-      const [tags, popular] = await Promise.all([
+      const [tags, popular, separated] = await Promise.all([
         getAvailableTags(),
         getPopularTags() // 制限なしで全てのタグを取得
       ]);
       setAvailableTags(tags);
       setPopularTags(popular);
+      
+      // ジャンルタグと著者タグを分けて取得
+      const separatedTags = await getSeparatedTags();
+      setGenreTags(separatedTags.genreTags);
+      setAuthorTags(separatedTags.authorTags);
+      
       await performSearch();
     } catch (err) {
       console.error('初期データ読み込みエラー:', err);
@@ -90,8 +98,16 @@ export default function SearchPage() {
   };
 
   const handlePopularTagClick = (tag: string) => {
-    // 人気タグをクリックした時は、そのタグのみで検索
+    // ジャンルタグをクリックした時は、そのタグのみで検索
     setFilters({ tags: [tag] });
+    setCurrentPage(1);
+    // 即座に検索実行
+    setTimeout(() => performSearch(), 0);
+  };
+
+  const handleAuthorClick = (author: string) => {
+    // 著者をクリックした時は、その著者のみで検索
+    setFilters({ author });
     setCurrentPage(1);
     // 即座に検索実行
     setTimeout(() => performSearch(), 0);
@@ -247,12 +263,12 @@ export default function SearchPage() {
           )}
         </Card>
 
-        {/* 全タグ */}
+        {/* ジャンルタグ */}
         <Card variant="default" className="p-6 mb-6">
-          <h3 className="text-lg font-semibold text-ios-gray-800 mb-3">全タグ一覧</h3>
-          <p className="text-ios-gray-600 text-sm mb-3">タグをクリックすると、そのタグを持つ書籍が表示されます（将来的にクリック回数順でソート予定）</p>
+          <h3 className="text-lg font-semibold text-ios-gray-800 mb-3">ジャンルタグ</h3>
+          <p className="text-ios-gray-600 text-sm mb-3">ジャンルタグをクリックすると、そのジャンルの書籍が表示されます</p>
           <div className="flex flex-wrap gap-2">
-            {popularTags.map(({ tag, count }) => (
+            {genreTags.map(({ tag, count }) => (
               <button
                 key={tag}
                 onClick={() => handlePopularTagClick(tag)}
@@ -261,7 +277,29 @@ export default function SearchPage() {
                     ? 'bg-ios-blue text-white shadow-md'
                     : 'bg-ios-gray-100 text-ios-gray-700 hover:bg-ios-gray-200 hover:shadow-sm'
                 }`}
-                title={`${tag}を持つ書籍を検索 (${count}冊)`}
+                title={`${tag}ジャンルの書籍を検索 (${count}冊)`}
+              >
+                {tag} ({count})
+              </button>
+            ))}
+          </div>
+        </Card>
+
+        {/* 著者タグ */}
+        <Card variant="default" className="p-6 mb-6">
+          <h3 className="text-lg font-semibold text-ios-gray-800 mb-3">著者別</h3>
+          <p className="text-ios-gray-600 text-sm mb-3">著者名をクリックすると、その著者の書籍が表示されます</p>
+          <div className="flex flex-wrap gap-2">
+            {authorTags.map(({ tag, count }) => (
+              <button
+                key={tag}
+                onClick={() => handleAuthorClick(tag)}
+                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors cursor-pointer ${
+                  filters.author === tag
+                    ? 'bg-ios-green text-white shadow-md'
+                    : 'bg-ios-gray-100 text-ios-gray-700 hover:bg-ios-gray-200 hover:shadow-sm'
+                }`}
+                title={`${tag}の書籍を検索 (${count}冊)`}
               >
                 {tag} ({count})
               </button>

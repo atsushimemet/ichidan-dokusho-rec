@@ -4,15 +4,15 @@ export default function Home() {
   return (
     <main className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center px-6 py-24">
-        <div className="max-w-6xl mx-auto text-center space-y-16">
+      <section className="relative min-h-screen flex items-center justify-center px-6 py-12 md:py-24">
+        <div className="max-w-6xl mx-auto text-center space-y-12 md:space-y-16">
           {/* メインタイトル */}
-          <div className="space-y-8 fade-in">
-            <h1 className="text-5xl md:text-7xl font-bold text-ios-gray-800 leading-tight">
+          <div className="space-y-6 md:space-y-8 fade-in">
+            <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-ios-gray-800 leading-tight">
               あなたにぴったりの
               <span className="holographic-text block">一冊を見つけよう</span>
             </h1>
-            <p className="text-2xl md:text-3xl text-ios-gray-600 max-w-4xl mx-auto leading-relaxed">
+            <p className="text-lg md:text-2xl lg:text-3xl text-ios-gray-600 max-w-4xl mx-auto leading-relaxed">
               たった2つの質問に答えるだけで、あなたの嗜好に合った最適な書籍をレコメンドします
             </p>
           </div>
@@ -21,7 +21,7 @@ export default function Home() {
           <div className="scale-in">
             <Link
               href="/questions"
-              className="btn-primary text-xl px-16 py-5 inline-block shadow-2xl hover:shadow-3xl transition-all duration-300"
+              className="btn-primary text-lg md:text-xl px-12 md:px-16 py-4 md:py-5 inline-block shadow-2xl hover:shadow-3xl transition-all duration-300"
             >
               📚 質問に答えて本を探す
             </Link>

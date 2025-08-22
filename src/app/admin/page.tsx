@@ -503,6 +503,11 @@ export default function AdminPage() {
                     {book.price && (
                       <div>価格: ¥{book.price.toLocaleString()}</div>
                     )}
+                    {book.summary_link && (
+                      <div className="text-ios-blue">
+                        📝 要約リンク: <a href={book.summary_link} target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">表示</a>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex space-x-2">

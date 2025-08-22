@@ -39,7 +39,7 @@ export default function SearchPage() {
       setIsLoading(true);
       const [tags, popular] = await Promise.all([
         getAvailableTags(),
-        getPopularTags(15)
+        getPopularTags() // 制限なしで全てのタグを取得
       ]);
       setAvailableTags(tags);
       setPopularTags(popular);
@@ -180,27 +180,13 @@ export default function SearchPage() {
           {/* 詳細フィルター */}
           {showFilters && (
             <div className="border-t pt-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                <Input
-                  label="最小ページ数"
-                  type="number"
-                  placeholder="100"
-                  value={filters.minPages?.toString() || ''}
-                  onChange={(e) => handleFilterChange('minPages', e.target.value ? parseInt(e.target.value) : undefined)}
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <Input
                   label="最大ページ数"
                   type="number"
                   placeholder="500"
                   value={filters.maxPages?.toString() || ''}
                   onChange={(e) => handleFilterChange('maxPages', e.target.value ? parseInt(e.target.value) : undefined)}
-                />
-                <Input
-                  label="最小価格"
-                  type="number"
-                  placeholder="1000"
-                  value={filters.minPrice?.toString() || ''}
-                  onChange={(e) => handleFilterChange('minPrice', e.target.value ? parseInt(e.target.value) : undefined)}
                 />
                 <Input
                   label="最大価格"
@@ -261,10 +247,10 @@ export default function SearchPage() {
           )}
         </Card>
 
-        {/* 人気タグ */}
+        {/* 全タグ */}
         <Card variant="default" className="p-6 mb-6">
-          <h3 className="text-lg font-semibold text-ios-gray-800 mb-3">人気のタグ</h3>
-          <p className="text-ios-gray-600 text-sm mb-3">タグをクリックすると、そのタグを持つ書籍が表示されます</p>
+          <h3 className="text-lg font-semibold text-ios-gray-800 mb-3">全タグ一覧</h3>
+          <p className="text-ios-gray-600 text-sm mb-3">タグをクリックすると、そのタグを持つ書籍が表示されます（将来的にクリック回数順でソート予定）</p>
           <div className="flex flex-wrap gap-2">
             {popularTags.map(({ tag, count }) => (
               <button

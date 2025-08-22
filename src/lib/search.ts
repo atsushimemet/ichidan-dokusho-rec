@@ -131,11 +131,11 @@ export async function getAvailableTags(): Promise<string[]> {
 }
 
 /**
- * 人気のタグを取得する（書籍数が多い順）
- * @param limit 取得件数
+ * 全タグを取得する（書籍数が多い順）
+ * @param limit 取得件数（デフォルトは制限なし）
  * @returns タグと書籍数の配列
  */
-export async function getPopularTags(limit: number = 10): Promise<Array<{ tag: string; count: number }>> {
+export async function getPopularTags(limit?: number): Promise<Array<{ tag: string; count: number }>> {
   try {
     const { data, error } = await supabase
       .from('books')
@@ -157,10 +157,10 @@ export async function getPopularTags(limit: number = 10): Promise<Array<{ tag: s
     // 出現回数順にソート
     const sortedTags = Object.entries(tagCounts)
       .map(([tag, count]) => ({ tag, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, limit);
+      .sort((a, b) => b.count - a.count);
 
-    return sortedTags;
+    // 制限がある場合のみスライス
+    return limit ? sortedTags.slice(0, limit) : sortedTags;
   } catch (error) {
     console.error('人気タグ取得エラー:', error);
     throw error;

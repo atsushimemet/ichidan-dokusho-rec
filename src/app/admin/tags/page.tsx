@@ -104,19 +104,6 @@ export default function TagsManagementPage() {
         stack: err instanceof Error ? err.stack : undefined,
         error: err
       });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const loadTagCategories = async () => {
-    try {
-      const categories = await getTagCategories();
-      setTagCategories(categories);
-    } catch (err) {
-      console.error('タグ分類データの読み込みエラー:', err);
-    }
-  };
       setError('タグデータの読み込みに失敗しました。モックデータを表示しています。');
       setTags([
         {
@@ -131,6 +118,17 @@ export default function TagsManagementPage() {
           updated_at: '2024-01-01T00:00:00Z'
         }
       ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadTagCategories = async () => {
+    try {
+      const categories = await getTagCategories();
+      setTagCategories(categories);
+    } catch (err) {
+      console.error('タグ分類データの読み込みエラー:', err);
     }
   };
 

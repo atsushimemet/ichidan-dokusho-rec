@@ -127,13 +127,13 @@ export default function TagsManagementPage() {
             </p>
             <div className="flex space-x-4 mt-4">
               <Link href="/admin">
-                <Button variant="outline" size="sm">
-                  ← 管理画面に戻る
+                <Button variant="outline" size="sm" className="px-3">
+                  ←
                 </Button>
               </Link>
               <Link href="/admin/mappings">
-                <Button variant="secondary" size="sm">
-                  🔗 質問マッピング管理
+                <Button variant="secondary" size="sm" className="px-3">
+                  🔗
                 </Button>
               </Link>
             </div>

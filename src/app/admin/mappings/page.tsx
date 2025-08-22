@@ -272,13 +272,13 @@ export default function MappingsManagementPage() {
             </p>
             <div className="flex space-x-4 mt-4">
               <Link href="/admin">
-                <Button variant="outline" size="sm">
-                  ← 管理画面に戻る
+                <Button variant="outline" size="sm" className="px-3">
+                  ←
                 </Button>
               </Link>
               <Link href="/admin/tags">
-                <Button variant="secondary" size="sm">
-                  🏷️ タグマスター一覧
+                <Button variant="secondary" size="sm" className="px-3">
+                  🏷️
                 </Button>
               </Link>
             </div>

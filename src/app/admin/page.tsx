@@ -302,18 +302,18 @@ export default function AdminPage() {
             </p>
             <div className="flex space-x-4 mt-4">
               <Link href="/admin/tags">
-                <Button variant="secondary" size="sm">
-                  🏷️ タグマスター管理
+                <Button variant="secondary" size="sm" className="px-3">
+                  🏷️
                 </Button>
               </Link>
               <Link href="/admin/mappings">
-                <Button variant="secondary" size="sm">
-                  🔗 質問マッピング管理
+                <Button variant="secondary" size="sm" className="px-3">
+                  🔗
                 </Button>
               </Link>
               <Link href="/">
-                <Button variant="outline" size="sm">
-                  🏠 ホームに戻る
+                <Button variant="outline" size="sm" className="px-3">
+                  🏠
                 </Button>
               </Link>
             </div>
@@ -508,17 +508,17 @@ export default function AdminPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => handleEdit(book)}
-                      className="flex-1"
+                      className="flex-1 px-3"
                     >
-                      ✏️ 編集
+                      ✏️
                     </Button>
                     <Button
                       variant="danger"
                       size="sm"
                       onClick={() => handleDelete(book.id)}
-                      className="flex-1"
+                      className="flex-1 px-3"
                     >
-                      🗑️ 削除
+                      🗑️
                     </Button>
                   </div>
                 </div>

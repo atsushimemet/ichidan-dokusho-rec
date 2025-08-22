@@ -416,7 +416,11 @@ export default function SearchPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              onClick={() => {
+                setCurrentPage(prev => Math.max(1, prev - 1));
+                // ページ変更後にスクロール位置を最上部に設定
+                setTimeout(() => window.scrollTo(0, 0), 100);
+              }}
               disabled={currentPage === 1}
             >
               ← 前へ
@@ -429,7 +433,11 @@ export default function SearchPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              onClick={() => {
+                setCurrentPage(prev => Math.min(totalPages, prev + 1));
+                // ページ変更後にスクロール位置を最上部に設定
+                setTimeout(() => window.scrollTo(0, 0), 100);
+              }}
               disabled={currentPage === totalPages}
             >
               次へ →

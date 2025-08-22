@@ -107,7 +107,7 @@ export default function Home() {
             <span className="block">今すぐ見つけませんか？</span>
           </h2>
           <p className="text-xl opacity-90 max-w-2xl mx-auto">
-            たった2分で、あなたの人生を変える一冊に出会えるかもしれません。
+            たった1分で、あなたの人生を変える一冊に出会えるかもしれません。
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link

@@ -44,9 +44,24 @@ export async function searchBooks(
       query = query.ilike('title', `%${filters.title}%`);
     }
 
-    // 著者検索（部分一致）
+    // 著者検索（部分一致 + トークン化検索）
     if (filters.author) {
-      query = query.ilike('author', `%${filters.author}%`);
+      const authorQuery = filters.author.trim();
+      if (authorQuery.includes(' ')) {
+        // 空白を含む場合は、トークン化してOR検索
+        const tokens = authorQuery.split(/\s+/).filter(token => token.length > 0);
+        if (tokens.length > 1) {
+          // 複数のトークンがある場合は、各トークンでOR検索
+          const orConditions = tokens.map(token => `author.ilike.%${token}%`);
+          query = query.or(orConditions.join(','));
+        } else {
+          // 単一トークンの場合は通常の部分一致
+          query = query.ilike('author', `%${authorQuery}%`);
+        }
+      } else {
+        // 空白を含まない場合は通常の部分一致
+        query = query.ilike('author', `%${authorQuery}%`);
+      }
     }
 
     // ページ数フィルター

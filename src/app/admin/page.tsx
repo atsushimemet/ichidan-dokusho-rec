@@ -294,14 +294,16 @@ export default function AdminPage() {
         <div className="max-w-7xl mx-auto">
         {/* ヘッダー */}
         <div className="mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-ios-gray-800">
-              管理画面
-            </h1>
-            <p className="text-ios-gray-600 mt-2">
-              レコメンドシステムの各種データを管理できます
-            </p>
-            <div className="flex space-x-4 mt-4">
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl font-bold text-ios-gray-800">
+                管理画面
+              </h1>
+              <p className="text-ios-gray-600 mt-2">
+                レコメンドシステムの各種データを管理できます
+              </p>
+            </div>
+            <div className="flex space-x-4">
               <Link href="/admin/tags">
                 <Button variant="secondary" size="sm" className="px-3">
                   🏷️

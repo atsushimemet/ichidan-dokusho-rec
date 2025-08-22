@@ -284,7 +284,7 @@ export default function SearchPage() {
         </Card>
 
         {/* 検索結果 */}
-        <div className="mb-6">
+        <div className="mb-6" id="search-results">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-ios-gray-800">
               検索結果 ({totalCount}件)
@@ -418,8 +418,13 @@ export default function SearchPage() {
               size="sm"
               onClick={() => {
                 setCurrentPage(prev => Math.max(1, prev - 1));
-                // ページ変更後にスクロール位置を最上部に設定
-                setTimeout(() => window.scrollTo(0, 0), 100);
+                // ページ変更後に検索結果セクションの最上部にスクロール
+                setTimeout(() => {
+                  const element = document.getElementById('search-results');
+                  if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
+                }, 100);
               }}
               disabled={currentPage === 1}
             >
@@ -435,8 +440,13 @@ export default function SearchPage() {
               size="sm"
               onClick={() => {
                 setCurrentPage(prev => Math.min(totalPages, prev + 1));
-                // ページ変更後にスクロール位置を最上部に設定
-                setTimeout(() => window.scrollTo(0, 0), 100);
+                // ページ変更後に検索結果セクションの最上部にスクロール
+                setTimeout(() => {
+                  const element = document.getElementById('search-results');
+                  if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
+                }, 100);
               }}
               disabled={currentPage === totalPages}
             >

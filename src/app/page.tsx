@@ -109,12 +109,18 @@ export default function Home() {
           <p className="text-xl opacity-90 max-w-2xl mx-auto">
             たった2分で、あなたの人生を変える一冊に出会えるかもしれません。
           </p>
-          <div>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/questions"
               className="inline-block bg-white text-ios-blue text-xl font-bold px-12 py-4 rounded-full hover:bg-gray-50 transition-all duration-300 shadow-2xl"
             >
               → 今すぐ始める
+            </Link>
+            <Link
+              href="/search"
+              className="inline-block bg-transparent border-2 border-white text-white text-xl font-bold px-12 py-4 rounded-full hover:bg-white hover:text-ios-blue transition-all duration-300"
+            >
+              🔍 書籍を検索
             </Link>
           </div>
         </div>

@@ -483,6 +483,8 @@ export default function SearchPage() {
               size="sm"
               onClick={() => {
                 setCurrentPage(prev => Math.max(1, prev - 1));
+                // フィルターを隠す
+                setShowFilters(false);
                 // ページ変更後にスクロール位置を最上部に設定
                 setTimeout(() => window.scrollTo(0, 0), 100);
               }}
@@ -500,6 +502,8 @@ export default function SearchPage() {
               size="sm"
               onClick={() => {
                 setCurrentPage(prev => Math.min(totalPages, prev + 1));
+                // フィルターを隠す
+                setShowFilters(false);
                 // ページ変更後にスクロール位置を最上部に設定
                 setTimeout(() => window.scrollTo(0, 0), 100);
               }}

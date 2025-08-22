@@ -83,7 +83,7 @@ export default function Home() {
             <div className="card-ios p-8 text-center">
               <div className="text-4xl font-bold text-ios-green mb-2">95%</div>
               <div className="text-lg text-ios-gray-600">満足度</div>
-              <div className="text-sm text-ios-gray-500 mt-2">ユーザー調査に基づく</div>
+              <div className="text-sm text-ios-gray-500 mt-2">ユーザー調査に基づく予定</div>
             </div>
             <div className="card-ios p-8 text-center">
               <div className="text-4xl font-bold text-ios-purple mb-2">30秒</div>

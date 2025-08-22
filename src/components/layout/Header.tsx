@@ -40,7 +40,7 @@ export default function Header() {
           <div className="flex justify-between items-center">
             {/* ロゴ */}
             <Link href="/" className="text-2xl font-bold text-ios-gray-800">
-              📚 一冊読書
+              📚 一段読書
             </Link>
 
             {/* ハンバーガーメニューボタン */}

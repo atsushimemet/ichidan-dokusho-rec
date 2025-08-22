@@ -68,7 +68,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            placeholder="noap3b69n@gmail.com"
+            placeholder="test@gmail.com"
           />
           
           <Input

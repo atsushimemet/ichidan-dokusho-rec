@@ -123,12 +123,12 @@ export default function Home() {
       {/* Footer */}
       <footer className="py-12 px-6 bg-ios-gray-800 text-white">
         <div className="max-w-6xl mx-auto text-center">
-          <div className="text-3xl font-bold mb-4">📚 一冊読書</div>
+          <div className="text-3xl font-bold mb-4">📚 一段読書</div>
           <p className="text-ios-gray-300 mb-6">
             あなたにぴったりの一冊を見つける、AIパーソナライズド書籍レコメンデーションサービス
           </p>
           <div className="text-sm text-ios-gray-400">
-            © 2024 一冊読書. All rights reserved.
+            © 2024 一段読書. All rights reserved.
           </div>
         </div>
       </footer>

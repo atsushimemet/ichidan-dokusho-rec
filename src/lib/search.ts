@@ -149,7 +149,7 @@ export async function getPopularTags(limit?: number): Promise<Array<{ tag: strin
     // タグの出現回数をカウント
     const tagCounts: Record<string, number> = {};
     (data || []).forEach(book => {
-      (book.genre_tags || []).forEach(tag => {
+      (book.genre_tags || []).forEach((tag: string) => {
         tagCounts[tag] = (tagCounts[tag] || 0) + 1;
       });
     });
@@ -168,37 +168,30 @@ export async function getPopularTags(limit?: number): Promise<Array<{ tag: strin
 }
 
 /**
- * ジャンルタグと著者名を分けて取得する
- * @returns ジャンルタグと著者名の配列
+ * ジャンルタグを取得する
+ * @returns ジャンルタグの配列
  */
 export async function getSeparatedTags(): Promise<{
   genreTags: Array<{ tag: string; count: number }>;
-  authorNames: Array<{ author: string; count: number }>;
 }> {
   try {
     const { data, error } = await supabase
       .from('books')
-      .select('genre_tags, author');
+      .select('genre_tags');
 
     if (error) {
-      console.error('タグ分離取得エラー:', error);
+      console.error('タグ取得エラー:', error);
       throw error;
     }
 
     // ジャンルタグの出現回数をカウント
     const genreTagCounts: Record<string, number> = {};
-    const authorNameCounts: Record<string, number> = {};
     
     (data || []).forEach(book => {
       // ジャンルタグのカウント
-      (book.genre_tags || []).forEach(tag => {
+      (book.genre_tags || []).forEach((tag: string) => {
         genreTagCounts[tag] = (genreTagCounts[tag] || 0) + 1;
       });
-      
-      // 著者名のカウント
-      if (book.author) {
-        authorNameCounts[book.author] = (authorNameCounts[book.author] || 0) + 1;
-      }
     });
 
     // ジャンルタグを出現回数順にソート
@@ -206,17 +199,11 @@ export async function getSeparatedTags(): Promise<{
       .map(([tag, count]) => ({ tag, count }))
       .sort((a, b) => b.count - a.count);
 
-    // 著者名を出現回数順にソート
-    const sortedAuthorNames = Object.entries(authorNameCounts)
-      .map(([author, count]) => ({ author, count }))
-      .sort((a, b) => b.count - a.count);
-
     return {
-      genreTags: sortedGenreTags,
-      authorNames: sortedAuthorNames
+      genreTags: sortedGenreTags
     };
   } catch (error) {
-    console.error('タグ分離取得エラー:', error);
+    console.error('タグ取得エラー:', error);
     throw error;
   }
 }
@@ -255,7 +242,7 @@ export async function getTagCategories(): Promise<Array<{
     // タグの出現回数をカウント
     const tagCounts: Record<string, number> = {};
     (books || []).forEach(book => {
-      (book.genre_tags || []).forEach(tag => {
+      (book.genre_tags || []).forEach((tag: string) => {
         tagCounts[tag] = (tagCounts[tag] || 0) + 1;
       });
     });

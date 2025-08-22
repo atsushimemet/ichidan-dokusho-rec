@@ -14,7 +14,6 @@ export default function SearchPage() {
   const [availableTags, setAvailableTags] = useState<string[]>([]);
   const [popularTags, setPopularTags] = useState<Array<{ tag: string; count: number }>>([]);
   const [genreTags, setGenreTags] = useState<Array<{ tag: string; count: number }>>([]);
-  const [authorNames, setAuthorNames] = useState<Array<{ author: string; count: number }>>([]);
   const [tagCategories, setTagCategories] = useState<Array<{
     category: string;
     description: string;
@@ -44,17 +43,16 @@ export default function SearchPage() {
   const loadInitialData = async () => {
     try {
       setIsLoading(true);
-      const [tags, popular, separated] = await Promise.all([
+      const [tags, popular] = await Promise.all([
         getAvailableTags(),
         getPopularTags() // 制限なしで全てのタグを取得
       ]);
       setAvailableTags(tags);
       setPopularTags(popular);
       
-      // ジャンルタグと著者名を分けて取得
+      // ジャンルタグを取得
       const separatedTags = await getSeparatedTags();
       setGenreTags(separatedTags.genreTags);
-      setAuthorNames(separatedTags.authorNames);
       
       // タグ分類を取得（一時的に無効化）
       try {
@@ -120,13 +118,6 @@ export default function SearchPage() {
     setTimeout(() => performSearch(), 0);
   };
 
-  const handleAuthorClick = (author: string) => {
-    // 著者をクリックした時は、その著者のみで検索
-    setFilters({ author });
-    setCurrentPage(1);
-    // 即座に検索実行
-    setTimeout(() => performSearch(), 0);
-  };
 
   const clearFilters = () => {
     setFilters({});
@@ -339,29 +330,6 @@ export default function SearchPage() {
           </>
         )}
 
-        {/* 著者別表示 */}
-        {authorNames.length > 0 && (
-          <Card variant="default" className="p-6 mb-6">
-            <h3 className="text-lg font-semibold text-ios-gray-800 mb-3">著者別</h3>
-            <p className="text-ios-gray-600 text-sm mb-3">著者名をクリックすると、その著者の書籍が表示されます</p>
-            <div className="flex flex-wrap gap-2">
-              {authorNames.map(({ author, count }) => (
-                <button
-                  key={author}
-                  onClick={() => handleAuthorClick(author)}
-                  className={`px-3 py-1 rounded-full text-sm font-medium transition-colors cursor-pointer ${
-                    filters.author === author
-                      ? 'bg-ios-green text-white shadow-md'
-                      : 'bg-ios-gray-100 text-ios-gray-700 hover:bg-ios-gray-200 hover:shadow-sm'
-                  }`}
-                  title={`${author}の書籍を検索 (${count}冊)`}
-                >
-                  {author} ({count})
-                </button>
-              ))}
-            </div>
-          </Card>
-        )}
 
         {/* 検索結果 */}
         <div className="mb-6" id="search-results">

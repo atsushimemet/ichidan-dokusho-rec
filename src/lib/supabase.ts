@@ -26,6 +26,8 @@ export interface Book {
   description?: string;
   difficulty_level: 'beginner' | 'intermediate' | 'advanced';
   reading_time_hours?: number;
+  page_count?: number;
+  price?: number;
   created_at: string;
   updated_at: string;
 }

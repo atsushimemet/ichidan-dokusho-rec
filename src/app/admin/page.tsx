@@ -761,19 +761,19 @@ export default function AdminPage() {
                          )}
                        </div>
 
-                       {/* 説明（固定高さ） */}
-                       <div className="h-12 mb-2">
-                         {book.description && (
-                           <p className="text-xs text-ios-gray-600 overflow-hidden h-full leading-relaxed"
-                              style={{
-                                display: '-webkit-box',
-                                WebkitLineClamp: 2,
-                                WebkitBoxOrient: 'vertical'
-                              }}>
-                             {book.description}
-                           </p>
-                         )}
-                       </div>
+                                               {/* 説明（固定高さ） */}
+                        <div className="h-16 mb-2">
+                          {book.description && (
+                            <p className="text-xs text-ios-gray-600 overflow-hidden h-full leading-relaxed"
+                               style={{
+                                 display: '-webkit-box',
+                                 WebkitLineClamp: 3,
+                                 WebkitBoxOrient: 'vertical'
+                               }}>
+                              {book.description}
+                            </p>
+                          )}
+                        </div>
                      </div>
 
                                          {/* フレキシブルスペース */}

@@ -54,7 +54,7 @@ export default function AdminPage() {
         keyLength: supabaseAnonKey ? supabaseAnonKey.length : 0
       });
       
-      if (!supabaseUrl || !supabaseAnonKey || supabaseUrl === 'your_supabase_url') {
+      if (!supabaseUrl || !supabaseAnonKey || supabaseUrl === 'your_supabase_url' || supabaseUrl === 'https://placeholder.supabase.co') {
         setError('Supabaseが設定されていません。モックデータを表示しています。');
         setBooks([
           {
@@ -129,7 +129,7 @@ export default function AdminPage() {
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
       
-      if (!supabaseUrl || !supabaseAnonKey || supabaseUrl === 'your_supabase_url') {
+      if (!supabaseUrl || !supabaseAnonKey || supabaseUrl === 'your_supabase_url' || supabaseUrl === 'https://placeholder.supabase.co') {
         // モックデータのタグ
         setAvailableTags([
           '自己啓発', 'ビジネス', '心理学', '哲学', '歴史', '科学', '健康', '小説',
@@ -179,8 +179,8 @@ export default function AdminPage() {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     
-    if (!supabaseUrl || !supabaseAnonKey || supabaseUrl === 'your_supabase_url') {
-      setError('Supabaseが設定されていないため、書籍の保存はできません。');
+    if (!supabaseUrl || !supabaseAnonKey || supabaseUrl === 'your_supabase_url' || supabaseUrl === 'https://placeholder.supabase.co') {
+      setError('Supabaseが設定されていないため、書籍の保存はできません。環境変数NEXT_PUBLIC_SUPABASE_URLとNEXT_PUBLIC_SUPABASE_ANON_KEYを設定してください。');
       return;
     }
 
@@ -199,29 +199,54 @@ export default function AdminPage() {
 
       if (editingBook) {
         // 更新
-        const { error } = await supabase
+        console.log('書籍更新開始:', { bookId: editingBook.id, bookData });
+        const { data, error } = await supabase
           .from('books')
           .update(bookData)
-          .eq('id', editingBook.id);
+          .eq('id', editingBook.id)
+          .select();
 
-        if (error) throw error;
+        console.log('書籍更新結果:', { data, error });
+        
+        if (error) {
+          console.error('書籍更新エラー:', error);
+          throw error;
+        }
+        
+        if (!data || data.length === 0) {
+          throw new Error('更新対象の書籍が見つかりませんでした');
+        }
+        
         setSuccessMessage('書籍を更新しました');
       } else {
         // 新規作成
-        const { error } = await supabase
+        console.log('書籍追加開始:', bookData);
+        const { data, error } = await supabase
           .from('books')
-          .insert([bookData]);
+          .insert([bookData])
+          .select();
 
-        if (error) throw error;
+        console.log('書籍追加結果:', { data, error });
+        
+        if (error) {
+          console.error('書籍追加エラー:', error);
+          throw error;
+        }
+        
+        if (!data || data.length === 0) {
+          throw new Error('書籍の追加に失敗しました');
+        }
+        
         setSuccessMessage('書籍を追加しました');
       }
 
       // フォームをリセットして書籍一覧を再読み込み
       resetForm();
-      loadBooks();
+      await loadBooks();
     } catch (err) {
       console.error('書籍保存エラー:', err);
-      setError('書籍の保存に失敗しました');
+      const errorMessage = err instanceof Error ? err.message : '書籍の保存に失敗しました';
+      setError(errorMessage);
     }
   };
 
@@ -248,8 +273,8 @@ export default function AdminPage() {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     
-    if (!supabaseUrl || !supabaseAnonKey || supabaseUrl === 'your_supabase_url') {
-      setError('Supabaseが設定されていないため、書籍の削除はできません。');
+    if (!supabaseUrl || !supabaseAnonKey || supabaseUrl === 'your_supabase_url' || supabaseUrl === 'https://placeholder.supabase.co') {
+      setError('Supabaseが設定されていないため、書籍の削除はできません。環境変数NEXT_PUBLIC_SUPABASE_URLとNEXT_PUBLIC_SUPABASE_ANON_KEYを設定してください。');
       return;
     }
 

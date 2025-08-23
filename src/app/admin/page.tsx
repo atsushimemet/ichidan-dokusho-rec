@@ -29,12 +29,22 @@ export default function AdminPage() {
   });
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [showDebugConsole, setShowDebugConsole] = useState(false);
+  const [debugLogs, setDebugLogs] = useState<string[]>([]);
 
   useEffect(() => {
     // ページ遷移時にスクロール位置を最上部に設定
     window.scrollTo(0, 0);
     loadData();
   }, []);
+
+  // デバッグログ機能
+  const addDebugLog = (message: string) => {
+    const timestamp = new Date().toLocaleTimeString('ja-JP');
+    const logMessage = `[${timestamp}] ${message}`;
+    setDebugLogs(prev => [logMessage, ...prev].slice(0, 50)); // 最新50件まで保持
+    console.log(logMessage);
+  };
 
   const loadData = async () => {
     await Promise.all([loadBooks(), loadTags()]);
@@ -43,6 +53,7 @@ export default function AdminPage() {
   const loadBooks = async () => {
     try {
       setIsLoading(true);
+      addDebugLog('書籍データ読み込み開始');
       
       // Supabaseの環境変数が設定されていない場合はモックデータを表示
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -55,6 +66,7 @@ export default function AdminPage() {
       });
       
       if (!supabaseUrl || !supabaseAnonKey || supabaseUrl === 'your_supabase_url' || supabaseUrl === 'https://placeholder.supabase.co') {
+        addDebugLog('Supabaseが未設定のためモックデータを使用');
         setError('Supabaseが設定されていません。モックデータを表示しています。');
         setBooks([
           {
@@ -85,12 +97,14 @@ export default function AdminPage() {
         return;
       }
 
+      addDebugLog('Supabaseクエリ実行開始');
       console.log('Supabaseクエリ実行開始');
       const { data, error } = await supabase
         .from('books')
         .select('*')
         .order('created_at', { ascending: false });
 
+      addDebugLog(`Supabaseクエリ結果: 書籍数=${data?.length || 0}, エラー=${error?.message || 'なし'}`);
       console.log('Supabaseクエリ結果:', { data: data?.length || 0, error });
       
       if (error) throw error;
@@ -206,32 +220,72 @@ export default function AdminPage() {
 
       if (editingBook) {
         // 更新
+        addDebugLog(`書籍更新開始: ID=${editingBook.id}, タイトル=${bookData.title}`);
         console.log('書籍更新開始:', { bookId: editingBook.id, bookData });
+        
+        // まず、更新対象の書籍が存在するか確認
+        const { data: existingBook, error: checkError } = await supabase
+          .from('books')
+          .select('id, title')
+          .eq('id', editingBook.id)
+          .single();
+
+        addDebugLog(`書籍存在確認: ${existingBook ? '存在' : '存在しない'}, エラー: ${checkError?.message || 'なし'}`);
+        
+        if (checkError || !existingBook) {
+          addDebugLog(`書籍が見つからない: ${checkError?.message || '不明なエラー'}`);
+          throw new Error(`更新対象の書籍(ID: ${editingBook.id})が見つかりませんでした`);
+        }
+        
         const { data, error } = await supabase
           .from('books')
           .update(bookData)
           .eq('id', editingBook.id)
           .select();
 
+        addDebugLog(`書籍更新結果: データ数=${data?.length || 0}, エラー=${error?.message || 'なし'}`);
         console.log('書籍更新結果:', { data, error });
         
         if (error) {
+          addDebugLog(`書籍更新エラー: ${error.message}`);
           console.error('書籍更新エラー:', error);
           throw error;
         }
         
         if (!data || data.length === 0) {
-          throw new Error('更新対象の書籍が見つかりませんでした');
+          addDebugLog('更新後のデータ取得に失敗 - RLSまたは権限の問題の可能性');
+          // データを直接取得し直してみる
+          const { data: updatedBook, error: fetchError } = await supabase
+            .from('books')
+            .select('*')
+            .eq('id', editingBook.id)
+            .single();
+          
+          if (fetchError || !updatedBook) {
+            throw new Error('書籍の更新には成功しましたが、更新後のデータの取得に失敗しました');
+          }
+          
+          addDebugLog('更新後のデータを別途取得成功');
+          console.log('書籍更新成功(別途取得):', updatedBook);
+          
+          // ローカルのbooksステートも即座に更新
+          setBooks(prevBooks => 
+            prevBooks.map(book => 
+              book.id === editingBook.id ? { ...book, ...updatedBook } : book
+            )
+          );
+        } else {
+          addDebugLog('書籍更新成功');
+          console.log('書籍更新成功:', data[0]);
+          
+          // ローカルのbooksステートも即座に更新
+          setBooks(prevBooks => 
+            prevBooks.map(book => 
+              book.id === editingBook.id ? { ...book, ...data[0] } : book
+            )
+          );
         }
-        
-        console.log('書籍更新成功:', data[0]);
-        
-        // ローカルのbooksステートも即座に更新
-        setBooks(prevBooks => 
-          prevBooks.map(book => 
-            book.id === editingBook.id ? { ...book, ...data[0] } : book
-          )
-        );
+
         
         setSuccessMessage('書籍を更新しました');
         
@@ -241,23 +295,28 @@ export default function AdminPage() {
         }, 3000);
       } else {
         // 新規作成
+        addDebugLog(`書籍追加開始: タイトル=${bookData.title}`);
         console.log('書籍追加開始:', bookData);
         const { data, error } = await supabase
           .from('books')
           .insert([bookData])
           .select();
 
+        addDebugLog(`書籍追加結果: データ数=${data?.length || 0}, エラー=${error?.message || 'なし'}`);
         console.log('書籍追加結果:', { data, error });
         
         if (error) {
+          addDebugLog(`書籍追加エラー: ${error.message}`);
           console.error('書籍追加エラー:', error);
           throw error;
         }
         
         if (!data || data.length === 0) {
+          addDebugLog('書籍の追加に失敗 - データが返されませんでした');
           throw new Error('書籍の追加に失敗しました');
         }
         
+        addDebugLog('書籍追加成功');
         console.log('書籍追加成功:', data[0]);
         
         // ローカルのbooksステートに新しい書籍を追加
@@ -315,6 +374,7 @@ export default function AdminPage() {
     }
 
     try {
+      addDebugLog(`書籍削除開始: ID=${bookId}`);
       console.log('書籍削除開始:', bookId);
       const { error } = await supabase
         .from('books')
@@ -322,10 +382,12 @@ export default function AdminPage() {
         .eq('id', bookId);
 
       if (error) {
+        addDebugLog(`書籍削除エラー: ${error.message}`);
         console.error('書籍削除エラー:', error);
         throw error;
       }
       
+      addDebugLog('書籍削除成功');
       console.log('書籍削除成功:', bookId);
       
       // ローカルのbooksステートからも削除
@@ -338,6 +400,7 @@ export default function AdminPage() {
         setSuccessMessage(null);
       }, 3000);
     } catch (err) {
+      addDebugLog(`書籍削除エラー: ${err instanceof Error ? err.message : '不明なエラー'}`);
       console.error('書籍削除エラー:', err);
       setError('書籍の削除に失敗しました');
     }
@@ -405,6 +468,15 @@ export default function AdminPage() {
                   🔗
                 </Button>
               </Link>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowDebugConsole(!showDebugConsole)}
+                className="px-3 w-10"
+                title="デバッグコンソール"
+              >
+                🔧
+              </Button>
               <Link href="/">
                 <Button variant="outline" size="sm" className="px-3 w-10">
                   🏠
@@ -433,6 +505,57 @@ export default function AdminPage() {
           <div className="bg-ios-green/10 border border-ios-green/30 rounded-lg p-4 mb-6">
             <p className="text-ios-green font-medium">✅ {successMessage}</p>
           </div>
+        )}
+
+        {/* デバッグコンソール */}
+        {showDebugConsole && (
+          <Card variant="default" className="p-6 mb-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-ios-gray-800">🔧 デバッグコンソール</h3>
+              <div className="flex space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setDebugLogs([])}
+                >
+                  ログクリア
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const logText = debugLogs.join('\n');
+                    navigator.clipboard?.writeText(logText).then(() => {
+                      alert('ログをクリップボードにコピーしました');
+                    });
+                  }}
+                >
+                  ログコピー
+                </Button>
+              </div>
+            </div>
+            
+            <div className="bg-black text-green-400 font-mono text-sm p-4 rounded-lg h-64 overflow-y-auto">
+              {debugLogs.length === 0 ? (
+                <div className="text-gray-500">ログがありません。書籍の操作を行うとここにログが表示されます。</div>
+              ) : (
+                debugLogs.map((log, index) => (
+                  <div key={index} className="mb-1">
+                    {log}
+                  </div>
+                ))
+              )}
+            </div>
+            
+            <div className="mt-4 text-sm text-ios-gray-600">
+              <p><strong>使い方:</strong></p>
+              <ul className="list-disc list-inside space-y-1">
+                <li>書籍の追加・編集・削除を行うとログが表示されます</li>
+                <li>モバイルデバイスでも操作の詳細を確認できます</li>
+                <li>問題が発生した場合、このログを開発者に共有してください</li>
+              </ul>
+            </div>
+          </Card>
         )}
 
         {showForm ? (

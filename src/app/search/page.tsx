@@ -8,6 +8,7 @@ import Input from '@/components/ui/Input';
 import { searchBooks, getAvailableTags, getPopularTags, getSeparatedTags, getTagCategories, SearchFilters } from '@/lib/search';
 import { Book } from '@/lib/supabase';
 import { getReadabilityLevel } from '@/lib/utils';
+import { trackAmazonLinkClick } from '@/lib/analytics';
 
 export default function SearchPage() {
   const [books, setBooks] = useState<Book[]>([]);
@@ -461,7 +462,16 @@ export default function SearchPage() {
                         <Button
                           variant="primary"
                           size="sm"
-                          onClick={() => window.open(book.amazon_link, '_blank')}
+                          onClick={() => {
+                            trackAmazonLinkClick({
+                              book_title: book.title,
+                              book_author: book.author,
+                              book_id: book.id,
+                              amazon_url: book.amazon_link,
+                              source_page: 'search'
+                            });
+                            window.open(book.amazon_link, '_blank');
+                          }}
                           className="flex-1"
                         >
                           📚 Amazon

@@ -8,6 +8,7 @@ import Button from '@/components/ui/Button';
 import { RecommendationEngine } from '@/lib/recommendation';
 import { RecommendationResult, QuestionResponse } from '@/types';
 import { getReadabilityLevel } from '@/lib/utils';
+import { trackAmazonLinkClick } from '@/lib/analytics';
 
 function ResultsContent() {
   const searchParams = useSearchParams();
@@ -238,6 +239,17 @@ function ResultsContent() {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex-1"
+                      onClick={() => {
+                        trackAmazonLinkClick({
+                          book_title: result.book.title,
+                          book_author: result.book.author,
+                          book_id: result.book.id,
+                          amazon_url: result.book.amazon_link,
+                          source_page: 'results',
+                          click_position: index + 1,
+                          recommendation_score: result.score
+                        });
+                      }}
                     >
                       <Button variant="primary" className="w-full text-sm">
                         📚 Amazon

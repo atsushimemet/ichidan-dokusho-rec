@@ -237,51 +237,48 @@ export default function AdminPage() {
           throw new Error(`更新対象の書籍(ID: ${editingBook.id})が見つかりませんでした`);
         }
         
-        const { data, error } = await supabase
+        // まず更新のみを実行（selectなし）
+        const { error: updateError } = await supabase
           .from('books')
           .update(bookData)
-          .eq('id', editingBook.id)
-          .select();
+          .eq('id', editingBook.id);
 
-        addDebugLog(`書籍更新結果: データ数=${data?.length || 0}, エラー=${error?.message || 'なし'}`);
-        console.log('書籍更新結果:', { data, error });
+        addDebugLog(`書籍更新結果: エラー=${updateError?.message || 'なし'}`);
+        console.log('書籍更新結果:', { error: updateError });
         
-        if (error) {
-          addDebugLog(`書籍更新エラー: ${error.message}`);
-          console.error('書籍更新エラー:', error);
-          throw error;
+        if (updateError) {
+          addDebugLog(`書籍更新エラー: ${updateError.message}`);
+          console.error('書籍更新エラー:', updateError);
+          throw updateError;
         }
+
+        // 更新成功後、別途データを取得
+        addDebugLog('更新成功、更新後のデータを取得中...');
+        const { data: updatedBook, error: fetchError } = await supabase
+          .from('books')
+          .select('*')
+          .eq('id', editingBook.id)
+          .single();
         
-        if (!data || data.length === 0) {
-          addDebugLog('更新後のデータ取得に失敗 - RLSまたは権限の問題の可能性');
-          // データを直接取得し直してみる
-          const { data: updatedBook, error: fetchError } = await supabase
-            .from('books')
-            .select('*')
-            .eq('id', editingBook.id)
-            .single();
-          
-          if (fetchError || !updatedBook) {
-            throw new Error('書籍の更新には成功しましたが、更新後のデータの取得に失敗しました');
-          }
-          
-          addDebugLog('更新後のデータを別途取得成功');
-          console.log('書籍更新成功(別途取得):', updatedBook);
-          
-          // ローカルのbooksステートも即座に更新
+        if (fetchError) {
+          addDebugLog(`更新後のデータ取得エラー: ${fetchError.message}`);
+          console.error('更新後のデータ取得エラー:', fetchError);
+          // エラーでも更新は成功しているので、ローカルデータから推測して更新
+          const mergedData = { ...editingBook, ...bookData, updated_at: new Date().toISOString() };
           setBooks(prevBooks => 
             prevBooks.map(book => 
-              book.id === editingBook.id ? { ...book, ...updatedBook } : book
+              book.id === editingBook.id ? mergedData : book
             )
           );
+          addDebugLog('ローカルデータで更新を反映');
         } else {
-          addDebugLog('書籍更新成功');
-          console.log('書籍更新成功:', data[0]);
+          addDebugLog('更新後のデータ取得成功');
+          console.log('書籍更新成功:', updatedBook);
           
-          // ローカルのbooksステートも即座に更新
+          // ローカルのbooksステートを更新
           setBooks(prevBooks => 
             prevBooks.map(book => 
-              book.id === editingBook.id ? { ...book, ...data[0] } : book
+              book.id === editingBook.id ? updatedBook : book
             )
           );
         }

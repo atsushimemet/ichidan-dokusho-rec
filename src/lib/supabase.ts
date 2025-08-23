@@ -10,8 +10,21 @@ if (typeof window !== 'undefined') {
   console.log('Supabaseクライアント設定:', {
     url: supabaseUrl ? `${supabaseUrl.substring(0, 20)}...` : '未設定',
     hasKey: !!supabaseAnonKey,
-    keyLength: supabaseAnonKey ? supabaseAnonKey.length : 0
+    keyLength: supabaseAnonKey ? supabaseAnonKey.length : 0,
+    isPlaceholder: supabaseUrl.includes('placeholder'),
+    environment: process.env.NODE_ENV
   });
+  
+  // 接続テスト
+  console.log('Supabase接続テスト実行中...');
+  supabase.from('books').select('count', { count: 'exact', head: true })
+    .then(({ count, error }) => {
+      if (error) {
+        console.error('Supabase接続エラー:', error);
+      } else {
+        console.log('Supabase接続成功。書籍数:', count);
+      }
+    });
 }
 
 // データベース型定義

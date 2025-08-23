@@ -218,6 +218,7 @@ export default function AdminPage() {
     }
 
     try {
+      // 一時的修正: データベースに存在しないカラムを除外
       const bookData = {
         title: formData.title,
         author: formData.author,
@@ -226,8 +227,8 @@ export default function AdminPage() {
         summary_link: formData.summary_link || null,
         cover_image_url: formData.cover_image_url || null,
         description: formData.description || null,
-        difficulty_level: 'beginner' as const, // デフォルト値として設定
-        reading_time_hours: null, // 将来的に実装予定
+        // difficulty_level: 'beginner' as const, // 一時的にコメントアウト（DBにカラムが無い）
+        // reading_time_hours: null, // 一時的にコメントアウト（DBにカラムが無い）
         page_count: formData.page_count ? parseInt(formData.page_count) : null,
         price: formData.price ? parseFloat(formData.price) : null
       };
@@ -278,7 +279,14 @@ export default function AdminPage() {
           addDebugLog(`更新後のデータ取得エラー: ${fetchError.message}`);
           console.error('更新後のデータ取得エラー:', fetchError);
           // エラーでも更新は成功しているので、ローカルデータから推測して更新
-          const mergedData: Book = { ...editingBook, ...bookData, updated_at: new Date().toISOString() };
+          const mergedData: Book = { 
+            ...editingBook, 
+            ...bookData, 
+            // 不足しているプロパティを明示的に設定
+            difficulty_level: editingBook.difficulty_level || 'beginner',
+            reading_time_hours: editingBook.reading_time_hours || null,
+            updated_at: new Date().toISOString() 
+          };
           setBooks(prevBooks => 
             prevBooks.map(book => 
               book.id === editingBook.id ? mergedData : book

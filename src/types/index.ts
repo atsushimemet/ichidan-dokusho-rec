@@ -5,11 +5,13 @@ export interface Book {
   author: string;
   genre_tags: string[];
   amazon_link: string;
-  summary_link?: string;
-  cover_image_url?: string;
-  description?: string;
-  page_count?: number;
-  price?: number;
+  summary_link: string | null;
+  cover_image_url: string | null;
+  description: string | null;
+  difficulty_level: 'beginner' | 'intermediate' | 'advanced';
+  reading_time_hours: number | null;
+  page_count: number | null;
+  price: number | null;
   created_at: string;
   updated_at: string;
 }

@@ -75,7 +75,11 @@ export default function AdminPage() {
             author: 'デール・カーネギー',
             genre_tags: ['自己啓発', 'コミュニケーション', 'ビジネス'],
             amazon_link: 'https://amazon.co.jp/dp/4422100513',
+            summary_link: null,
+            cover_image_url: null,
             description: '人間関係の古典的名著。人を動かす3つの基本原則から始まり、人に好かれる6つの原則、人を説得する12の原則などを具体的なエピソードとともに紹介。',
+            difficulty_level: 'beginner' as const,
+            reading_time_hours: null,
             page_count: 320,
             price: 1540,
             created_at: '2024-01-01T00:00:00Z',
@@ -87,7 +91,11 @@ export default function AdminPage() {
             author: 'スティーブン・R・コヴィー',
             genre_tags: ['自己啓発', 'ビジネス', '成功法則'],
             amazon_link: 'https://amazon.co.jp/dp/4863940246',
+            summary_link: null,
+            cover_image_url: null,
             description: '世界的ベストセラー。私的成功から公的成功へと導く7つの習慣を体系的に解説。',
+            difficulty_level: 'intermediate' as const,
+            reading_time_hours: null,
             page_count: 560,
             price: 2420,
             created_at: '2024-01-01T00:00:00Z',
@@ -126,7 +134,11 @@ export default function AdminPage() {
           author: 'デール・カーネギー',
           genre_tags: ['自己啓発', 'コミュニケーション', 'ビジネス'],
           amazon_link: 'https://amazon.co.jp/dp/4422100513',
+          summary_link: null,
+          cover_image_url: null,
           description: '人間関係の古典的名著。',
+          difficulty_level: 'beginner' as const,
+          reading_time_hours: null,
           page_count: 320,
           price: 1540,
           created_at: '2024-01-01T00:00:00Z',
@@ -214,6 +226,8 @@ export default function AdminPage() {
         summary_link: formData.summary_link || null,
         cover_image_url: formData.cover_image_url || null,
         description: formData.description || null,
+        difficulty_level: 'beginner' as const, // デフォルト値として設定
+        reading_time_hours: null, // 将来的に実装予定
         page_count: formData.page_count ? parseInt(formData.page_count) : null,
         price: formData.price ? parseFloat(formData.price) : null
       };
@@ -264,7 +278,7 @@ export default function AdminPage() {
           addDebugLog(`更新後のデータ取得エラー: ${fetchError.message}`);
           console.error('更新後のデータ取得エラー:', fetchError);
           // エラーでも更新は成功しているので、ローカルデータから推測して更新
-          const mergedData = { ...editingBook, ...bookData, updated_at: new Date().toISOString() };
+          const mergedData: Book = { ...editingBook, ...bookData, updated_at: new Date().toISOString() };
           setBooks(prevBooks => 
             prevBooks.map(book => 
               book.id === editingBook.id ? mergedData : book
@@ -349,11 +363,11 @@ export default function AdminPage() {
       author: book.author,
       genre_tags: book.genre_tags,
       amazon_link: book.amazon_link,
-      summary_link: book.summary_link || '',
-      cover_image_url: book.cover_image_url || '',
-      description: book.description || '',
-      page_count: book.page_count?.toString() || '',
-      price: book.price?.toString() || ''
+      summary_link: book.summary_link ?? '',
+      cover_image_url: book.cover_image_url ?? '',
+      description: book.description ?? '',
+      page_count: book.page_count?.toString() ?? '',
+      price: book.price?.toString() ?? ''
     });
     setShowForm(true);
   };

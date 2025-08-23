@@ -3,14 +3,12 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/components/auth/AuthContext';
-import LoginModal from '@/components/auth/LoginModal';
+import { useSupabaseAuth } from '@/components/auth/SupabaseAuthContext';
 import Button from '@/components/ui/Button';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, logout } = useSupabaseAuth();
   const router = useRouter();
 
   const handleAdminAccess = () => {
@@ -18,19 +16,15 @@ export default function Header() {
       router.push('/admin');
       setIsMenuOpen(false);
     } else {
-      setIsLoginModalOpen(true);
+      router.push('/login');
       setIsMenuOpen(false);
     }
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     setIsMenuOpen(false);
     router.push('/');
-  };
-
-  const handleLoginSuccess = () => {
-    router.push('/admin');
   };
 
   return (
@@ -127,12 +121,7 @@ export default function Header() {
         />
       )}
 
-      {/* ログインモーダル */}
-      <LoginModal
-        isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-        onSuccess={handleLoginSuccess}
-      />
+
     </>
   );
 }

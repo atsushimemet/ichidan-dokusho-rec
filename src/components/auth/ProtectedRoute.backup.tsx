@@ -2,19 +2,19 @@
 
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSupabaseAuth } from './SupabaseAuthContext';
+import { useAuth } from './AuthContext';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user, isLoading } = useSupabaseAuth();
+  const { user, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (!isLoading && !user) {
-      router.push('/login');
+      router.push('/');
     }
   }, [user, isLoading, router]);
 

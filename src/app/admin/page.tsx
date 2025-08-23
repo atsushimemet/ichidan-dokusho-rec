@@ -700,14 +700,15 @@ export default function AdminPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
             {books.map((book) => (
               <Card key={book.id} variant="default" className="overflow-hidden hover:shadow-ios-xl transition-all duration-300 flex flex-col h-full">
-                <div className="flex flex-col h-full">
-                  {/* 書籍画像 */}
-                  {book.cover_image_url && (
-                    <div className="w-full h-48 bg-ios-gray-100 flex items-center justify-center overflow-hidden">
+                                <div className="flex flex-col h-full">
+                  {/* 書籍画像エリア */}
+                  <div className="w-full h-40 bg-ios-gray-100 flex items-center justify-center overflow-hidden rounded-t-lg">
+                    {book.cover_image_url ? (
                       <img 
                         src={book.cover_image_url} 
                         alt={`${book.title}の表紙`}
-                        className="w-full h-full object-cover"
+                        className="max-w-full max-h-full object-contain"
+                        style={{ width: 'auto', height: 'auto', maxWidth: '150px' }}
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.style.display = 'none';
@@ -718,103 +719,117 @@ export default function AdminPage() {
                           `;
                         }}
                       />
-                    </div>
-                  )}
-                  
-                  <div className="p-5 flex flex-col flex-grow">
-                    {/* 書籍情報（固定高さ） */}
-                    <div className="mb-3">
-                      <h3 className="text-lg font-bold text-ios-gray-800 mb-2 h-12 overflow-hidden leading-tight"
-                          style={{
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical'
-                          }}>
-                        {book.title}
-                      </h3>
-                      <p className="text-ios-gray-600 mb-2 h-5 text-sm">
-                        著者: {book.author}
-                      </p>
-                      
-                      {/* ジャンルタグ（固定高さ） */}
-                      <div className="flex flex-wrap gap-1 mb-2 h-7 overflow-hidden">
-                        {book.genre_tags.map((tag, index) => (
-                          <span 
-                            key={index}
-                            className="bg-ios-purple/10 text-ios-purple text-xs px-2 py-1 rounded-md"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-
-                      {/* 説明（固定高さ） */}
-                      <div className="h-16 mb-3">
-                        {book.description && (
-                          <p className="text-sm text-ios-gray-600 overflow-hidden h-full leading-relaxed"
-                             style={{
-                               display: '-webkit-box',
-                               WebkitLineClamp: 3,
-                               WebkitBoxOrient: 'vertical'
-                             }}>
-                            {book.description}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* フレキシブルスペース */}
-                    <div className="flex-grow">
-                      {/* メタ情報（固定高さ） */}
-                      <div className="text-sm text-ios-gray-500 space-y-1 mb-3">
-                        {book.page_count && (
-                          <div>ページ数: {book.page_count}ページ</div>
-                        )}
-                        {book.price && (
-                          <div>価格: ¥{book.price.toLocaleString()}</div>
-                        )}
-                        {book.page_count && (
-                          <div>
-                            {(() => {
-                              const readability = getReadabilityLevel(book.page_count);
-                              return (
-                                <span className={`text-xs font-medium ${readability.color}`}>
-                                  📖 {readability.label}
-                                </span>
-                              );
-                            })()}
-                          </div>
-                        )}
-                        
-                        {/* リンク情報 */}
-                        <div className="space-y-2 mt-3">
-                          {book.amazon_link && (
-                            <div className="text-ios-blue">
-                              🛒 <a 
-                                href={book.amazon_link} 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                className="underline hover:no-underline font-medium"
-                              >
-                                Amazon で購入
-                              </a>
-                            </div>
-                          )}
-                          {book.summary_link && (
-                            <div className="text-ios-blue">
-                              📝 <a 
-                                href={book.summary_link} 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                className="underline hover:no-underline"
-                              >
-                                要約を読む
-                              </a>
-                            </div>
-                          )}
+                    ) : (
+                      <div className="flex items-center justify-center w-full h-full bg-ios-gray-200 text-ios-gray-400">
+                        <div className="text-center">
+                          <div className="text-3xl mb-2">📚</div>
+                          <div className="text-xs">画像なし</div>
                         </div>
                       </div>
-                    </div>
+                    )}
+                  </div>
+                   
+                   <div className="p-4 flex flex-col flex-grow">
+                                         {/* 書籍情報（固定高さ） */}
+                     <div className="mb-2">
+                       <h3 className="text-base font-bold text-ios-gray-800 mb-1 h-10 overflow-hidden leading-tight"
+                           style={{
+                             display: '-webkit-box',
+                             WebkitLineClamp: 2,
+                             WebkitBoxOrient: 'vertical'
+                           }}>
+                         {book.title}
+                       </h3>
+                       <p className="text-ios-gray-600 mb-2 h-4 text-sm">
+                         著者: {book.author}
+                       </p>
+                       
+                       {/* ジャンルタグ（固定高さ） */}
+                       <div className="flex flex-wrap gap-1 mb-2 h-6 overflow-hidden">
+                         {book.genre_tags.slice(0, 3).map((tag, index) => (
+                           <span 
+                             key={index}
+                             className="bg-ios-purple/10 text-ios-purple text-xs px-2 py-1 rounded-md"
+                           >
+                             {tag}
+                           </span>
+                         ))}
+                         {book.genre_tags.length > 3 && (
+                           <span className="text-xs text-ios-gray-400 px-1 py-1">
+                             +{book.genre_tags.length - 3}
+                           </span>
+                         )}
+                       </div>
+
+                       {/* 説明（固定高さ） */}
+                       <div className="h-12 mb-2">
+                         {book.description && (
+                           <p className="text-xs text-ios-gray-600 overflow-hidden h-full leading-relaxed"
+                              style={{
+                                display: '-webkit-box',
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: 'vertical'
+                              }}>
+                             {book.description}
+                           </p>
+                         )}
+                       </div>
+                     </div>
+
+                                         {/* フレキシブルスペース */}
+                     <div className="flex-grow">
+                       {/* メタ情報 */}
+                       <div className="text-xs text-ios-gray-500 space-y-1 mb-2">
+                         <div className="flex justify-between items-center">
+                           {book.page_count && (
+                             <span>{book.page_count}p</span>
+                           )}
+                           {book.price && (
+                             <span>¥{book.price.toLocaleString()}</span>
+                           )}
+                         </div>
+                         {book.page_count && (
+                           <div>
+                             {(() => {
+                               const readability = getReadabilityLevel(book.page_count);
+                               return (
+                                 <span className={`text-xs font-medium ${readability.color}`}>
+                                   📖 {readability.label}
+                                 </span>
+                               );
+                             })()}
+                           </div>
+                         )}
+                       </div>
+                         
+                       {/* リンク情報 */}
+                       <div className="space-y-1 mb-2">
+                         {book.amazon_link && (
+                           <div className="text-ios-blue text-xs">
+                             🛒 <a 
+                               href={book.amazon_link} 
+                               target="_blank" 
+                               rel="noopener noreferrer" 
+                               className="underline hover:no-underline font-medium"
+                             >
+                               Amazon
+                             </a>
+                           </div>
+                         )}
+                         {book.summary_link && (
+                           <div className="text-ios-blue text-xs">
+                             📝 <a 
+                               href={book.summary_link} 
+                               target="_blank" 
+                               rel="noopener noreferrer" 
+                               className="underline hover:no-underline"
+                             >
+                               要約
+                             </a>
+                           </div>
+                         )}
+                       </div>
+                     </div>
 
                     {/* 下部固定要素 */}
                     <div className="mt-auto">

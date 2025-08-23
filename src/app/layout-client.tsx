@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { AuthProvider } from '@/components/auth/AuthContext';
+import { SupabaseAuthProvider } from '@/components/auth/SupabaseAuthContext';
 import Header from '@/components/layout/Header';
 
 export default function ClientLayout({
@@ -10,11 +10,11 @@ export default function ClientLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AuthProvider>
+    <SupabaseAuthProvider>
       <Header />
       <main className="pt-20">
         {children}
       </main>
-    </AuthProvider>
+    </SupabaseAuthProvider>
   );
 }

@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import type { Book } from '@/types';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
@@ -27,23 +28,8 @@ if (typeof window !== 'undefined') {
     });
 }
 
-// データベース型定義
-export interface Book {
-  id: string;
-  title: string;
-  author: string;
-  genre_tags: string[];
-  amazon_link: string;
-  summary_link?: string;
-  cover_image_url?: string;
-  description?: string;
-  difficulty_level: 'beginner' | 'intermediate' | 'advanced';
-  reading_time_hours?: number;
-  page_count?: number;
-  price?: number;
-  created_at: string;
-  updated_at: string;
-}
+// Bookインターフェースは@/typesからインポート
+export type { Book } from '@/types';
 
 export interface QuestionResponse {
   purpose: string;

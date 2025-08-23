@@ -54,7 +54,7 @@ export default function AdminPage() {
         keyLength: supabaseAnonKey ? supabaseAnonKey.length : 0
       });
       
-      if (!supabaseUrl || !supabaseAnonKey || supabaseUrl === 'your_supabase_url') {
+      if (!supabaseUrl || !supabaseAnonKey || supabaseUrl === 'your_supabase_url' || supabaseUrl === 'https://placeholder.supabase.co') {
         setError('Supabaseが設定されていません。モックデータを表示しています。');
         setBooks([
           {
@@ -129,7 +129,7 @@ export default function AdminPage() {
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
       
-      if (!supabaseUrl || !supabaseAnonKey || supabaseUrl === 'your_supabase_url') {
+      if (!supabaseUrl || !supabaseAnonKey || supabaseUrl === 'your_supabase_url' || supabaseUrl === 'https://placeholder.supabase.co') {
         // モックデータのタグ
         setAvailableTags([
           '自己啓発', 'ビジネス', '心理学', '哲学', '歴史', '科学', '健康', '小説',
@@ -175,12 +175,19 @@ export default function AdminPage() {
       return;
     }
 
-    // Supabaseが設定されていない場合はエラー表示
+    // 環境変数の詳細ログ
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     
-    if (!supabaseUrl || !supabaseAnonKey || supabaseUrl === 'your_supabase_url') {
-      setError('Supabaseが設定されていないため、書籍の保存はできません。');
+    console.log('環境変数チェック:', {
+      url: supabaseUrl ? `${supabaseUrl.substring(0, 30)}...` : '未設定',
+      hasKey: !!supabaseAnonKey,
+      keyLength: supabaseAnonKey ? supabaseAnonKey.length : 0,
+      isPlaceholder: supabaseUrl === 'https://placeholder.supabase.co'
+    });
+    
+    if (!supabaseUrl || !supabaseAnonKey || supabaseUrl === 'your_supabase_url' || supabaseUrl === 'https://placeholder.supabase.co') {
+      setError('Supabaseが設定されていないため、書籍の保存はできません。環境変数NEXT_PUBLIC_SUPABASE_URLとNEXT_PUBLIC_SUPABASE_ANON_KEYを設定してください。');
       return;
     }
 
@@ -199,29 +206,83 @@ export default function AdminPage() {
 
       if (editingBook) {
         // 更新
-        const { error } = await supabase
+        console.log('書籍更新開始:', { bookId: editingBook.id, bookData });
+        const { data, error } = await supabase
           .from('books')
           .update(bookData)
-          .eq('id', editingBook.id);
+          .eq('id', editingBook.id)
+          .select();
 
-        if (error) throw error;
+        console.log('書籍更新結果:', { data, error });
+        
+        if (error) {
+          console.error('書籍更新エラー:', error);
+          throw error;
+        }
+        
+        if (!data || data.length === 0) {
+          throw new Error('更新対象の書籍が見つかりませんでした');
+        }
+        
+        console.log('書籍更新成功:', data[0]);
+        
+        // ローカルのbooksステートも即座に更新
+        setBooks(prevBooks => 
+          prevBooks.map(book => 
+            book.id === editingBook.id ? { ...book, ...data[0] } : book
+          )
+        );
+        
         setSuccessMessage('書籍を更新しました');
+        
+        // 3秒後にメッセージをクリア
+        setTimeout(() => {
+          setSuccessMessage(null);
+        }, 3000);
       } else {
         // 新規作成
-        const { error } = await supabase
+        console.log('書籍追加開始:', bookData);
+        const { data, error } = await supabase
           .from('books')
-          .insert([bookData]);
+          .insert([bookData])
+          .select();
 
-        if (error) throw error;
+        console.log('書籍追加結果:', { data, error });
+        
+        if (error) {
+          console.error('書籍追加エラー:', error);
+          throw error;
+        }
+        
+        if (!data || data.length === 0) {
+          throw new Error('書籍の追加に失敗しました');
+        }
+        
+        console.log('書籍追加成功:', data[0]);
+        
+        // ローカルのbooksステートに新しい書籍を追加
+        setBooks(prevBooks => [data[0], ...prevBooks]);
+        
         setSuccessMessage('書籍を追加しました');
+        
+        // 3秒後にメッセージをクリア
+        setTimeout(() => {
+          setSuccessMessage(null);
+        }, 3000);
       }
 
-      // フォームをリセットして書籍一覧を再読み込み
+      // フォームをリセット
       resetForm();
-      loadBooks();
+      
+      // 念のため、少し遅延を入れてからデータを再読み込み
+      setTimeout(async () => {
+        await loadBooks();
+        console.log('書籍一覧を再読み込み完了');
+      }, 500);
     } catch (err) {
       console.error('書籍保存エラー:', err);
-      setError('書籍の保存に失敗しました');
+      const errorMessage = err instanceof Error ? err.message : '書籍の保存に失敗しました';
+      setError(errorMessage);
     }
   };
 
@@ -248,20 +309,34 @@ export default function AdminPage() {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     
-    if (!supabaseUrl || !supabaseAnonKey || supabaseUrl === 'your_supabase_url') {
-      setError('Supabaseが設定されていないため、書籍の削除はできません。');
+    if (!supabaseUrl || !supabaseAnonKey || supabaseUrl === 'your_supabase_url' || supabaseUrl === 'https://placeholder.supabase.co') {
+      setError('Supabaseが設定されていないため、書籍の削除はできません。環境変数NEXT_PUBLIC_SUPABASE_URLとNEXT_PUBLIC_SUPABASE_ANON_KEYを設定してください。');
       return;
     }
 
     try {
+      console.log('書籍削除開始:', bookId);
       const { error } = await supabase
         .from('books')
         .delete()
         .eq('id', bookId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('書籍削除エラー:', error);
+        throw error;
+      }
+      
+      console.log('書籍削除成功:', bookId);
+      
+      // ローカルのbooksステートからも削除
+      setBooks(prevBooks => prevBooks.filter(book => book.id !== bookId));
+      
       setSuccessMessage('書籍を削除しました');
-      loadBooks();
+      
+      // 3秒後にメッセージをクリア
+      setTimeout(() => {
+        setSuccessMessage(null);
+      }, 3000);
     } catch (err) {
       console.error('書籍削除エラー:', err);
       setError('書籍の削除に失敗しました');

@@ -4,10 +4,10 @@ export default function Home() {
   return (
     <main className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center px-6 py-8 md:py-12 lg:py-24">
-        <div className="max-w-6xl mx-auto text-center space-y-12 md:space-y-16">
+      <section className="relative min-h-screen flex items-center justify-center px-6 py-4 md:py-12 lg:py-24">
+        <div className="max-w-6xl mx-auto text-center space-y-8 md:space-y-12 lg:space-y-16">
           {/* メインタイトル */}
-          <div className="space-y-6 md:space-y-8 fade-in">
+          <div className="space-y-4 md:space-y-6 lg:space-y-8 fade-in">
             <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-ios-gray-800 leading-tight">
               あなたにぴったりの
               <span className="holographic-text block">一冊を見つけよう</span>

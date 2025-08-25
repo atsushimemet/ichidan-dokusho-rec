@@ -6,6 +6,7 @@ import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import Accordion from '@/components/ui/Accordion';
 import { supabase } from '@/lib/supabase';
 import { Book } from '@/types';
 import { getReadabilityLevel, buildCoverImageUrl, extractAsinFromCoverUrl } from '@/lib/utils';
@@ -13,6 +14,7 @@ import { getReadabilityLevel, buildCoverImageUrl, extractAsinFromCoverUrl } from
 export default function AdminPage() {
   const [books, setBooks] = useState<Book[]>([]);
   const [availableTags, setAvailableTags] = useState<string[]>([]);
+  const [tagsByCategory, setTagsByCategory] = useState<Record<string, string[]>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingBook, setEditingBook] = useState<Book | null>(null);
@@ -31,6 +33,16 @@ export default function AdminPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showDebugConsole, setShowDebugConsole] = useState(false);
   const [debugLogs, setDebugLogs] = useState<string[]>([]);
+
+  // タグカテゴリの定義
+  const tagCategories = [
+    { value: 'genre', label: 'ジャンル', emoji: '📚' },
+    { value: 'knowledge', label: '知識・教養', emoji: '🧠' },
+    { value: 'skill', label: 'スキル', emoji: '💪' },
+    { value: 'growth', label: '自己成長', emoji: '🌱' },
+    { value: 'relaxation', label: 'リラックス', emoji: '😌' },
+    { value: 'common', label: '共通', emoji: '🔗' }
+  ];
 
   useEffect(() => {
     // ページ遷移時にスクロール位置を最上部に設定
@@ -156,24 +168,43 @@ export default function AdminPage() {
       const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
       
       if (!supabaseUrl || !supabaseAnonKey || supabaseUrl === 'your_supabase_url' || supabaseUrl === 'https://placeholder.supabase.co') {
-        // モックデータのタグ
-        setAvailableTags([
-          '自己啓発', 'ビジネス', '心理学', '哲学', '歴史', '科学', '健康', '小説',
-          'コミュニケーション', 'スキルアップ', '成功法則', '習慣', '教養', 'プレゼンテーション'
-        ]);
+        // モックデータのタグ（カテゴリ別）
+        const mockTagsByCategory = {
+          'genre': ['自己啓発', 'ビジネス', '心理学', '哲学', '歴史', '科学', '健康', '小説'],
+          'knowledge': ['教養', '学習法', '読書術'],
+          'skill': ['コミュニケーション', 'スキルアップ', 'プレゼンテーション', 'リーダーシップ'],
+          'growth': ['成功法則', '習慣', 'モチベーション', '目標設定'],
+          'relaxation': ['瞑想', 'マインドフルネス', 'ストレス管理'],
+          'common': ['時間管理', '効率化']
+        };
+        
+        setTagsByCategory(mockTagsByCategory);
+        const allTags = Object.values(mockTagsByCategory).flat();
+        setAvailableTags(allTags);
         return;
       }
 
       console.log('タグクエリ実行開始');
       const { data, error } = await supabase
         .from('genre_tags')
-        .select('name')
+        .select('name, category')
         .eq('is_active', true)
         .order('category, display_order');
 
       console.log('タグクエリ結果:', { data: data?.length || 0, error });
       
       if (error) throw error;
+      
+      // カテゴリ別にタグを整理
+      const tagsByCategory: Record<string, string[]> = {};
+      (data || []).forEach(tag => {
+        if (!tagsByCategory[tag.category]) {
+          tagsByCategory[tag.category] = [];
+        }
+        tagsByCategory[tag.category].push(tag.name);
+      });
+      
+      setTagsByCategory(tagsByCategory);
       setAvailableTags((data || []).map(tag => tag.name));
     } catch (err) {
       console.error('タグデータの読み込みエラー:', err);
@@ -182,11 +213,20 @@ export default function AdminPage() {
         stack: err instanceof Error ? err.stack : undefined,
         error: err
       });
-      // フォールバック
-      setAvailableTags([
-        '自己啓発', 'ビジネス', '心理学', '哲学', '歴史', '科学', '健康', '小説',
-        'コミュニケーション', 'スキルアップ', '成功法則', '習慣', '教養', 'プレゼンテーション'
-      ]);
+      
+      // フォールバック（カテゴリ別）
+      const fallbackTagsByCategory = {
+        'genre': ['自己啓発', 'ビジネス', '心理学', '哲学', '歴史', '科学', '健康', '小説'],
+        'knowledge': ['教養', '学習法', '読書術'],
+        'skill': ['コミュニケーション', 'スキルアップ', 'プレゼンテーション', 'リーダーシップ'],
+        'growth': ['成功法則', '習慣', 'モチベーション', '目標設定'],
+        'relaxation': ['瞑想', 'マインドフルネス', 'ストレス管理'],
+        'common': ['時間管理', '効率化']
+      };
+      
+      setTagsByCategory(fallbackTagsByCategory);
+      const allTags = Object.values(fallbackTagsByCategory).flat();
+      setAvailableTags(allTags);
     }
   };
 
@@ -601,28 +641,67 @@ export default function AdminPage() {
                 />
               </div>
 
-              {/* ジャンルタグ選択 */}
+              {/* ジャンルタグ選択（アコーディオン） */}
               <div>
                 <label className="block text-sm font-medium text-ios-gray-700 mb-4">
                   ジャンルタグ * (選択済み: {formData.genre_tags.length}個)
                 </label>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-2">
-                  {availableTags.map(tag => (
-                    <div
-                      key={tag}
-                      onClick={() => handleTagToggle(tag)}
-                      className={`p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
-                        formData.genre_tags.includes(tag)
-                          ? 'border-ios-blue bg-ios-blue/10 text-ios-blue'
-                          : 'border-ios-gray-300 hover:border-ios-blue/50'
-                      }`}
-                    >
-                      <div className="text-sm font-medium">{tag}</div>
+                
+                {/* 選択中のタグの表示 */}
+                {formData.genre_tags.length > 0 && (
+                  <div className="mb-4 p-3 bg-ios-blue/5 rounded-lg border border-ios-blue/20">
+                    <p className="text-sm font-medium text-ios-gray-700 mb-2">選択中のタグ:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {formData.genre_tags.map(tag => (
+                        <span 
+                          key={tag}
+                          onClick={() => handleTagToggle(tag)}
+                          className="bg-ios-blue/10 text-ios-blue text-sm px-3 py-1 rounded-full cursor-pointer hover:bg-ios-blue/20 transition-colors duration-200"
+                        >
+                          {tag} ×
+                        </span>
+                      ))}
                     </div>
-                  ))}
+                  </div>
+                )}
+
+                {/* カテゴリ別アコーディオン */}
+                <div className="space-y-3">
+                  {tagCategories.map(category => {
+                    const categoryTags = tagsByCategory[category.value] || [];
+                    if (categoryTags.length === 0) return null;
+                    
+                    const selectedCount = categoryTags.filter(tag => formData.genre_tags.includes(tag)).length;
+                    
+                    return (
+                      <Accordion
+                        key={category.value}
+                        title={`${category.emoji} ${category.label} (${selectedCount}/${categoryTags.length})`}
+                        defaultOpen={category.value === 'genre'}
+                        className="border-ios-gray-200"
+                      >
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                          {categoryTags.map(tag => (
+                            <div
+                              key={tag}
+                              onClick={() => handleTagToggle(tag)}
+                              className={`p-2 rounded-lg border cursor-pointer transition-all duration-200 text-sm ${
+                                formData.genre_tags.includes(tag)
+                                  ? 'border-ios-blue bg-ios-blue/10 text-ios-blue'
+                                  : 'border-ios-gray-300 hover:border-ios-blue/50 hover:bg-ios-blue/5'
+                              }`}
+                            >
+                              <div className="font-medium">{tag}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </Accordion>
+                    );
+                  })}
                 </div>
+                
                 {formData.genre_tags.length === 0 && (
-                  <p className="text-sm text-ios-red">少なくとも1つのタグを選択してください</p>
+                  <p className="text-sm text-ios-red mt-2">少なくとも1つのタグを選択してください</p>
                 )}
                 <p className="text-sm text-ios-gray-600 mt-2">
                   タグマスターに登録されたタグから選択できます。新しいタグが必要な場合は<Link href="/admin/tags" className="text-ios-blue underline">タグマスター管理</Link>で追加してください。

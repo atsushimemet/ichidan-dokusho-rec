@@ -39,3 +39,30 @@ export function getReadabilityLevel(pageCount: number): {
     };
   }
 }
+
+/**
+ * ASINからAmazonの表紙画像URLを生成する
+ * @param asin Amazon商品のASIN
+ * @returns 表紙画像URL
+ */
+export function buildCoverImageUrl(asin: string): string {
+  if (!asin || asin.trim() === '') {
+    return '';
+  }
+  return `https://images-na.ssl-images-amazon.com/images/P/${asin.trim()}.SX150.MZZZZZZZ.jpg`;
+}
+
+/**
+ * Amazon表紙画像URLからASINを抽出する
+ * @param coverImageUrl Amazon表紙画像URL
+ * @returns ASIN（抽出できない場合は空文字）
+ */
+export function extractAsinFromCoverUrl(coverImageUrl: string): string {
+  if (!coverImageUrl) {
+    return '';
+  }
+  
+  // Amazon画像URLのパターンにマッチするかチェック
+  const match = coverImageUrl.match(/\/images\/P\/([A-Z0-9]{10})\.SX150\.MZZZZZZZ\.jpg$/);
+  return match ? match[1] : '';
+}

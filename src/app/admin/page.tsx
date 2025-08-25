@@ -8,7 +8,7 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { supabase } from '@/lib/supabase';
 import { Book } from '@/types';
-import { getReadabilityLevel } from '@/lib/utils';
+import { getReadabilityLevel, buildCoverImageUrl, extractAsinFromCoverUrl } from '@/lib/utils';
 
 export default function AdminPage() {
   const [books, setBooks] = useState<Book[]>([]);
@@ -22,7 +22,7 @@ export default function AdminPage() {
     genre_tags: [] as string[],
     amazon_link: '',
     summary_link: '',
-    cover_image_url: '',
+    asin: '',
     description: '',
     page_count: '',
     price: ''
@@ -225,7 +225,7 @@ export default function AdminPage() {
         genre_tags: formData.genre_tags,
         amazon_link: formData.amazon_link,
         summary_link: formData.summary_link || null,
-        cover_image_url: formData.cover_image_url || null,
+        cover_image_url: formData.asin ? buildCoverImageUrl(formData.asin) : null,
         description: formData.description || null,
         // difficulty_level: 'beginner' as const, // 一時的にコメントアウト（DBにカラムが無い）
         // reading_time_hours: null, // 一時的にコメントアウト（DBにカラムが無い）
@@ -372,7 +372,7 @@ export default function AdminPage() {
       genre_tags: book.genre_tags,
       amazon_link: book.amazon_link,
       summary_link: book.summary_link ?? '',
-      cover_image_url: book.cover_image_url ?? '',
+      asin: extractAsinFromCoverUrl(book.cover_image_url ?? ''),
       description: book.description ?? '',
       page_count: book.page_count?.toString() ?? '',
       price: book.price?.toString() ?? ''
@@ -432,7 +432,7 @@ export default function AdminPage() {
       genre_tags: [],
       amazon_link: '',
       summary_link: '',
-      cover_image_url: '',
+      asin: '',
       description: '',
       page_count: '',
       price: ''
@@ -645,12 +645,34 @@ export default function AdminPage() {
                   placeholder="https://..."
                 />
                 
-                <Input
-                  label="表紙画像URL"
-                  value={formData.cover_image_url}
-                  onChange={(e) => setFormData({...formData, cover_image_url: e.target.value})}
-                  placeholder="https://..."
-                />
+                <div>
+                  <Input
+                    label="ASIN"
+                    value={formData.asin}
+                    onChange={(e) => setFormData({...formData, asin: e.target.value})}
+                    placeholder="B08GJWJ5B2"
+                  />
+                  {/* ASIN入力プレビュー */}
+                  {formData.asin && (
+                    <div className="mt-2">
+                      <p className="text-xs text-ios-gray-600 mb-1">プレビュー:</p>
+                      <div className="w-20 h-28 bg-ios-gray-100 rounded border flex items-center justify-center overflow-hidden">
+                        <img 
+                          src={buildCoverImageUrl(formData.asin)} 
+                          alt="表紙プレビュー"
+                          className="max-w-full max-h-full object-contain"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            target.parentElement!.innerHTML = `
+                              <span class="text-xs text-ios-gray-400 text-center">画像が<br/>見つかりません</span>
+                            `;
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

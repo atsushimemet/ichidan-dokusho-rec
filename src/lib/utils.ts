@@ -16,14 +16,14 @@ export function getReadabilityLevel(pageCount: number): {
   description: string;
   color: string;
 } {
-  if (pageCount <= 200) {
+  if (pageCount <= 300) {
     return {
       level: 'easy',
       label: '読みやすい',
       description: '気軽に読める分量',
       color: 'text-ios-green'
     };
-  } else if (pageCount <= 400) {
+  } else if (pageCount <= 600) {
     return {
       level: 'moderate',
       label: '少し頑張る',

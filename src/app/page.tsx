@@ -4,7 +4,7 @@ export default function Home() {
   return (
     <main className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center px-6 py-12 md:py-24">
+      <section className="relative min-h-screen flex items-center justify-center px-6 py-8 md:py-12 lg:py-24">
         <div className="max-w-6xl mx-auto text-center space-y-12 md:space-y-16">
           {/* メインタイトル */}
           <div className="space-y-6 md:space-y-8 fade-in">

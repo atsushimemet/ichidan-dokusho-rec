@@ -12,7 +12,7 @@ export default function ClientLayout({
   return (
     <SupabaseAuthProvider>
       <Header />
-      <main className="pt-20">
+      <main className="pt-12 md:pt-20">
         {children}
       </main>
     </SupabaseAuthProvider>

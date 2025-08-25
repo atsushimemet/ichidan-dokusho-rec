@@ -31,6 +31,7 @@ export default function AdminPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showDebugConsole, setShowDebugConsole] = useState(false);
   const [debugLogs, setDebugLogs] = useState<string[]>([]);
+  const [isTagAccordionOpen, setIsTagAccordionOpen] = useState(false);
 
   useEffect(() => {
     // ページ遷移時にスクロール位置を最上部に設定
@@ -601,32 +602,65 @@ export default function AdminPage() {
                 />
               </div>
 
-              {/* ジャンルタグ選択 */}
+              {/* タグ選択 */}
               <div>
-                <label className="block text-sm font-medium text-ios-gray-700 mb-4">
-                  ジャンルタグ * (選択済み: {formData.genre_tags.length}個)
-                </label>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-2">
-                  {availableTags.map(tag => (
-                    <div
-                      key={tag}
-                      onClick={() => handleTagToggle(tag)}
-                      className={`p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
-                        formData.genre_tags.includes(tag)
-                          ? 'border-ios-blue bg-ios-blue/10 text-ios-blue'
-                          : 'border-ios-gray-300 hover:border-ios-blue/50'
-                      }`}
-                    >
-                      <div className="text-sm font-medium">{tag}</div>
-                    </div>
-                  ))}
+                {/* アコーディオンヘッダー */}
+                <div 
+                  onClick={() => setIsTagAccordionOpen(!isTagAccordionOpen)}
+                  className="flex items-center justify-between p-4 border border-ios-gray-300 rounded-lg cursor-pointer hover:bg-ios-gray-50 transition-colors duration-200"
+                >
+                  <div className="flex items-center space-x-3">
+                    <label className="text-sm font-medium text-ios-gray-700">
+                      タグ * (選択済み: {formData.genre_tags.length}個)
+                    </label>
+                    {formData.genre_tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {formData.genre_tags.slice(0, 3).map((tag, index) => (
+                          <span key={index} className="bg-ios-blue/10 text-ios-blue text-xs px-2 py-1 rounded">
+                            {tag}
+                          </span>
+                        ))}
+                        {formData.genre_tags.length > 3 && (
+                          <span className="text-ios-gray-500 text-xs">+{formData.genre_tags.length - 3}</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <div className={`transform transition-transform duration-200 ${isTagAccordionOpen ? 'rotate-180' : ''}`}>
+                    <svg className="w-5 h-5 text-ios-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
                 </div>
-                {formData.genre_tags.length === 0 && (
-                  <p className="text-sm text-ios-red">少なくとも1つのタグを選択してください</p>
+
+                {/* アコーディオンコンテンツ */}
+                {isTagAccordionOpen && (
+                  <div className="mt-4 p-4 border border-ios-gray-200 rounded-lg bg-ios-gray-25">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-2">
+                      {availableTags.map(tag => (
+                        <div
+                          key={tag}
+                          onClick={() => handleTagToggle(tag)}
+                          className={`p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
+                            formData.genre_tags.includes(tag)
+                              ? 'border-ios-blue bg-ios-blue/10 text-ios-blue'
+                              : 'border-ios-gray-300 hover:border-ios-blue/50'
+                          }`}
+                        >
+                          <div className="text-sm font-medium">{tag}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-sm text-ios-gray-600 mt-2">
+                      タグマスターに登録されたタグから選択できます。新しいタグが必要な場合は<Link href="/admin/tags" className="text-ios-blue underline">タグマスター管理</Link>で追加してください。
+                    </p>
+                  </div>
                 )}
-                <p className="text-sm text-ios-gray-600 mt-2">
-                  タグマスターに登録されたタグから選択できます。新しいタグが必要な場合は<Link href="/admin/tags" className="text-ios-blue underline">タグマスター管理</Link>で追加してください。
-                </p>
+
+                {/* エラーメッセージ */}
+                {formData.genre_tags.length === 0 && (
+                  <p className="text-sm text-ios-red mt-2">少なくとも1つのタグを選択してください</p>
+                )}
               </div>
 
               <Input

@@ -29,14 +29,26 @@ export default function AdminPage() {
   });
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [showDebugConsole, setShowDebugConsole] = useState(false);
+  const [showDebugConsole, setShowDebugConsole] = useState(true);
   const [debugLogs, setDebugLogs] = useState<string[]>([]);
   const [isTagAccordionOpen, setIsTagAccordionOpen] = useState(false);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [autoSaveMessage, setAutoSaveMessage] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     // ページ遷移時にスクロール位置を最上部に設定
     window.scrollTo(0, 0);
     loadData();
+  }, []);
+
+  // コンポーネントのクリーンアップ時にタイマーをクリア
+  useEffect(() => {
+    return () => {
+      Object.values(debounceTimers.current).forEach(timer => {
+        clearTimeout(timer);
+      });
+    };
   }, []);
 
   // デバッグログ機能
@@ -45,6 +57,174 @@ export default function AdminPage() {
     const logMessage = `[${timestamp}] ${message}`;
     setDebugLogs(prev => [logMessage, ...prev].slice(0, 50)); // 最新50件まで保持
     console.log(logMessage);
+  };
+
+  // 自動保存機能（フォームデータを指定）
+  const autoSaveWithData = async (fieldName: string, dataToSave: typeof formData) => {
+    addDebugLog(`autoSaveWithData関数呼び出し: fieldName=${fieldName}, editingBook=${editingBook?.id}, isSaving=${isSaving}`);
+    
+    if (!editingBook || isSaving) {
+      addDebugLog(`自動保存スキップ: editingBook=${!!editingBook}, isSaving=${isSaving}`);
+      return;
+    }
+    
+    setIsSaving(true);
+    setAutoSaveStatus('saving');
+    setAutoSaveMessage('保存中...');
+    addDebugLog(`自動保存開始: ${fieldName}, 書籍ID: ${editingBook.id}`);
+
+    try {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      
+      addDebugLog(`Supabase設定確認: URL=${supabaseUrl ? 'あり' : 'なし'}, Key=${supabaseAnonKey ? 'あり' : 'なし'}`);
+      
+      if (!supabaseUrl || !supabaseAnonKey || supabaseUrl === 'your_supabase_url' || supabaseUrl === 'https://placeholder.supabase.co') {
+        setAutoSaveStatus('error');
+        setAutoSaveMessage('Supabaseが設定されていません');
+        addDebugLog('自動保存失敗: Supabase未設定');
+        setTimeout(() => {
+          setAutoSaveStatus('idle');
+          setAutoSaveMessage(null);
+        }, 3000);
+        return;
+      }
+
+      const bookData = {
+        title: dataToSave.title,
+        author: dataToSave.author,
+        genre_tags: dataToSave.genre_tags,
+        amazon_link: dataToSave.amazon_link,
+        summary_link: dataToSave.summary_link || null,
+        cover_image_url: dataToSave.asin ? buildCoverImageUrl(dataToSave.asin) : null,
+        description: dataToSave.description || null,
+        page_count: dataToSave.page_count ? parseInt(dataToSave.page_count) : null,
+        price: dataToSave.price ? parseFloat(dataToSave.price) : null
+      };
+
+      addDebugLog(`更新データ: ${JSON.stringify(bookData, null, 2)}`);
+
+      const { data, error, count } = await supabase
+        .from('books')
+        .update(bookData)
+        .eq('id', editingBook.id)
+        .select();
+
+      addDebugLog(`Supabase更新結果: data=${data ? JSON.stringify(data) : 'null'}, error=${error ? error.message : 'null'}, count=${count}`);
+
+      if (error) {
+        addDebugLog(`自動保存エラー: ${error.message}, code: ${error.code}, details: ${error.details}`);
+        throw error;
+      }
+
+      if (!data || data.length === 0) {
+        addDebugLog('警告: 更新は成功したがデータが返されませんでした');
+      }
+
+      // ローカル状態も更新
+      setBooks(prevBooks => 
+        prevBooks.map(book => 
+          book.id === editingBook.id 
+            ? { ...book, ...bookData, updated_at: new Date().toISOString() }
+            : book
+        )
+      );
+
+      addDebugLog(`ローカル状態更新完了`);
+
+      setAutoSaveStatus('saved');
+      setAutoSaveMessage(`${fieldName}を自動保存しました`);
+      addDebugLog(`自動保存成功: ${fieldName}`);
+      
+      // 3秒後にメッセージをクリア
+      setTimeout(() => {
+        setAutoSaveStatus('idle');
+        setAutoSaveMessage(null);
+      }, 3000);
+    } catch (err) {
+      console.error('自動保存エラー:', err);
+      setAutoSaveStatus('error');
+      setAutoSaveMessage('自動保存に失敗しました');
+      addDebugLog(`自動保存エラー: ${err instanceof Error ? err.message : '不明なエラー'}`);
+      
+      // 3秒後にメッセージをクリア
+      setTimeout(() => {
+        setAutoSaveStatus('idle');
+        setAutoSaveMessage(null);
+      }, 3000);
+    } finally {
+      setIsSaving(false);
+      addDebugLog(`自動保存処理終了: ${fieldName}`);
+    }
+  };
+
+  // 自動保存機能（現在のformDataを使用）
+  const autoSave = async (fieldName: string) => {
+    return autoSaveWithData(fieldName, formData);
+  };
+
+  // デバウンス用のタイマーを管理
+  const debounceTimers = React.useRef<{[key: string]: NodeJS.Timeout}>({});
+
+  // 入力フィールドのハンドラー（自動保存付き）
+  const handleFieldChange = (field: string, value: any, fieldDisplayName: string) => {
+    addDebugLog(`フィールド変更: ${field} = ${value}, 編集モード: ${!!editingBook}`);
+    
+    // フォームデータを更新
+    const newFormData = { ...formData, [field]: value };
+    setFormData(newFormData);
+    
+    // 編集モード時のみ自動保存
+    if (editingBook) {
+      addDebugLog(`デバウンスタイマー設定: ${field} (${fieldDisplayName})`);
+      
+      // 前のタイマーをクリア
+      if (debounceTimers.current[field]) {
+        clearTimeout(debounceTimers.current[field]);
+        addDebugLog(`前のタイマーをクリア: ${field}`);
+      }
+      
+      // デバウンス処理（500ms後に自動保存）
+      debounceTimers.current[field] = setTimeout(() => {
+        addDebugLog(`デバウンス完了、自動保存実行: ${field} (${fieldDisplayName})`);
+        autoSaveWithData(fieldDisplayName, newFormData);
+        delete debounceTimers.current[field];
+      }, 500);
+    } else {
+      addDebugLog(`編集モードではないため自動保存をスキップ`);
+    }
+  };
+
+  // タグ変更時の自動保存ハンドラー
+  const handleTagToggleWithAutoSave = (tagName: string) => {
+    const newTags = formData.genre_tags.includes(tagName)
+      ? formData.genre_tags.filter(t => t !== tagName)
+      : [...formData.genre_tags, tagName];
+    
+    addDebugLog(`タグ変更: ${tagName}, 新しいタグ配列: [${newTags.join(', ')}], 編集モード: ${!!editingBook}`);
+    
+    // フォームデータを更新
+    const newFormData = { ...formData, genre_tags: newTags };
+    setFormData(newFormData);
+    
+    // 編集モード時のみ自動保存
+    if (editingBook) {
+      addDebugLog(`タグ変更デバウンスタイマー設定`);
+      
+      // 前のタイマーをクリア
+      if (debounceTimers.current['genre_tags']) {
+        clearTimeout(debounceTimers.current['genre_tags']);
+        addDebugLog(`前のタグタイマーをクリア`);
+      }
+      
+      debounceTimers.current['genre_tags'] = setTimeout(() => {
+        addDebugLog(`タグ変更デバウンス完了、自動保存実行`);
+        autoSaveWithData('ジャンルタグ', newFormData);
+        delete debounceTimers.current['genre_tags'];
+      }, 500);
+    } else {
+      addDebugLog(`編集モードではないためタグ自動保存をスキップ`);
+    }
   };
 
   const loadData = async () => {
@@ -366,6 +546,7 @@ export default function AdminPage() {
   };
 
   const handleEdit = (book: Book) => {
+    addDebugLog(`編集モード開始: 書籍ID=${book.id}, タイトル=${book.title}`);
     setEditingBook(book);
     setFormData({
       title: book.title,
@@ -379,6 +560,7 @@ export default function AdminPage() {
       price: book.price?.toString() ?? ''
     });
     setShowForm(true);
+    addDebugLog(`編集フォーム表示: editingBook=${book.id}`);
   };
 
   const handleDelete = async (bookId: string) => {
@@ -427,6 +609,15 @@ export default function AdminPage() {
   };
 
   const resetForm = () => {
+    addDebugLog(`フォームリセット: 編集モード終了=${!!editingBook}`);
+    
+    // 保留中のタイマーをクリア
+    Object.values(debounceTimers.current).forEach(timer => {
+      clearTimeout(timer);
+    });
+    debounceTimers.current = {};
+    addDebugLog(`保留中のタイマーをクリア`);
+    
     setFormData({
       title: '',
       author: '',
@@ -440,16 +631,14 @@ export default function AdminPage() {
     });
     setEditingBook(null);
     setShowForm(false);
+    
+    // 自動保存ステータスもクリア
+    setAutoSaveStatus('idle');
+    setAutoSaveMessage(null);
+    setIsSaving(false);
   };
 
-  const handleTagToggle = (tagName: string) => {
-    setFormData(prev => ({
-      ...prev,
-      genre_tags: prev.genre_tags.includes(tagName)
-        ? prev.genre_tags.filter(t => t !== tagName)
-        : [...prev.genre_tags, tagName]
-    }));
-  };
+
 
   if (isLoading) {
     return (
@@ -527,6 +716,26 @@ export default function AdminPage() {
           </div>
         )}
 
+        {/* 自動保存ステータス */}
+        {autoSaveMessage && (
+          <div className={`fixed top-4 right-4 z-50 max-w-sm p-4 rounded-lg shadow-lg border ${
+            autoSaveStatus === 'saving' 
+              ? 'bg-ios-blue/10 border-ios-blue/30 text-ios-blue' 
+              : autoSaveStatus === 'saved'
+              ? 'bg-ios-green/10 border-ios-green/30 text-ios-green'
+              : 'bg-ios-red/10 border-ios-red/30 text-ios-red'
+          }`}>
+            <div className="flex items-center space-x-2">
+              {autoSaveStatus === 'saving' && (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+              )}
+              {autoSaveStatus === 'saved' && <span>✅</span>}
+              {autoSaveStatus === 'error' && <span>❌</span>}
+              <p className="text-sm font-medium">{autoSaveMessage}</p>
+            </div>
+          </div>
+        )}
+
         {/* デバッグコンソール */}
         {showDebugConsole && (
           <Card variant="default" className="p-6 mb-6">
@@ -582,22 +791,30 @@ export default function AdminPage() {
           /* 書籍追加・編集フォーム */
           <Card variant="default" className="p-8">
             <h2 className="text-2xl font-bold text-ios-gray-800 mb-6">
-              {editingBook ? '書籍を編集' : '新しい書籍を追加'}
+              {editingBook ? '書籍を編集（自動保存）' : '新しい書籍を追加'}
             </h2>
+            
+            {editingBook && (
+              <div className="mb-4 p-3 bg-ios-blue/5 border border-ios-blue/20 rounded-lg">
+                <p className="text-sm text-ios-blue">
+                  💡 編集中の内容は各項目の入力完了時に自動的に保存されます
+                </p>
+              </div>
+            )}
             
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Input
                   label="書籍タイトル *"
                   value={formData.title}
-                  onChange={(e) => setFormData({...formData, title: e.target.value})}
+                  onChange={(e) => handleFieldChange('title', e.target.value, 'タイトル')}
                   required
                 />
                 
                 <Input
                   label="著者名 *"
                   value={formData.author}
-                  onChange={(e) => setFormData({...formData, author: e.target.value})}
+                  onChange={(e) => handleFieldChange('author', e.target.value, '著者名')}
                   required
                 />
               </div>
@@ -640,7 +857,7 @@ export default function AdminPage() {
                       {availableTags.map(tag => (
                         <div
                           key={tag}
-                          onClick={() => handleTagToggle(tag)}
+                          onClick={() => handleTagToggleWithAutoSave(tag)}
                           className={`p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
                             formData.genre_tags.includes(tag)
                               ? 'border-ios-blue bg-ios-blue/10 text-ios-blue'
@@ -666,7 +883,7 @@ export default function AdminPage() {
               <Input
                 label="Amazon リンク *"
                 value={formData.amazon_link}
-                onChange={(e) => setFormData({...formData, amazon_link: e.target.value})}
+                onChange={(e) => handleFieldChange('amazon_link', e.target.value, 'Amazonリンク')}
                 placeholder="https://amazon.co.jp/dp/..."
                 required
               />
@@ -675,7 +892,7 @@ export default function AdminPage() {
                 <Input
                   label="要約リンク"
                   value={formData.summary_link}
-                  onChange={(e) => setFormData({...formData, summary_link: e.target.value})}
+                  onChange={(e) => handleFieldChange('summary_link', e.target.value, '要約リンク')}
                   placeholder="https://..."
                 />
                 
@@ -683,7 +900,7 @@ export default function AdminPage() {
                   <Input
                     label="ASIN"
                     value={formData.asin}
-                    onChange={(e) => setFormData({...formData, asin: e.target.value})}
+                    onChange={(e) => handleFieldChange('asin', e.target.value, 'ASIN')}
                     placeholder="B08GJWJ5B2"
                   />
                   {/* ASIN入力プレビュー */}
@@ -714,7 +931,7 @@ export default function AdminPage() {
                   label="ページ数"
                   type="number"
                   value={formData.page_count}
-                  onChange={(e) => setFormData({...formData, page_count: e.target.value})}
+                  onChange={(e) => handleFieldChange('page_count', e.target.value, 'ページ数')}
                   placeholder="320"
                 />
 
@@ -723,7 +940,7 @@ export default function AdminPage() {
                   type="number"
                   step="0.01"
                   value={formData.price}
-                  onChange={(e) => setFormData({...formData, price: e.target.value})}
+                  onChange={(e) => handleFieldChange('price', e.target.value, '価格')}
                   placeholder="1540"
                 />
               </div>
@@ -734,7 +951,7 @@ export default function AdminPage() {
                 </label>
                 <textarea
                   value={formData.description}
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  onChange={(e) => handleFieldChange('description', e.target.value, '説明・あらすじ')}
                   className="w-full px-4 py-3 rounded-xl border border-ios-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-ios-blue/50 focus:border-ios-blue"
                   rows={4}
                   placeholder="この本の内容や魅力を簡潔に説明してください..."
@@ -742,11 +959,13 @@ export default function AdminPage() {
               </div>
 
               <div className="flex space-x-4">
-                <Button type="submit" variant="primary">
-                  {editingBook ? '更新する' : '追加する'}
-                </Button>
+                {!editingBook && (
+                  <Button type="submit" variant="primary">
+                    追加する
+                  </Button>
+                )}
                 <Button type="button" variant="outline" onClick={resetForm}>
-                  キャンセル
+                  {editingBook ? '編集を終了' : 'キャンセル'}
                 </Button>
               </div>
             </form>

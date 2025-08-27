@@ -59,9 +59,9 @@ export default function AdminPage() {
     console.log(logMessage);
   };
 
-  // 自動保存機能
-  const autoSave = async (fieldName: string) => {
-    addDebugLog(`autoSave関数呼び出し: fieldName=${fieldName}, editingBook=${editingBook?.id}, isSaving=${isSaving}`);
+  // 自動保存機能（フォームデータを指定）
+  const autoSaveWithData = async (fieldName: string, dataToSave: typeof formData) => {
+    addDebugLog(`autoSaveWithData関数呼び出し: fieldName=${fieldName}, editingBook=${editingBook?.id}, isSaving=${isSaving}`);
     
     if (!editingBook || isSaving) {
       addDebugLog(`自動保存スキップ: editingBook=${!!editingBook}, isSaving=${isSaving}`);
@@ -91,15 +91,15 @@ export default function AdminPage() {
       }
 
       const bookData = {
-        title: formData.title,
-        author: formData.author,
-        genre_tags: formData.genre_tags,
-        amazon_link: formData.amazon_link,
-        summary_link: formData.summary_link || null,
-        cover_image_url: formData.asin ? buildCoverImageUrl(formData.asin) : null,
-        description: formData.description || null,
-        page_count: formData.page_count ? parseInt(formData.page_count) : null,
-        price: formData.price ? parseFloat(formData.price) : null
+        title: dataToSave.title,
+        author: dataToSave.author,
+        genre_tags: dataToSave.genre_tags,
+        amazon_link: dataToSave.amazon_link,
+        summary_link: dataToSave.summary_link || null,
+        cover_image_url: dataToSave.asin ? buildCoverImageUrl(dataToSave.asin) : null,
+        description: dataToSave.description || null,
+        page_count: dataToSave.page_count ? parseInt(dataToSave.page_count) : null,
+        price: dataToSave.price ? parseFloat(dataToSave.price) : null
       };
 
       addDebugLog(`更新データ: ${JSON.stringify(bookData, null, 2)}`);
@@ -158,13 +158,21 @@ export default function AdminPage() {
     }
   };
 
+  // 自動保存機能（現在のformDataを使用）
+  const autoSave = async (fieldName: string) => {
+    return autoSaveWithData(fieldName, formData);
+  };
+
   // デバウンス用のタイマーを管理
   const debounceTimers = React.useRef<{[key: string]: NodeJS.Timeout}>({});
 
   // 入力フィールドのハンドラー（自動保存付き）
   const handleFieldChange = (field: string, value: any, fieldDisplayName: string) => {
     addDebugLog(`フィールド変更: ${field} = ${value}, 編集モード: ${!!editingBook}`);
-    setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // フォームデータを更新
+    const newFormData = { ...formData, [field]: value };
+    setFormData(newFormData);
     
     // 編集モード時のみ自動保存
     if (editingBook) {
@@ -179,7 +187,7 @@ export default function AdminPage() {
       // デバウンス処理（500ms後に自動保存）
       debounceTimers.current[field] = setTimeout(() => {
         addDebugLog(`デバウンス完了、自動保存実行: ${field} (${fieldDisplayName})`);
-        autoSave(fieldDisplayName);
+        autoSaveWithData(fieldDisplayName, newFormData);
         delete debounceTimers.current[field];
       }, 500);
     } else {
@@ -194,7 +202,10 @@ export default function AdminPage() {
       : [...formData.genre_tags, tagName];
     
     addDebugLog(`タグ変更: ${tagName}, 新しいタグ配列: [${newTags.join(', ')}], 編集モード: ${!!editingBook}`);
-    setFormData(prev => ({ ...prev, genre_tags: newTags }));
+    
+    // フォームデータを更新
+    const newFormData = { ...formData, genre_tags: newTags };
+    setFormData(newFormData);
     
     // 編集モード時のみ自動保存
     if (editingBook) {
@@ -208,7 +219,7 @@ export default function AdminPage() {
       
       debounceTimers.current['genre_tags'] = setTimeout(() => {
         addDebugLog(`タグ変更デバウンス完了、自動保存実行`);
-        autoSave('ジャンルタグ');
+        autoSaveWithData('ジャンルタグ', newFormData);
         delete debounceTimers.current['genre_tags'];
       }, 500);
     } else {

@@ -29,7 +29,7 @@ export default function AdminPage() {
   });
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [showDebugConsole, setShowDebugConsole] = useState(false);
+  const [showDebugConsole, setShowDebugConsole] = useState(true);
   const [debugLogs, setDebugLogs] = useState<string[]>([]);
   const [isTagAccordionOpen, setIsTagAccordionOpen] = useState(false);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
@@ -61,16 +61,23 @@ export default function AdminPage() {
 
   // 自動保存機能
   const autoSave = async (fieldName: string) => {
-    if (!editingBook || isSaving) return;
+    addDebugLog(`autoSave関数呼び出し: fieldName=${fieldName}, editingBook=${editingBook?.id}, isSaving=${isSaving}`);
+    
+    if (!editingBook || isSaving) {
+      addDebugLog(`自動保存スキップ: editingBook=${!!editingBook}, isSaving=${isSaving}`);
+      return;
+    }
     
     setIsSaving(true);
     setAutoSaveStatus('saving');
     setAutoSaveMessage('保存中...');
-    addDebugLog(`自動保存開始: ${fieldName}`);
+    addDebugLog(`自動保存開始: ${fieldName}, 書籍ID: ${editingBook.id}`);
 
     try {
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      
+      addDebugLog(`Supabase設定確認: URL=${supabaseUrl ? 'あり' : 'なし'}, Key=${supabaseAnonKey ? 'あり' : 'なし'}`);
       
       if (!supabaseUrl || !supabaseAnonKey || supabaseUrl === 'your_supabase_url' || supabaseUrl === 'https://placeholder.supabase.co') {
         setAutoSaveStatus('error');
@@ -95,14 +102,23 @@ export default function AdminPage() {
         price: formData.price ? parseFloat(formData.price) : null
       };
 
-      const { error } = await supabase
+      addDebugLog(`更新データ: ${JSON.stringify(bookData, null, 2)}`);
+
+      const { data, error, count } = await supabase
         .from('books')
         .update(bookData)
-        .eq('id', editingBook.id);
+        .eq('id', editingBook.id)
+        .select();
+
+      addDebugLog(`Supabase更新結果: data=${data ? JSON.stringify(data) : 'null'}, error=${error ? error.message : 'null'}, count=${count}`);
 
       if (error) {
-        addDebugLog(`自動保存エラー: ${error.message}`);
+        addDebugLog(`自動保存エラー: ${error.message}, code: ${error.code}, details: ${error.details}`);
         throw error;
+      }
+
+      if (!data || data.length === 0) {
+        addDebugLog('警告: 更新は成功したがデータが返されませんでした');
       }
 
       // ローカル状態も更新
@@ -113,6 +129,8 @@ export default function AdminPage() {
             : book
         )
       );
+
+      addDebugLog(`ローカル状態更新完了`);
 
       setAutoSaveStatus('saved');
       setAutoSaveMessage(`${fieldName}を自動保存しました`);
@@ -136,6 +154,7 @@ export default function AdminPage() {
       }, 3000);
     } finally {
       setIsSaving(false);
+      addDebugLog(`自動保存処理終了: ${fieldName}`);
     }
   };
 
@@ -144,20 +163,27 @@ export default function AdminPage() {
 
   // 入力フィールドのハンドラー（自動保存付き）
   const handleFieldChange = (field: string, value: any, fieldDisplayName: string) => {
+    addDebugLog(`フィールド変更: ${field} = ${value}, 編集モード: ${!!editingBook}`);
     setFormData(prev => ({ ...prev, [field]: value }));
     
     // 編集モード時のみ自動保存
     if (editingBook) {
+      addDebugLog(`デバウンスタイマー設定: ${field} (${fieldDisplayName})`);
+      
       // 前のタイマーをクリア
       if (debounceTimers.current[field]) {
         clearTimeout(debounceTimers.current[field]);
+        addDebugLog(`前のタイマーをクリア: ${field}`);
       }
       
       // デバウンス処理（500ms後に自動保存）
       debounceTimers.current[field] = setTimeout(() => {
+        addDebugLog(`デバウンス完了、自動保存実行: ${field} (${fieldDisplayName})`);
         autoSave(fieldDisplayName);
         delete debounceTimers.current[field];
       }, 500);
+    } else {
+      addDebugLog(`編集モードではないため自動保存をスキップ`);
     }
   };
 
@@ -167,19 +193,26 @@ export default function AdminPage() {
       ? formData.genre_tags.filter(t => t !== tagName)
       : [...formData.genre_tags, tagName];
     
+    addDebugLog(`タグ変更: ${tagName}, 新しいタグ配列: [${newTags.join(', ')}], 編集モード: ${!!editingBook}`);
     setFormData(prev => ({ ...prev, genre_tags: newTags }));
     
     // 編集モード時のみ自動保存
     if (editingBook) {
+      addDebugLog(`タグ変更デバウンスタイマー設定`);
+      
       // 前のタイマーをクリア
       if (debounceTimers.current['genre_tags']) {
         clearTimeout(debounceTimers.current['genre_tags']);
+        addDebugLog(`前のタグタイマーをクリア`);
       }
       
       debounceTimers.current['genre_tags'] = setTimeout(() => {
+        addDebugLog(`タグ変更デバウンス完了、自動保存実行`);
         autoSave('ジャンルタグ');
         delete debounceTimers.current['genre_tags'];
       }, 500);
+    } else {
+      addDebugLog(`編集モードではないためタグ自動保存をスキップ`);
     }
   };
 
@@ -502,6 +535,7 @@ export default function AdminPage() {
   };
 
   const handleEdit = (book: Book) => {
+    addDebugLog(`編集モード開始: 書籍ID=${book.id}, タイトル=${book.title}`);
     setEditingBook(book);
     setFormData({
       title: book.title,
@@ -515,6 +549,7 @@ export default function AdminPage() {
       price: book.price?.toString() ?? ''
     });
     setShowForm(true);
+    addDebugLog(`編集フォーム表示: editingBook=${book.id}`);
   };
 
   const handleDelete = async (bookId: string) => {
@@ -563,6 +598,15 @@ export default function AdminPage() {
   };
 
   const resetForm = () => {
+    addDebugLog(`フォームリセット: 編集モード終了=${!!editingBook}`);
+    
+    // 保留中のタイマーをクリア
+    Object.values(debounceTimers.current).forEach(timer => {
+      clearTimeout(timer);
+    });
+    debounceTimers.current = {};
+    addDebugLog(`保留中のタイマーをクリア`);
+    
     setFormData({
       title: '',
       author: '',
@@ -576,6 +620,11 @@ export default function AdminPage() {
     });
     setEditingBook(null);
     setShowForm(false);
+    
+    // 自動保存ステータスもクリア
+    setAutoSaveStatus('idle');
+    setAutoSaveMessage(null);
+    setIsSaving(false);
   };
 
 

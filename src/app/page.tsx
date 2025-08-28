@@ -174,7 +174,7 @@ export default function Home() {
           </ScrollAnimatedSection>
           
           <ScrollAnimatedSection animationType="fade-in" delay={200}>
-            <p className="text-xl font-light opacity-90 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xl font-light text-white max-w-2xl mx-auto leading-relaxed">
               たった1分で、あなたの人生を変える一冊に出会えるかもしれません。
             </p>
           </ScrollAnimatedSection>

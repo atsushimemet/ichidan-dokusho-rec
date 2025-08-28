@@ -667,6 +667,11 @@ export default function AdminPage() {
               </p>
             </div>
             <div className="flex space-x-4 justify-end">
+              <Link href="/admin/stores">
+                <Button variant="secondary" size="sm" className="px-3 w-10">
+                  🏪
+                </Button>
+              </Link>
               <Link href="/admin/tags">
                 <Button variant="secondary" size="sm" className="px-3 w-10">
                   🏷️

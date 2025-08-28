@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import ManagementSelector from '@/components/admin/ManagementSelector';
 import { Archive } from '@/types';
 import { getArchives, createArchive, updateArchive, deleteArchive } from '@/lib/archives';
 
@@ -151,16 +153,50 @@ export default function AdminArchivesPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-br from-ios-gray-50 to-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="min-h-screen bg-gradient-to-br from-ios-blue/5 via-white to-ios-purple/5 px-4 py-8">
+        <div className="max-w-7xl mx-auto">
           {/* ヘッダー */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-ios-gray-800 mb-2">
-              アーカイブ管理
-            </h1>
-            <p className="text-ios-gray-600">
-              Good Archivesの記事を管理できます
-            </p>
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <h1 className="text-3xl font-bold text-ios-gray-800">アーカイブ管理</h1>
+                <p className="text-ios-gray-600 mt-2">
+                  関連記事・コンテンツを管理
+                </p>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <ManagementSelector currentEntity="archives" compact />
+                
+                <Link href="/admin/tags">
+                  <Button variant="secondary" size="sm" className="px-3 w-10" title="タグマスター管理">
+                    🏷️
+                  </Button>
+                </Link>
+                
+                <Link href="/admin/mappings">
+                  <Button variant="secondary" size="sm" className="px-3 w-10" title="質問マッピング管理">
+                    🔗
+                  </Button>
+                </Link>
+                
+                <Link href="/">
+                  <Button variant="outline" size="sm" className="px-3 w-10" title="ホームに戻る">
+                    🏠
+                  </Button>
+                </Link>
+                
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => setShowForm(!showForm)}
+                  className="px-3 w-10"
+                  title={showForm ? '戻る' : '新しい記事を追加'}
+                >
+                  {showForm ? '←' : '📰'}
+                </Button>
+              </div>
+            </div>
           </div>
 
           {/* 成功メッセージ */}

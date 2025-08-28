@@ -6,6 +6,7 @@ import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import ManagementSelector from '@/components/admin/ManagementSelector';
 import { supabase } from '@/lib/supabase';
 import { QuestionMapping, GenreTag } from '@/types';
 import { questions } from '@/data/questions';
@@ -259,41 +260,35 @@ export default function MappingsManagementPage() {
         <div className="max-w-7xl mx-auto">
         {/* ヘッダー */}
         <div className="mb-8">
-          <div>
-            <div className="mb-4">
-              <h1 className="text-3xl font-bold text-ios-gray-800">
-                質問マッピング管理
-              </h1>
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-ios-gray-800">質問マッピング管理</h1>
               <p className="text-ios-gray-600 mt-2">
-                目的とジャンルの選択肢とタグのマッピングを管理し、レコメンドロジックを調整できます
+                質問とタグの関連付けを管理し、レコメンドロジックを調整
               </p>
             </div>
-            <div className="flex space-x-4 justify-end">
-              <Link href="/admin">
-                <Button variant="outline" size="sm" className="px-3 w-10">
-                  ←
-                </Button>
-              </Link>
+            
+            <div className="flex items-center space-x-2">
+              <ManagementSelector compact />
+              
               <Link href="/admin/tags">
-                <Button variant="secondary" size="sm" className="px-3 w-10">
+                <Button variant="secondary" size="sm" className="px-3 w-10" title="タグマスター管理">
                   🏷️
                 </Button>
               </Link>
+              
               <Link href="/">
-                <Button variant="outline" size="sm" className="px-3 w-10">
+                <Button variant="outline" size="sm" className="px-3 w-10" title="ホームに戻る">
                   🏠
                 </Button>
               </Link>
-              <Link href="/admin">
-                <Button variant="primary" size="sm" className="px-3 w-10">
-                  📚
-                </Button>
-              </Link>
+              
               <Button
                 variant="primary"
                 size="sm"
                 onClick={() => setShowForm(!showForm)}
                 className="px-3 w-10"
+                title={showForm ? '戻る' : '新しいマッピングを追加'}
               >
                 {showForm ? '←' : '🔗'}
               </Button>

@@ -93,3 +93,43 @@ export interface Archive {
   created_at: string;
   updated_at: string;
 }
+
+// 管理対象の共通型定義
+export type ManagementEntityType = 'books' | 'stores' | 'archives';
+
+export interface ManagementEntityConfig {
+  type: ManagementEntityType;
+  name: string;
+  icon: string;
+  description: string;
+  path: string;
+  color: string;
+}
+
+// 管理対象のメタデータ
+export const MANAGEMENT_ENTITIES: Record<ManagementEntityType, ManagementEntityConfig> = {
+  books: {
+    type: 'books',
+    name: '書籍管理',
+    icon: '📚',
+    description: 'レコメンドシステムの書籍データを管理',
+    path: '/admin',
+    color: 'blue'
+  },
+  stores: {
+    type: 'stores',
+    name: '店舗管理',
+    icon: '🏪',
+    description: '書店・本屋の情報を管理',
+    path: '/admin/stores',
+    color: 'green'
+  },
+  archives: {
+    type: 'archives',
+    name: 'アーカイブ管理',
+    icon: '📰',
+    description: '関連記事・コンテンツを管理',
+    path: '/admin/archives',
+    color: 'purple'
+  }
+};

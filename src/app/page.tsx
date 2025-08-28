@@ -18,20 +18,20 @@ export default function Home() {
           {/* メインタイトル */}
           <div className="space-y-6 md:space-y-8 lg:space-y-12">
             <div className="space-y-4">
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-light text-ios-gray-900 leading-tight tracking-tight text-reveal">
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-light text-ios-gray-900 leading-tight tracking-tight">
                 あなたにぴったりの
                 <span className="block font-medium text-ios-blue">一冊を見つけよう</span>
               </h1>
-              <div className="w-24 h-1 bg-gradient-to-r from-ios-blue to-ios-purple mx-auto rounded-full line-draw"></div>
+              <div className="w-24 h-1 bg-gradient-to-r from-ios-blue to-ios-purple mx-auto rounded-full"></div>
             </div>
-            <p className="text-lg md:text-xl lg:text-2xl text-ios-gray-600 max-w-3xl mx-auto leading-relaxed font-light minimal-fade-in" style={{animationDelay: '0.8s'}}>
+            <p className="text-lg md:text-xl lg:text-2xl text-ios-gray-600 max-w-3xl mx-auto leading-relaxed font-light">
               たった2つの質問に答えるだけで、<br className="hidden md:block" />
               あなたの嗜好に合った最適な書籍をレコメンドします
             </p>
           </div>
 
           {/* CTAボタン */}
-          <div className="space-y-4 minimal-scale-in" style={{animationDelay: '1.2s'}}>
+          <div className="space-y-4">
             <Link
               href="/questions"
               className="group inline-flex items-center gap-3 bg-ios-blue text-white text-lg md:text-xl px-8 md:px-12 py-4 md:py-5 rounded-full hover:bg-ios-blue/90 transition-all duration-500 ease-out hover:scale-105 shadow-lg hover:shadow-xl"
@@ -41,7 +41,7 @@ export default function Home() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
             </Link>
-            <p className="text-sm text-ios-gray-500 font-light minimal-fade-in" style={{animationDelay: '1.5s'}}>
+            <p className="text-sm text-ios-gray-500 font-light">
               所要時間: 約30秒
             </p>
           </div>

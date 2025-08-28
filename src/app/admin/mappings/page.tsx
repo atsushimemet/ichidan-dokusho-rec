@@ -7,6 +7,7 @@ import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import ManagementSelector from '@/components/admin/ManagementSelector';
+import DropdownMenu from '@/components/ui/DropdownMenu';
 import { supabase } from '@/lib/supabase';
 import { QuestionMapping, GenreTag } from '@/types';
 import { questions } from '@/data/questions';
@@ -271,27 +272,38 @@ export default function MappingsManagementPage() {
             <div className="flex items-center space-x-2">
               <ManagementSelector compact />
               
-              <Link href="/admin/tags">
-                <Button variant="secondary" size="sm" className="px-3 w-10" title="タグマスター管理">
-                  🏷️
-                </Button>
-              </Link>
-              
-              <Link href="/">
-                <Button variant="outline" size="sm" className="px-3 w-10" title="ホームに戻る">
-                  🏠
-                </Button>
-              </Link>
-              
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => setShowForm(!showForm)}
-                className="px-3 w-10"
-                title={showForm ? '戻る' : '新しいマッピングを追加'}
-              >
-                {showForm ? '←' : '🔗'}
-              </Button>
+              <DropdownMenu
+                trigger={
+                  <button className="flex items-center space-x-2 px-4 py-2 bg-ios-blue text-white rounded-lg hover:bg-ios-blue/90 transition-colors duration-200 shadow-sm">
+                    <span>アクション</span>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                }
+                items={[
+                  {
+                    type: 'button',
+                    label: showForm ? 'フォームを閉じる' : '新しいマッピングを追加',
+                    icon: showForm ? '←' : '🔗',
+                    onClick: () => setShowForm(!showForm),
+                    variant: 'primary'
+                  },
+                  {
+                    type: 'link',
+                    href: '/admin/tags',
+                    label: 'タグマスター管理',
+                    icon: '🏷️'
+                  },
+                  {
+                    type: 'link',
+                    href: '/',
+                    label: 'ホームに戻る',
+                    icon: '🏠'
+                  }
+                ]}
+                align="right"
+              />
             </div>
           </div>
         </div>

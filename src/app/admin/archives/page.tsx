@@ -7,6 +7,7 @@ import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import ManagementSelector from '@/components/admin/ManagementSelector';
+import { AdminActionsDropdown } from '@/components/ui/DropdownMenu';
 import { Archive } from '@/types';
 import { getArchives, createArchive, updateArchive, deleteArchive } from '@/lib/archives';
 
@@ -168,33 +169,12 @@ export default function AdminArchivesPage() {
               <div className="flex items-center space-x-2">
                 <ManagementSelector currentEntity="archives" compact />
                 
-                <Link href="/admin/tags">
-                  <Button variant="secondary" size="sm" className="px-3 w-10" title="タグマスター管理">
-                    🏷️
-                  </Button>
-                </Link>
-                
-                <Link href="/admin/mappings">
-                  <Button variant="secondary" size="sm" className="px-3 w-10" title="質問マッピング管理">
-                    🔗
-                  </Button>
-                </Link>
-                
-                <Link href="/">
-                  <Button variant="outline" size="sm" className="px-3 w-10" title="ホームに戻る">
-                    🏠
-                  </Button>
-                </Link>
-                
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => setShowForm(!showForm)}
-                  className="px-3 w-10"
-                  title={showForm ? '戻る' : '新しい記事を追加'}
-                >
-                  {showForm ? '←' : '📰'}
-                </Button>
+                <AdminActionsDropdown
+                  onToggleForm={() => setShowForm(!showForm)}
+                  showForm={showForm}
+                  currentEntity="archives"
+                  hasDebugFeature={false}
+                />
               </div>
             </div>
           </div>

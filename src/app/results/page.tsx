@@ -252,7 +252,7 @@ function ResultsContent() {
                       }}
                     >
                       <Button variant="primary" className="w-full text-sm">
-                        📚 Amazon PR
+                        📚 Amazon (PR)
                       </Button>
                     </a>
                     {result.book.summary_link ? (

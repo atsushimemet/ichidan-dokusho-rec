@@ -176,10 +176,9 @@ export default function BookSlider({ title, subtitle, count = 8 }: BookSliderPro
                           href={book.amazon_link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex-1 bg-ios-blue text-white text-center py-2 px-3 rounded-lg text-xs font-medium hover:bg-ios-blue/90 transition-colors relative"
+                          className="flex-1 bg-ios-blue text-white text-center py-2 px-3 rounded-lg text-xs font-medium hover:bg-ios-blue/90 transition-colors"
                         >
-                          <span className="block">Amazon</span>
-                          <span className="text-[10px] opacity-80">PR</span>
+                          Amazon (PR)
                         </Link>
                         {book.summary_link && (
                           <Link

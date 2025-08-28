@@ -474,7 +474,7 @@ export default function SearchPage() {
                           }}
                           className="flex-1"
                         >
-                          📚 Amazon PR
+                          📚 Amazon (PR)
                         </Button>
                       </div>
                     </div>

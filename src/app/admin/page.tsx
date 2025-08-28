@@ -1094,7 +1094,7 @@ export default function AdminPage() {
                                rel="noopener noreferrer" 
                                className="underline hover:no-underline font-medium"
                              >
-                               Amazon PR
+                               Amazon (PR)
                              </a>
                            </div>
                          )}

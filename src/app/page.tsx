@@ -18,7 +18,7 @@ export default function Home() {
           {/* メインタイトル */}
           <div className="space-y-6 md:space-y-8 lg:space-y-12">
             <div className="space-y-4">
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-light text-ios-gray-900 leading-tight tracking-tight">
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-light text-ios-gray-800 leading-tight tracking-tight">
                 あなたにぴったりの
                 <span className="block font-medium text-ios-blue">一冊を見つけよう</span>
               </h1>
@@ -70,7 +70,7 @@ export default function Home() {
       <section className="py-24 px-6 bg-white">
         <div className="max-w-6xl mx-auto">
           <ScrollAnimatedSection animationType="slide-up" className="text-center mb-16">
-            <h2 className="font-light text-ios-gray-900 tracking-tight mb-6">
+            <h2 className="font-light text-ios-gray-800 tracking-tight mb-6">
               シンプルなステップで理想の一冊へ
             </h2>
             <p className="text-xl font-light text-ios-gray-600 max-w-3xl mx-auto leading-relaxed">
@@ -82,7 +82,7 @@ export default function Home() {
             <ScrollAnimatedSection animationType="slide-in-left" delay={0}>
               <div className="text-center p-8 rounded-2xl bg-gradient-to-br from-ios-blue/5 to-ios-blue/10 hover-lift">
                 <div className="text-6xl mb-6 bounce-gentle">🎯</div>
-                <h3 className="text-2xl font-light text-ios-gray-900 tracking-tight mb-4">目的を選ぶ</h3>
+                <h3 className="text-2xl font-light text-ios-gray-800 tracking-tight mb-4">目的を選ぶ</h3>
                 <p className="font-light text-ios-gray-600 leading-relaxed">
                   知識を広げたい、スキルアップしたい、自己成長したいなど、あなたの読書目的を教えてください。
                 </p>
@@ -92,7 +92,7 @@ export default function Home() {
             <ScrollAnimatedSection animationType="slide-up" delay={200}>
               <div className="text-center p-8 rounded-2xl bg-gradient-to-br from-ios-purple/5 to-ios-purple/10 hover-lift">
                 <div className="text-6xl mb-6 bounce-gentle" style={{animationDelay: '0.5s'}}>📚</div>
-                <h3 className="text-2xl font-light text-ios-gray-900 tracking-tight mb-4">ジャンルを選ぶ</h3>
+                <h3 className="text-2xl font-light text-ios-gray-800 tracking-tight mb-4">ジャンルを選ぶ</h3>
                 <p className="font-light text-ios-gray-600 leading-relaxed">
                   自己啓発、ビジネス、心理学、哲学など、興味のあるジャンルを自由に選択できます。
                 </p>
@@ -102,7 +102,7 @@ export default function Home() {
             <ScrollAnimatedSection animationType="slide-in-right" delay={400}>
               <div className="text-center p-8 rounded-2xl bg-gradient-to-br from-ios-green/5 to-ios-green/10 hover-lift">
                 <div className="text-6xl mb-6 bounce-gentle" style={{animationDelay: '1s'}}>✨</div>
-                <h3 className="text-2xl font-light text-ios-gray-900 tracking-tight mb-4">推薦を受け取る</h3>
+                <h3 className="text-2xl font-light text-ios-gray-800 tracking-tight mb-4">推薦を受け取る</h3>
                 <p className="font-light text-ios-gray-600 leading-relaxed">
                   AIがあなたの回答を分析し、最適な書籍をマッチングスコアとともに推薦します。
                 </p>
@@ -116,7 +116,7 @@ export default function Home() {
       <section className="py-24 px-6 bg-gradient-to-br from-ios-blue/5 via-white to-ios-purple/5">
         <div className="max-w-6xl mx-auto text-center">
           <ScrollAnimatedSection animationType="slide-up" className="mb-16">
-            <h2 className="font-light text-ios-gray-900 tracking-tight">
+            <h2 className="font-light text-ios-gray-800 tracking-tight">
               信頼される数字
             </h2>
           </ScrollAnimatedSection>

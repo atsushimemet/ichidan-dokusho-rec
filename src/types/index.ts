@@ -70,3 +70,14 @@ export interface QuestionMapping {
   created_at: string;
   updated_at: string;
 }
+
+// 店舗型定義
+export interface Store {
+  id: string;
+  name: string;
+  sns_link: string | null;
+  google_map_link: string | null;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+}

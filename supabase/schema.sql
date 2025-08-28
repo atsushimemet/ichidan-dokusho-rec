@@ -157,6 +157,47 @@ INSERT INTO question_mappings (question_id, question_type, option_value, mapped_
 ('genre', 'multiple', '健康', ARRAY['健康', 'ライフスタイル']),
 ('genre', 'multiple', '小説', ARRAY['小説', '文学', 'エンタメ']);
 
+-- 店舗テーブル
+CREATE TABLE IF NOT EXISTS stores (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  sns_link TEXT,
+  google_map_link TEXT,
+  description TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 店舗テーブルの更新日時自動更新トリガー
+CREATE TRIGGER update_stores_updated_at 
+    BEFORE UPDATE ON stores 
+    FOR EACH ROW 
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- 店舗用インデックス
+CREATE INDEX IF NOT EXISTS idx_stores_name ON stores (name);
+
+-- 店舗テーブルのRLS設定
+ALTER TABLE stores ENABLE ROW LEVEL SECURITY;
+
+-- Stores: 読み取り権限（全ユーザー）
+CREATE POLICY "Stores are viewable by everyone" 
+ON stores FOR SELECT 
+USING (true);
+
+-- Stores: 書き込み権限（認証済みユーザーのみ）
+CREATE POLICY "Stores are editable by authenticated users" 
+ON stores FOR ALL 
+USING (auth.role() = 'authenticated');
+
+-- 店舗サンプルデータの挿入
+INSERT INTO stores (name, sns_link, google_map_link, description) VALUES
+('青山ブックセンター本店', 'https://twitter.com/aoyamabc', 'https://maps.google.com/?q=青山ブックセンター本店', 'アート、デザイン、建築書に強い青山の老舗書店。'),
+('蔦屋書店 代官山店', 'https://twitter.com/tsutaya_daikanyama', 'https://maps.google.com/?q=蔦屋書店代官山店', 'ライフスタイル提案型書店。カフェも併設された文化の発信地。'),
+('SHIBUYA TSUTAYA', 'https://twitter.com/shibuya_tsutaya', 'https://maps.google.com/?q=SHIBUYA TSUTAYA', '渋谷の中心地にある大型書店。豊富な品揃えが自慢。'),
+('丸善 丸の内本店', 'https://twitter.com/maruzen_info', 'https://maps.google.com/?q=丸善丸の内本店', '明治2年創業の老舗書店。ビジネス書や専門書に定評。'),
+('紀伊國屋書店 新宿本店', 'https://twitter.com/kinokuniya_jp', 'https://maps.google.com/?q=紀伊國屋書店新宿本店', '新宿の老舗大型書店。あらゆるジャンルを網羅。');
+
 -- サンプルデータの挿入
 INSERT INTO books (title, author, genre_tags, amazon_link, description, page_count, price) VALUES
 ('人を動かす', 'デール・カーネギー', ARRAY['自己啓発', 'コミュニケーション', 'ビジネス'], 'https://amazon.co.jp/dp/4422100513', '人間関係の古典的名著。人を動かす3つの基本原則から始まり、人に好かれる6つの原則、人を説得する12の原則などを具体的なエピソードとともに紹介。', 320, 1540),

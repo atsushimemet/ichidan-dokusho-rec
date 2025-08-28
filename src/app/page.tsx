@@ -3,6 +3,8 @@ import ParticleBackground from "@/components/ParticleBackground";
 import ScrollAnimatedSection from "@/components/ScrollAnimatedSection";
 import CountUpNumber from "@/components/CountUpNumber";
 import FloatingElements from "@/components/FloatingElements";
+import BookSlider from "@/components/BookSlider";
+import StoreSlider from "@/components/StoreSlider";
 
 export default function Home() {
   return (
@@ -38,6 +40,24 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Book Slider Section */}
+      <ScrollAnimatedSection animationType="fade-in">
+        <BookSlider 
+          title="おすすめの書籍"
+          subtitle="あなたの成長をサポートする厳選された書籍をご紹介します"
+          count={8}
+        />
+      </ScrollAnimatedSection>
+
+      {/* Store Slider Section */}
+      <ScrollAnimatedSection animationType="fade-in">
+        <StoreSlider 
+          title="素敵な本屋さん"
+          subtitle="心地よい読書体験ができる本屋さんを見つけませんか"
+          count={8}
+        />
+      </ScrollAnimatedSection>
 
       {/* Features Section */}
       <section className="py-24 px-6 bg-white">
@@ -140,9 +160,9 @@ export default function Home() {
         
         <div className="max-w-4xl mx-auto text-center space-y-8 relative z-10">
           <ScrollAnimatedSection animationType="slide-up">
-            <h2 className="text-4xl md:text-5xl font-bold leading-tight">
+            <h2 className="text-4xl md:text-5xl font-bold leading-tight text-white drop-shadow-lg">
               あなたの次の一冊を
-              <span className="block holographic-text">今すぐ見つけませんか？</span>
+              <span className="block text-white font-extrabold text-shadow-strong">今すぐ見つけませんか？</span>
             </h2>
           </ScrollAnimatedSection>
           

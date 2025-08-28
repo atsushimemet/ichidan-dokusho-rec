@@ -161,6 +161,8 @@ INSERT INTO question_mappings (question_id, question_type, option_value, mapped_
 CREATE TABLE IF NOT EXISTS stores (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
+  prefecture VARCHAR(50),
+  city VARCHAR(100),
   sns_link TEXT,
   google_map_link TEXT,
   description TEXT,
@@ -176,6 +178,8 @@ CREATE TRIGGER update_stores_updated_at
 
 -- 店舗用インデックス
 CREATE INDEX IF NOT EXISTS idx_stores_name ON stores (name);
+CREATE INDEX IF NOT EXISTS idx_stores_prefecture ON stores (prefecture);
+CREATE INDEX IF NOT EXISTS idx_stores_city ON stores (city);
 
 -- 店舗テーブルのRLS設定
 ALTER TABLE stores ENABLE ROW LEVEL SECURITY;
@@ -191,12 +195,15 @@ ON stores FOR ALL
 USING (auth.role() = 'authenticated');
 
 -- 店舗サンプルデータの挿入
-INSERT INTO stores (name, sns_link, google_map_link, description) VALUES
-('青山ブックセンター本店', 'https://twitter.com/aoyamabc', 'https://maps.google.com/?q=青山ブックセンター本店', 'アート、デザイン、建築書に強い青山の老舗書店。'),
-('蔦屋書店 代官山店', 'https://twitter.com/tsutaya_daikanyama', 'https://maps.google.com/?q=蔦屋書店代官山店', 'ライフスタイル提案型書店。カフェも併設された文化の発信地。'),
-('SHIBUYA TSUTAYA', 'https://twitter.com/shibuya_tsutaya', 'https://maps.google.com/?q=SHIBUYA TSUTAYA', '渋谷の中心地にある大型書店。豊富な品揃えが自慢。'),
-('丸善 丸の内本店', 'https://twitter.com/maruzen_info', 'https://maps.google.com/?q=丸善丸の内本店', '明治2年創業の老舗書店。ビジネス書や専門書に定評。'),
-('紀伊國屋書店 新宿本店', 'https://twitter.com/kinokuniya_jp', 'https://maps.google.com/?q=紀伊國屋書店新宿本店', '新宿の老舗大型書店。あらゆるジャンルを網羅。');
+INSERT INTO stores (name, prefecture, city, sns_link, google_map_link, description) VALUES
+('青山ブックセンター本店', '東京都', '港区', 'https://twitter.com/aoyamabc', 'https://maps.google.com/?q=青山ブックセンター本店', 'アート、デザイン、建築書に強い青山の老舗書店。'),
+('蔦屋書店 代官山店', '東京都', '渋谷区', 'https://twitter.com/tsutaya_daikanyama', 'https://maps.google.com/?q=蔦屋書店代官山店', 'ライフスタイル提案型書店。カフェも併設された文化の発信地。'),
+('SHIBUYA TSUTAYA', '東京都', '渋谷区', 'https://twitter.com/shibuya_tsutaya', 'https://maps.google.com/?q=SHIBUYA TSUTAYA', '渋谷の中心地にある大型書店。豊富な品揃えが自慢。'),
+('丸善 丸の内本店', '東京都', '千代田区', 'https://twitter.com/maruzen_info', 'https://maps.google.com/?q=丸善丸の内本店', '明治2年創業の老舗書店。ビジネス書や専門書に定評。'),
+('紀伊國屋書店 新宿本店', '東京都', '新宿区', 'https://twitter.com/kinokuniya_jp', 'https://maps.google.com/?q=紀伊國屋書店新宿本店', '新宿の老舗大型書店。あらゆるジャンルを網羅。'),
+('有隣堂 横浜駅西口店', '神奈川県', '横浜市', 'https://twitter.com/yurindobooks', 'https://maps.google.com/?q=有隣堂横浜駅西口店', '横浜の老舗書店。地域密着型の品揃えが魅力。'),
+('TSUTAYA 横浜みなとみらい店', '神奈川県', '横浜市', 'https://twitter.com/tsutaya_mm', 'https://maps.google.com/?q=TSUTAYA横浜みなとみらい店', 'みなとみらいの景色を楽しみながら本が読める。'),
+('ブックファースト青葉台店', '神奈川県', '横浜市', 'https://twitter.com/bookfirst_aoba', 'https://maps.google.com/?q=ブックファースト青葉台店', '青葉台駅直結の便利な立地。幅広いジャンルの本を扱う。');
 
 -- サンプルデータの挿入
 INSERT INTO books (title, author, genre_tags, amazon_link, description, page_count, price) VALUES

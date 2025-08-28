@@ -122,6 +122,12 @@ export default function Home() {
             >
               🔍 書籍を検索
             </Link>
+            <Link
+              href="/stores"
+              className="inline-block bg-transparent border-2 border-white text-white text-xl font-bold px-12 py-4 rounded-full hover:bg-white hover:text-ios-blue transition-all duration-300"
+            >
+              📚 本屋さん検索
+            </Link>
           </div>
         </div>
       </section>

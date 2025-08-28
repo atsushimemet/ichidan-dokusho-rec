@@ -75,9 +75,9 @@ export default function BookSlider({ title, subtitle, count = 8 }: BookSliderPro
     <div className="py-16 bg-gradient-to-br from-ios-gray-50 via-white to-ios-blue/5">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-ios-gray-800 mb-4">{title}</h2>
+          <h2 className="text-3xl md:text-4xl font-light text-ios-gray-900 tracking-tight mb-4">{title}</h2>
           {subtitle && (
-            <p className="text-lg text-ios-gray-600 max-w-2xl mx-auto">{subtitle}</p>
+            <p className="text-lg font-light text-ios-gray-600 max-w-2xl mx-auto leading-relaxed">{subtitle}</p>
           )}
         </div>
         

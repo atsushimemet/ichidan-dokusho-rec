@@ -746,8 +746,9 @@ export default function AdminPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => setDebugLogs([])}
+                  title="ログクリア"
                 >
-                  ログクリア
+                  🗑️
                 </Button>
                 <Button
                   variant="outline"
@@ -758,8 +759,9 @@ export default function AdminPage() {
                       alert('ログをクリップボードにコピーしました');
                     });
                   }}
+                  title="ログコピー"
                 >
-                  ログコピー
+                  📋
                 </Button>
               </div>
             </div>

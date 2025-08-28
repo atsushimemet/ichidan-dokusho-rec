@@ -30,9 +30,26 @@ export default function AdminArchivesPage() {
     try {
       setIsLoading(true);
       // 実際のプロダクションではAPIから取得
-      // 現在はモックデータを使用
+      // 開発環境では、ローカルストレージから取得またはモックデータを使用
       await new Promise(resolve => setTimeout(resolve, 500)); // ローディングをシミュレート
-      setArchives([...mockArchives]);
+      
+      // ローカルストレージから更新されたデータを取得
+      const savedArchives = localStorage.getItem('admin_archives');
+      if (savedArchives) {
+        try {
+          const parsedArchives = JSON.parse(savedArchives);
+          setArchives(parsedArchives);
+        } catch (parseError) {
+          console.error('ローカルストレージのデータ解析エラー:', parseError);
+          // 解析エラーの場合はモックデータを使用
+          setArchives([...mockArchives]);
+          localStorage.setItem('admin_archives', JSON.stringify(mockArchives));
+        }
+      } else {
+        // 初回起動時はモックデータを使用
+        setArchives([...mockArchives]);
+        localStorage.setItem('admin_archives', JSON.stringify(mockArchives));
+      }
     } catch (err) {
       setError('アーカイブの読み込みに失敗しました');
       console.error('アーカイブ読み込みエラー:', err);
@@ -71,11 +88,13 @@ export default function AdminArchivesPage() {
         };
         
         // 実際のプロダクションではAPI呼び出し
-        setArchives(prev => 
-          prev.map(archive => 
-            archive.id === editingArchive.id ? updatedArchive : archive
-          )
+        const newArchivesList = archives.map(archive => 
+          archive.id === editingArchive.id ? updatedArchive : archive
         );
+        setArchives(newArchivesList);
+        
+        // ローカルストレージに保存（開発環境用）
+        localStorage.setItem('admin_archives', JSON.stringify(newArchivesList));
         
         setSuccessMessage('アーカイブが更新されました');
       } else {
@@ -90,7 +109,11 @@ export default function AdminArchivesPage() {
         };
         
         // 実際のプロダクションではAPI呼び出し
-        setArchives(prev => [newArchive, ...prev]);
+        const newArchivesList = [newArchive, ...archives];
+        setArchives(newArchivesList);
+        
+        // ローカルストレージに保存（開発環境用）
+        localStorage.setItem('admin_archives', JSON.stringify(newArchivesList));
         
         setSuccessMessage('アーカイブが作成されました');
       }
@@ -129,7 +152,12 @@ export default function AdminArchivesPage() {
     
     try {
       // 実際のプロダクションではAPI呼び出し
-      setArchives(prev => prev.filter(archive => archive.id !== id));
+      const newArchivesList = archives.filter(archive => archive.id !== id);
+      setArchives(newArchivesList);
+      
+      // ローカルストレージに保存（開発環境用）
+      localStorage.setItem('admin_archives', JSON.stringify(newArchivesList));
+      
       setSuccessMessage('アーカイブが削除されました');
       
       // 3秒後にメッセージを消去
@@ -148,6 +176,18 @@ export default function AdminArchivesPage() {
     setEditingArchive(null);
     setShowForm(false);
     setError(null);
+  };
+
+  const handleResetData = () => {
+    if (confirm('すべてのデータを初期状態にリセットしますか？この操作は取り消せません。')) {
+      setArchives([...mockArchives]);
+      localStorage.setItem('admin_archives', JSON.stringify(mockArchives));
+      setSuccessMessage('データを初期状態にリセットしました');
+      
+      setTimeout(() => {
+        setSuccessMessage(null);
+      }, 3000);
+    }
   };
 
   const filteredArchives = archives.filter(archive =>
@@ -208,17 +248,25 @@ export default function AdminArchivesPage() {
                 className="w-full"
               />
             </div>
-            <Button
-              onClick={() => {
-                setShowForm(true);
-                setEditingArchive(null);
-                setFormData({ title: '', link: '', description: '' });
-                setError(null);
-              }}
-              className="bg-gradient-to-r from-ios-blue to-ios-purple text-white px-6 py-2 rounded-lg hover:shadow-lg transition-all duration-300"
-            >
-              新規作成
-            </Button>
+            <div className="flex gap-3">
+              <Button
+                onClick={handleResetData}
+                className="bg-ios-gray-500 text-white px-4 py-2 rounded-lg hover:bg-ios-gray-600 transition-all duration-300"
+              >
+                リセット
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowForm(true);
+                  setEditingArchive(null);
+                  setFormData({ title: '', link: '', description: '' });
+                  setError(null);
+                }}
+                className="bg-gradient-to-r from-ios-blue to-ios-purple text-white px-6 py-2 rounded-lg hover:shadow-lg transition-all duration-300"
+              >
+                新規作成
+              </Button>
+            </div>
           </div>
 
           {/* フォーム */}

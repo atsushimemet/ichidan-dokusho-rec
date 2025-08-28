@@ -77,7 +77,20 @@ export const searchArchives = async (
   // 実際のAPIコールをシミュレート
   await new Promise(resolve => setTimeout(resolve, 300));
   
-  let filteredArchives = [...mockArchives];
+  // 管理画面で更新されたデータがあればそれを使用、なければモックデータ
+  let sourceArchives = [...mockArchives];
+  if (typeof window !== 'undefined') {
+    const savedArchives = localStorage.getItem('admin_archives');
+    if (savedArchives) {
+      try {
+        sourceArchives = JSON.parse(savedArchives);
+      } catch (error) {
+        console.error('ローカルストレージのデータ解析エラー:', error);
+      }
+    }
+  }
+  
+  let filteredArchives = [...sourceArchives];
   
   // クエリがある場合はフィルタリング
   if (query && query.trim()) {

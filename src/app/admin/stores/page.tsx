@@ -16,6 +16,8 @@ export default function AdminStoresPage() {
   const [editingStore, setEditingStore] = useState<Store | null>(null);
   const [formData, setFormData] = useState({
     name: '',
+    prefecture: '',
+    city: '',
     sns_link: '',
     google_map_link: '',
     description: ''
@@ -82,6 +84,8 @@ export default function AdminStoresPage() {
 
       const storeData = {
         name: dataToSave.name,
+        prefecture: dataToSave.prefecture || null,
+        city: dataToSave.city || null,
         sns_link: dataToSave.sns_link || null,
         google_map_link: dataToSave.google_map_link || null,
         description: dataToSave.description || null
@@ -194,6 +198,8 @@ export default function AdminStoresPage() {
           {
             id: '1',
             name: '青山ブックセンター本店',
+            prefecture: '東京都',
+            city: '港区',
             sns_link: 'https://twitter.com/aoyamabc',
             google_map_link: 'https://maps.google.com/?q=青山ブックセンター本店',
             description: 'アート、デザイン、建築書に強い青山の老舗書店。',
@@ -203,6 +209,8 @@ export default function AdminStoresPage() {
           {
             id: '2',
             name: '蔦屋書店 代官山店',
+            prefecture: '東京都',
+            city: '渋谷区',
             sns_link: 'https://twitter.com/tsutaya_daikanyama',
             google_map_link: 'https://maps.google.com/?q=蔦屋書店代官山店',
             description: 'ライフスタイル提案型書店。カフェも併設された文化の発信地。',
@@ -234,6 +242,8 @@ export default function AdminStoresPage() {
         {
           id: '1',
           name: '青山ブックセンター本店',
+          prefecture: '東京都',
+          city: '港区',
           sns_link: 'https://twitter.com/aoyamabc',
           google_map_link: 'https://maps.google.com/?q=青山ブックセンター本店',
           description: 'アート、デザイン、建築書に強い青山の老舗書店。',
@@ -268,6 +278,8 @@ export default function AdminStoresPage() {
     try {
       const storeData = {
         name: formData.name,
+        prefecture: formData.prefecture || null,
+        city: formData.city || null,
         sns_link: formData.sns_link || null,
         google_map_link: formData.google_map_link || null,
         description: formData.description || null
@@ -384,6 +396,8 @@ export default function AdminStoresPage() {
     setEditingStore(store);
     setFormData({
       name: store.name,
+      prefecture: store.prefecture ?? '',
+      city: store.city ?? '',
       sns_link: store.sns_link ?? '',
       google_map_link: store.google_map_link ?? '',
       description: store.description ?? ''
@@ -440,6 +454,8 @@ export default function AdminStoresPage() {
     
     setFormData({
       name: '',
+      prefecture: '',
+      city: '',
       sns_link: '',
       google_map_link: '',
       description: ''
@@ -630,6 +646,22 @@ export default function AdminStoresPage() {
                 placeholder="青山ブックセンター本店"
               />
               
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
+                  label="都道府県"
+                  value={formData.prefecture}
+                  onChange={(e) => handleFieldChange('prefecture', e.target.value, '都道府県')}
+                  placeholder="東京都"
+                />
+                
+                <Input
+                  label="市区町村"
+                  value={formData.city}
+                  onChange={(e) => handleFieldChange('city', e.target.value, '市区町村')}
+                  placeholder="港区"
+                />
+              </div>
+              
               <Input
                 label="SNSリンク"
                 value={formData.sns_link}
@@ -694,6 +726,15 @@ export default function AdminStoresPage() {
                           }}>
                         {store.name}
                       </h3>
+                      
+                      {/* 地域情報 */}
+                      {(store.prefecture || store.city) && (
+                        <div className="mb-2">
+                          <p className="text-xs text-ios-blue-600 font-medium">
+                            📍 {store.prefecture}{store.city && ` ${store.city}`}
+                          </p>
+                        </div>
+                      )}
                       
                       {/* 説明 */}
                       <div className="h-16 mb-2">

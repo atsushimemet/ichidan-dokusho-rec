@@ -75,6 +75,8 @@ export interface QuestionMapping {
 export interface Store {
   id: string;
   name: string;
+  prefecture: string | null;
+  city: string | null;
   sns_link: string | null;
   google_map_link: string | null;
   description: string | null;

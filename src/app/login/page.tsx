@@ -47,7 +47,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <Card className="p-8">
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-ios-gray-900 mb-2">
+            <h1 className="text-2xl font-bold text-ios-gray-800 mb-2">
               管理者ログイン
             </h1>
             <p className="text-ios-gray-600">

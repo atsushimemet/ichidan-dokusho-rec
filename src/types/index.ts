@@ -83,3 +83,13 @@ export interface Store {
   created_at: string;
   updated_at: string;
 }
+
+// アーカイブ記事型定義
+export interface Archive {
+  id: string;
+  title: string;
+  link: string;
+  description: string;
+  created_at: string;
+  updated_at: string;
+}

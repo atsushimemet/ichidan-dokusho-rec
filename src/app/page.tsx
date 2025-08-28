@@ -5,6 +5,7 @@ import CountUpNumber from "@/components/CountUpNumber";
 import FloatingElements from "@/components/FloatingElements";
 import BookSlider from "@/components/BookSlider";
 import StoreSlider from "@/components/StoreSlider";
+import ArchiveSlider from "@/components/ArchiveSlider";
 
 export default function Home() {
   return (
@@ -63,6 +64,15 @@ export default function Home() {
           title="素敵な本屋さん"
           subtitle="心地よい読書体験ができる本屋さんを見つけませんか"
           count={8}
+        />
+      </ScrollAnimatedSection>
+
+      {/* Archive Slider Section */}
+      <ScrollAnimatedSection animationType="fade-in">
+        <ArchiveSlider 
+          title="Good Archives"
+          subtitle="過去の本にまつわる貴重な記事やコンテンツをお楽しみください"
+          count={6}
         />
       </ScrollAnimatedSection>
 
@@ -198,6 +208,12 @@ export default function Home() {
                 className="inline-block bg-transparent border-2 border-white text-white text-xl font-bold px-12 py-4 rounded-full hover:bg-white hover:text-ios-blue transition-all duration-300 hover-lift"
               >
                 📚 本屋さん検索
+              </Link>
+              <Link
+                href="/archives"
+                className="inline-block bg-transparent border-2 border-white text-white text-xl font-bold px-12 py-4 rounded-full hover:bg-white hover:text-ios-blue transition-all duration-300 hover-lift"
+              >
+                📰 記事を読む
               </Link>
             </div>
           </ScrollAnimatedSection>

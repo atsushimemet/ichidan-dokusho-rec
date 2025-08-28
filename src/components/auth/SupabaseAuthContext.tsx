@@ -8,6 +8,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   login: (email: string, password: string) => Promise<boolean>;
+  register: (email: string, password: string) => Promise<{ success: boolean; message: string }>;
   logout: () => Promise<void>;
   isLoading: boolean;
 }
@@ -66,6 +67,37 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
     }
   };
 
+  const register = async (email: string, password: string): Promise<{ success: boolean; message: string }> => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      if (error) {
+        console.error('登録エラー:', error);
+        return { 
+          success: false, 
+          message: error.message === 'User already registered' 
+            ? 'このメールアドレスは既に登録されています' 
+            : 'ユーザー登録に失敗しました'
+        };
+      }
+
+      if (data.user && !data.user.email_confirmed_at) {
+        return { 
+          success: true, 
+          message: '確認メールを送信しました。メールを確認してアカウントを有効化してください。'
+        };
+      }
+
+      return { success: true, message: 'ユーザー登録が完了しました' };
+    } catch (error) {
+      console.error('登録処理エラー:', error);
+      return { success: false, message: '登録処理中にエラーが発生しました' };
+    }
+  };
+
   const logout = async (): Promise<void> => {
     try {
       const { error } = await supabase.auth.signOut();
@@ -78,7 +110,7 @@ export function SupabaseAuthProvider({ children }: { children: React.ReactNode }
   };
 
   return (
-    <SupabaseAuthContext.Provider value={{ user, session, login, logout, isLoading }}>
+    <SupabaseAuthContext.Provider value={{ user, session, login, register, logout, isLoading }}>
       {children}
     </SupabaseAuthContext.Provider>
   );

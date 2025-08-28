@@ -6,7 +6,7 @@ import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { Archive } from '@/types';
-import { mockArchives } from '@/data/archives';
+import { getArchives, createArchive, updateArchive, deleteArchive } from '@/lib/archives';
 
 export default function AdminArchivesPage() {
   const [archives, setArchives] = useState<Archive[]>([]);
@@ -29,27 +29,9 @@ export default function AdminArchivesPage() {
   const loadArchives = async () => {
     try {
       setIsLoading(true);
-      // 実際のプロダクションではAPIから取得
-      // 開発環境では、ローカルストレージから取得またはモックデータを使用
-      await new Promise(resolve => setTimeout(resolve, 500)); // ローディングをシミュレート
-      
-      // ローカルストレージから更新されたデータを取得
-      const savedArchives = localStorage.getItem('admin_archives');
-      if (savedArchives) {
-        try {
-          const parsedArchives = JSON.parse(savedArchives);
-          setArchives(parsedArchives);
-        } catch (parseError) {
-          console.error('ローカルストレージのデータ解析エラー:', parseError);
-          // 解析エラーの場合はモックデータを使用
-          setArchives([...mockArchives]);
-          localStorage.setItem('admin_archives', JSON.stringify(mockArchives));
-        }
-      } else {
-        // 初回起動時はモックデータを使用
-        setArchives([...mockArchives]);
-        localStorage.setItem('admin_archives', JSON.stringify(mockArchives));
-      }
+      // 本番環境: Supabaseからデータを取得
+      const result = await getArchives('', 1, 100); // 管理画面では多めに取得
+      setArchives(result.archives);
     } catch (err) {
       setError('アーカイブの読み込みに失敗しました');
       console.error('アーカイブ読み込みエラー:', err);
@@ -79,42 +61,28 @@ export default function AdminArchivesPage() {
       
       if (editingArchive) {
         // 編集の場合
-        const updatedArchive: Archive = {
-          ...editingArchive,
+        const updatedArchive = await updateArchive(editingArchive.id, {
           title: formData.title.trim(),
           link: formData.link.trim(),
-          description: formData.description.trim(),
-          updated_at: new Date().toISOString()
-        };
+          description: formData.description.trim()
+        });
         
-        // 実際のプロダクションではAPI呼び出し
-        const newArchivesList = archives.map(archive => 
-          archive.id === editingArchive.id ? updatedArchive : archive
+        setArchives(prev => 
+          prev.map(archive => 
+            archive.id === editingArchive.id ? updatedArchive : archive
+          )
         );
-        setArchives(newArchivesList);
-        
-        // ローカルストレージに保存（開発環境用）
-        localStorage.setItem('admin_archives', JSON.stringify(newArchivesList));
         
         setSuccessMessage('アーカイブが更新されました');
       } else {
         // 新規作成の場合
-        const newArchive: Archive = {
-          id: Date.now().toString(), // 実際のプロダクションではUUIDなどを使用
+        const newArchive = await createArchive({
           title: formData.title.trim(),
           link: formData.link.trim(),
-          description: formData.description.trim(),
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        };
+          description: formData.description.trim()
+        });
         
-        // 実際のプロダクションではAPI呼び出し
-        const newArchivesList = [newArchive, ...archives];
-        setArchives(newArchivesList);
-        
-        // ローカルストレージに保存（開発環境用）
-        localStorage.setItem('admin_archives', JSON.stringify(newArchivesList));
-        
+        setArchives(prev => [newArchive, ...prev]);
         setSuccessMessage('アーカイブが作成されました');
       }
       
@@ -129,7 +97,7 @@ export default function AdminArchivesPage() {
       }, 3000);
       
     } catch (err) {
-      setError('保存に失敗しました');
+      setError(err instanceof Error ? err.message : '保存に失敗しました');
       console.error('保存エラー:', err);
     }
   };
@@ -151,13 +119,9 @@ export default function AdminArchivesPage() {
     }
     
     try {
-      // 実際のプロダクションではAPI呼び出し
-      const newArchivesList = archives.filter(archive => archive.id !== id);
-      setArchives(newArchivesList);
-      
-      // ローカルストレージに保存（開発環境用）
-      localStorage.setItem('admin_archives', JSON.stringify(newArchivesList));
-      
+      // 本番環境: Supabaseから削除
+      await deleteArchive(id);
+      setArchives(prev => prev.filter(archive => archive.id !== id));
       setSuccessMessage('アーカイブが削除されました');
       
       // 3秒後にメッセージを消去
@@ -166,7 +130,7 @@ export default function AdminArchivesPage() {
       }, 3000);
       
     } catch (err) {
-      setError('削除に失敗しました');
+      setError(err instanceof Error ? err.message : '削除に失敗しました');
       console.error('削除エラー:', err);
     }
   };
@@ -178,17 +142,7 @@ export default function AdminArchivesPage() {
     setError(null);
   };
 
-  const handleResetData = () => {
-    if (confirm('すべてのデータを初期状態にリセットしますか？この操作は取り消せません。')) {
-      setArchives([...mockArchives]);
-      localStorage.setItem('admin_archives', JSON.stringify(mockArchives));
-      setSuccessMessage('データを初期状態にリセットしました');
-      
-      setTimeout(() => {
-        setSuccessMessage(null);
-      }, 3000);
-    }
-  };
+
 
   const filteredArchives = archives.filter(archive =>
     archive.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -248,25 +202,17 @@ export default function AdminArchivesPage() {
                 className="w-full"
               />
             </div>
-            <div className="flex gap-3">
-              <Button
-                onClick={handleResetData}
-                className="bg-ios-gray-500 text-white px-4 py-2 rounded-lg hover:bg-ios-gray-600 transition-all duration-300"
-              >
-                リセット
-              </Button>
-              <Button
-                onClick={() => {
-                  setShowForm(true);
-                  setEditingArchive(null);
-                  setFormData({ title: '', link: '', description: '' });
-                  setError(null);
-                }}
-                className="bg-gradient-to-r from-ios-blue to-ios-purple text-white px-6 py-2 rounded-lg hover:shadow-lg transition-all duration-300"
-              >
-                新規作成
-              </Button>
-            </div>
+            <Button
+              onClick={() => {
+                setShowForm(true);
+                setEditingArchive(null);
+                setFormData({ title: '', link: '', description: '' });
+                setError(null);
+              }}
+              className="bg-gradient-to-r from-ios-blue to-ios-purple text-white px-6 py-2 rounded-lg hover:shadow-lg transition-all duration-300"
+            >
+              新規作成
+            </Button>
           </div>
 
           {/* フォーム */}

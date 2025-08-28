@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Archive } from '@/types';
-import { searchArchives } from '@/data/archives';
+import { getArchives } from '@/lib/archives';
 
 export default function ArchivesPage() {
   const [archives, setArchives] = useState<Archive[]>([]);
@@ -22,7 +22,7 @@ export default function ArchivesPage() {
       setIsSearching(true);
       setError(null);
       
-      const result = await searchArchives(query, pageNum, 12);
+      const result = await getArchives(query, pageNum, 12);
       
       if (append) {
         setArchives(prev => [...prev, ...result.archives]);

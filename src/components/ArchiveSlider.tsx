@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Archive } from '@/types';
-import { searchArchives } from '@/data/archives';
+import { getArchives } from '@/lib/archives';
 
 interface ArchiveSliderProps {
   title: string;
@@ -22,7 +22,7 @@ export default function ArchiveSlider({ title, subtitle, count = 8 }: ArchiveSli
         setError(null);
         
         // アーカイブ記事を取得
-        const result = await searchArchives('', 1, count);
+        const result = await getArchives('', 1, count);
         
         if (result.archives.length === 0) {
           setError('記事が見つかりませんでした');

@@ -56,17 +56,25 @@
     animation: holographic 3s ease-in-out infinite;
   }
   
-  /* フェードインアニメーション */
+  /* ミニマルアニメーション */
   .fade-in {
-    animation: ios-fade-in 0.6s ease-out;
+    animation: minimal-fade-in 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   }
   
   .slide-up {
-    animation: ios-slide-up 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+    animation: minimal-slide-up 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   }
   
   .scale-in {
-    animation: ios-scale-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: minimal-scale-in 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .text-reveal {
+    animation: text-reveal 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .line-draw {
+    animation: line-draw 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.5s both;
   }
 
   /* 新しいアニメーションクラス */
@@ -153,6 +161,25 @@
   /* テキストシャドウ */
   .text-shadow-strong {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5), 0 0 8px rgba(0, 0, 0, 0.3);
+  }
+
+  /* ミニマルなデザインエレメント */
+  .minimal-gradient {
+    background: linear-gradient(135deg, rgba(0, 122, 255, 0.1) 0%, rgba(175, 82, 222, 0.05) 100%);
+  }
+
+  /* スムースなトランジション */
+  .transition-smooth {
+    transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  /* 初期状態を非表示に */
+  .minimal-fade-in,
+  .minimal-scale-in,
+  .text-reveal,
+  .line-draw {
+    opacity: 0;
+    animation-fill-mode: both;
   }
 
   /* スクロールバーを隠す */

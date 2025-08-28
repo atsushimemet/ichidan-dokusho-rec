@@ -10,33 +10,40 @@ export default function Home() {
   return (
     <main className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center px-6 py-4 md:py-12 lg:py-24 overflow-hidden">
-        {/* パーティクル背景 */}
-        <ParticleBackground />
+      <section className="relative min-h-screen flex items-center justify-center px-6 py-4 md:py-12 lg:py-24">
+        {/* ミニマルなバックグラウンド */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white via-ios-gray-50/30 to-ios-blue/5"></div>
         
-        {/* フローティング要素 */}
-        <FloatingElements />
-        
-        <div className="max-w-6xl mx-auto text-center space-y-8 md:space-y-12 lg:space-y-16 relative z-10">
+        <div className="max-w-4xl mx-auto text-center space-y-8 md:space-y-12 lg:space-y-16 relative z-10">
           {/* メインタイトル */}
-          <div className="space-y-4 md:space-y-6 lg:space-y-8 fade-in">
-            <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-ios-gray-800 leading-tight">
-              あなたにぴったりの
-              <span className="holographic-text block">一冊を見つけよう</span>
-            </h1>
-            <p className="text-lg md:text-2xl lg:text-3xl text-ios-gray-600 max-w-4xl mx-auto leading-relaxed">
-              たった2つの質問に答えるだけで、あなたの嗜好に合った最適な書籍をレコメンドします
+          <div className="space-y-6 md:space-y-8 lg:space-y-12">
+            <div className="space-y-4">
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-light text-ios-gray-900 leading-tight tracking-tight text-reveal">
+                あなたにぴったりの
+                <span className="block font-medium text-ios-blue">一冊を見つけよう</span>
+              </h1>
+              <div className="w-24 h-1 bg-gradient-to-r from-ios-blue to-ios-purple mx-auto rounded-full line-draw"></div>
+            </div>
+            <p className="text-lg md:text-xl lg:text-2xl text-ios-gray-600 max-w-3xl mx-auto leading-relaxed font-light minimal-fade-in" style={{animationDelay: '0.8s'}}>
+              たった2つの質問に答えるだけで、<br className="hidden md:block" />
+              あなたの嗜好に合った最適な書籍をレコメンドします
             </p>
           </div>
 
           {/* CTAボタン */}
-          <div className="scale-in">
+          <div className="space-y-4 minimal-scale-in" style={{animationDelay: '1.2s'}}>
             <Link
               href="/questions"
-              className="btn-primary text-lg md:text-xl px-12 md:px-16 py-4 md:py-5 inline-block shadow-2xl hover:shadow-3xl transition-all duration-300 pulse-glow hover-lift shimmer"
+              className="group inline-flex items-center gap-3 bg-ios-blue text-white text-lg md:text-xl px-8 md:px-12 py-4 md:py-5 rounded-full hover:bg-ios-blue/90 transition-all duration-500 ease-out hover:scale-105 shadow-lg hover:shadow-xl"
             >
-              📚 質問に答えて本を探す
+              <span className="group-hover:translate-x-1 transition-transform duration-300">質問に答えて本を探す</span>
+              <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
             </Link>
+            <p className="text-sm text-ios-gray-500 font-light minimal-fade-in" style={{animationDelay: '1.5s'}}>
+              所要時間: 約30秒
+            </p>
           </div>
         </div>
       </section>

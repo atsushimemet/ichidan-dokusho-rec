@@ -24,19 +24,32 @@ export default function AdminArchivesPage() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showDebugConsole, setShowDebugConsole] = useState(false);
+  const [debugLogs, setDebugLogs] = useState<string[]>([]);
 
   useEffect(() => {
     loadArchives();
   }, []);
 
+  // デバッグログ機能
+  const addDebugLog = (message: string) => {
+    const timestamp = new Date().toLocaleTimeString('ja-JP');
+    const logMessage = `[${timestamp}] ${message}`;
+    setDebugLogs(prev => [logMessage, ...prev].slice(0, 50)); // 最新50件まで保持
+    console.log(logMessage);
+  };
+
   const loadArchives = async () => {
     try {
       setIsLoading(true);
+      addDebugLog('アーカイブデータ読み込み開始');
       // 本番環境: Supabaseからデータを取得
       const result = await getArchives('', 1, 100); // 管理画面では多めに取得
       setArchives(result.archives);
+      addDebugLog(`アーカイブデータ読み込み完了: ${result.archives.length}件`);
     } catch (err) {
       setError('アーカイブの読み込みに失敗しました');
+      addDebugLog(`アーカイブ読み込みエラー: ${err instanceof Error ? err.message : '不明なエラー'}`);
       console.error('アーカイブ読み込みエラー:', err);
     } finally {
       setIsLoading(false);
@@ -64,6 +77,7 @@ export default function AdminArchivesPage() {
       
       if (editingArchive) {
         // 編集の場合
+        addDebugLog(`アーカイブ更新開始: ID=${editingArchive.id}, タイトル=${formData.title}`);
         const updatedArchive = await updateArchive(editingArchive.id, {
           title: formData.title.trim(),
           link: formData.link.trim(),
@@ -76,9 +90,11 @@ export default function AdminArchivesPage() {
           )
         );
         
+        addDebugLog('アーカイブ更新成功');
         setSuccessMessage('アーカイブが更新されました');
       } else {
         // 新規作成の場合
+        addDebugLog(`アーカイブ作成開始: タイトル=${formData.title}`);
         const newArchive = await createArchive({
           title: formData.title.trim(),
           link: formData.link.trim(),
@@ -86,6 +102,7 @@ export default function AdminArchivesPage() {
         });
         
         setArchives(prev => [newArchive, ...prev]);
+        addDebugLog('アーカイブ作成成功');
         setSuccessMessage('アーカイブが作成されました');
       }
       
@@ -122,9 +139,11 @@ export default function AdminArchivesPage() {
     }
     
     try {
+      addDebugLog(`アーカイブ削除開始: ID=${id}`);
       // 本番環境: Supabaseから削除
       await deleteArchive(id);
       setArchives(prev => prev.filter(archive => archive.id !== id));
+      addDebugLog('アーカイブ削除成功');
       setSuccessMessage('アーカイブが削除されました');
       
       // 3秒後にメッセージを消去
@@ -133,6 +152,7 @@ export default function AdminArchivesPage() {
       }, 3000);
       
     } catch (err) {
+      addDebugLog(`アーカイブ削除エラー: ${err instanceof Error ? err.message : '不明なエラー'}`);
       setError(err instanceof Error ? err.message : '削除に失敗しました');
       console.error('削除エラー:', err);
     }
@@ -171,9 +191,11 @@ export default function AdminArchivesPage() {
                 
                 <AdminActionsDropdown
                   onToggleForm={() => setShowForm(!showForm)}
+                  onToggleDebug={() => setShowDebugConsole(!showDebugConsole)}
                   showForm={showForm}
+                  showDebugConsole={showDebugConsole}
                   currentEntity="archives"
-                  hasDebugFeature={false}
+                  hasDebugFeature={true}
                 />
               </div>
             </div>
@@ -207,8 +229,61 @@ export default function AdminArchivesPage() {
             </div>
           )}
 
+          {/* デバッグコンソール */}
+          {showDebugConsole && (
+            <div className="mb-6 bg-white rounded-xl shadow-ios-sm border border-ios-gray-200 p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-bold text-ios-gray-800">🔧 デバッグコンソール</h3>
+                <div className="flex space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setDebugLogs([])}
+                    title="ログクリア"
+                  >
+                    🗑️
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const logText = debugLogs.join('\n');
+                      navigator.clipboard?.writeText(logText).then(() => {
+                        alert('ログをクリップボードにコピーしました');
+                      });
+                    }}
+                    title="ログコピー"
+                  >
+                    📋
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="bg-black text-green-400 font-mono text-sm p-4 rounded-lg h-64 overflow-y-auto">
+                {debugLogs.length === 0 ? (
+                  <div className="text-gray-500">ログがありません。アーカイブの操作を行うとここにログが表示されます。</div>
+                ) : (
+                  debugLogs.map((log, index) => (
+                    <div key={index} className="mb-1">
+                      {log}
+                    </div>
+                  ))
+                )}
+              </div>
+              
+              <div className="mt-4 text-sm text-ios-gray-600">
+                <p><strong>使い方:</strong></p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>アーカイブの作成・編集・削除を行うとログが表示されます</li>
+                  <li>モバイルデバイスでも操作の詳細を確認できます</li>
+                  <li>問題が発生した場合、このログを開発者に共有してください</li>
+                </ul>
+              </div>
+            </div>
+          )}
+
           {/* 操作バー */}
-          <div className="mb-6 flex flex-col sm:flex-row gap-4 justify-between">
+          <div className="mb-6">
             <div className="flex-1 max-w-md">
               <Input
                 type="text"
@@ -218,17 +293,6 @@ export default function AdminArchivesPage() {
                 className="w-full"
               />
             </div>
-            <Button
-              onClick={() => {
-                setShowForm(true);
-                setEditingArchive(null);
-                setFormData({ title: '', link: '', description: '' });
-                setError(null);
-              }}
-              className="bg-gradient-to-r from-ios-blue to-ios-purple text-white px-6 py-2 rounded-lg hover:shadow-lg transition-all duration-300"
-            >
-              新規作成
-            </Button>
           </div>
 
           {/* フォーム */}

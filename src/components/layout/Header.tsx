@@ -94,12 +94,30 @@ export default function Header() {
                 📚 本屋さん検索
               </Link>
               
+              <Link 
+                href="/archives"
+                className="block text-ios-gray-700 hover:text-ios-blue transition-colors py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                📰 記事を読む
+              </Link>
+              
               <button
                 onClick={handleAdminAccess}
                 className="block text-ios-gray-700 hover:text-ios-blue transition-colors py-2 text-left w-full"
               >
                 ⚙️ 管理者画面
               </button>
+
+              {!user && (
+                <Link 
+                  href="/admin/register"
+                  className="block text-ios-gray-700 hover:text-ios-blue transition-colors py-2"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  👤 管理者登録
+                </Link>
+              )}
 
               {user && (
                 <>

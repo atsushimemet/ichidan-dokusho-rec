@@ -52,7 +52,7 @@ export default function BookSlider({ title, subtitle, count = 8 }: BookSliderPro
           <h2 className="text-3xl font-bold text-ios-gray-800 mb-8">{title}</h2>
           <div className="flex gap-4 overflow-hidden">
             {Array.from({ length: count }).map((_, index) => (
-              <div key={index} className="flex-shrink-0 w-64 h-96 bg-ios-gray-100 rounded-2xl animate-pulse"></div>
+              <div key={index} className="flex-shrink-0 w-64 h-[500px] bg-ios-gray-100 rounded-2xl animate-pulse"></div>
             ))}
           </div>
         </div>
@@ -89,15 +89,14 @@ export default function BookSlider({ title, subtitle, count = 8 }: BookSliderPro
                 className="flex-shrink-0 w-64 snap-start hover-lift"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className="bg-white rounded-2xl shadow-ios hover:shadow-ios-lg transition-all duration-300 overflow-hidden flex flex-col h-96">
+                <div className="bg-white rounded-2xl shadow-ios hover:shadow-ios-lg transition-all duration-300 overflow-hidden flex flex-col h-[500px]">
                   {/* 書籍画像 */}
                   <div className="w-full h-40 bg-gradient-to-br from-ios-blue/10 to-ios-purple/10 flex items-center justify-center overflow-hidden">
                     {book.cover_image_url ? (
                       <img
                         src={book.cover_image_url}
                         alt={book.title}
-                        className="max-w-full max-h-full object-contain"
-                        style={{ width: 'auto', height: 'auto', maxWidth: '120px' }}
+                        className="w-24 h-32 object-cover rounded-lg"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.style.display = 'none';
@@ -148,10 +147,12 @@ export default function BookSlider({ title, subtitle, count = 8 }: BookSliderPro
                     </div>
                     
                     {/* 説明（固定高さ） */}
-                    <div className="h-12 mb-3">
+                    <div className="h-20 mb-3">
                       {book.description && (
-                        <p className="text-xs text-ios-gray-600 overflow-hidden h-full leading-relaxed line-clamp-3">
-                          {book.description}
+                        <p className="text-xs text-ios-gray-600 overflow-hidden h-full leading-relaxed">
+                          {book.description.length > 150 
+                            ? `${book.description.substring(0, 150)}...` 
+                            : book.description}
                         </p>
                       )}
                     </div>
@@ -178,7 +179,7 @@ export default function BookSlider({ title, subtitle, count = 8 }: BookSliderPro
                           rel="noopener noreferrer"
                           className="flex-1 bg-ios-blue text-white text-center py-2 px-3 rounded-lg text-xs font-medium hover:bg-ios-blue/90 transition-colors"
                         >
-                          Amazon
+                          Amazon (PR)
                         </Link>
                         {book.summary_link && (
                           <Link
@@ -200,7 +201,7 @@ export default function BookSlider({ title, subtitle, count = 8 }: BookSliderPro
             {/* 最後に「もっと見る」カード */}
             <div className="flex-shrink-0 w-64 snap-start">
               <Link href="/search">
-                <div className="h-96 bg-gradient-to-br from-ios-blue/10 to-ios-purple/10 rounded-2xl border-2 border-dashed border-ios-blue/30 flex flex-col items-center justify-center hover:border-ios-blue transition-all duration-300 hover-lift">
+                <div className="h-[500px] bg-gradient-to-br from-ios-blue/10 to-ios-purple/10 rounded-2xl border-2 border-dashed border-ios-blue/30 flex flex-col items-center justify-center hover:border-ios-blue transition-all duration-300 hover-lift">
                   <div className="text-4xl mb-4">🔍</div>
                   <p className="text-ios-blue font-semibold text-lg">もっと探す</p>
                   <p className="text-ios-gray-600 text-sm mt-2 text-center px-4">

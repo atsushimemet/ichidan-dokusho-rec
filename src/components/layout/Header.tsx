@@ -86,6 +86,14 @@ export default function Header() {
                 🔍 書籍検索
               </Link>
               
+              <Link 
+                href="/stores"
+                className="block text-ios-gray-700 hover:text-ios-blue transition-colors py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                📚 本屋さん検索
+              </Link>
+              
               <button
                 onClick={handleAdminAccess}
                 className="block text-ios-gray-700 hover:text-ios-blue transition-colors py-2 text-left w-full"

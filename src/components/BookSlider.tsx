@@ -150,8 +150,10 @@ export default function BookSlider({ title, subtitle, count = 8 }: BookSliderPro
                     {/* 説明（固定高さ） */}
                     <div className="h-12 mb-3">
                       {book.description && (
-                        <p className="text-xs text-ios-gray-600 overflow-hidden h-full leading-relaxed line-clamp-3">
-                          {book.description}
+                        <p className="text-xs text-ios-gray-600 overflow-hidden h-full leading-relaxed">
+                          {book.description.length > 80 
+                            ? `${book.description.substring(0, 80)}...` 
+                            : book.description}
                         </p>
                       )}
                     </div>

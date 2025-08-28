@@ -68,6 +68,87 @@
   .scale-in {
     animation: ios-scale-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
+
+  /* 新しいアニメーションクラス */
+  .slide-in-left {
+    animation: slide-in-left 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+  
+  .slide-in-right {
+    animation: slide-in-right 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+
+  .bounce-gentle {
+    animation: bounce-gentle 2s ease-in-out infinite;
+  }
+
+  .pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  /* シマーエフェクト */
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .shimmer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.4),
+      transparent
+    );
+    transform: translateX(-100%);
+    animation: shimmer 2s linear infinite;
+  }
+
+  /* パーティクル効果 */
+  .particles {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: radial-gradient(circle, rgba(0, 122, 255, 0.8), transparent);
+    border-radius: 50%;
+    animation: sparkle 3s ease-in-out infinite;
+  }
+
+  /* フローティング要素 */
+  .floating-book {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .floating-book:nth-child(2) {
+    animation-delay: -1s;
+  }
+
+  .floating-book:nth-child(3) {
+    animation-delay: -2s;
+  }
+
+  /* ホバーエフェクト */
+  .hover-lift {
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  }
 }
 
 /* フォーカス管理 */

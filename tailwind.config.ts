@@ -60,6 +60,14 @@ const config: Config = {
         'ios-scale-in': 'ios-scale-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
         'float': 'float 3s ease-in-out infinite',
         'holographic': 'holographic 3s ease-in-out infinite',
+        'bounce-gentle': 'bounce-gentle 2s ease-in-out infinite',
+        'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
+        'slide-in-left': 'slide-in-left 0.8s cubic-bezier(0.25, 0.8, 0.25, 1)',
+        'slide-in-right': 'slide-in-right 0.8s cubic-bezier(0.25, 0.8, 0.25, 1)',
+        'rotate-slow': 'rotate-slow 20s linear infinite',
+        'shimmer': 'shimmer 2s linear infinite',
+        'sparkle': 'sparkle 3s ease-in-out infinite',
+        'count-up': 'count-up 2s ease-out',
       },
       keyframes: {
         'ios-fade-in': {
@@ -81,6 +89,42 @@ const config: Config = {
         'holographic': {
           '0%, 100%': { backgroundPosition: '0% 50%' },
           '50%': { backgroundPosition: '100% 50%' },
+        },
+        'bounce-gentle': {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-5px)' },
+        },
+        'pulse-glow': {
+          '0%, 100%': { 
+            boxShadow: '0 0 20px rgba(0, 122, 255, 0.4), 0 0 40px rgba(0, 122, 255, 0.2)' 
+          },
+          '50%': { 
+            boxShadow: '0 0 30px rgba(0, 122, 255, 0.8), 0 0 60px rgba(0, 122, 255, 0.4)' 
+          },
+        },
+        'slide-in-left': {
+          '0%': { transform: 'translateX(-100px)', opacity: '0' },
+          '100%': { transform: 'translateX(0)', opacity: '1' },
+        },
+        'slide-in-right': {
+          '0%': { transform: 'translateX(100px)', opacity: '0' },
+          '100%': { transform: 'translateX(0)', opacity: '1' },
+        },
+        'rotate-slow': {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' },
+        },
+        'shimmer': {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
+        'sparkle': {
+          '0%, 100%': { opacity: '0.3', transform: 'scale(0.8)' },
+          '50%': { opacity: '1', transform: 'scale(1.2)' },
+        },
+        'count-up': {
+          '0%': { transform: 'scale(0.8)', opacity: '0' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
         },
       },
     },

@@ -57,6 +57,12 @@ npm install
 既にランキング機能を実装済みの場合は、以下の手順でASIN対応版に更新：
 1. `supabase/rollback_ranking_books.sql` を実行（既存データは削除されます）
 2. `supabase/migration_add_ranking_books_v2.sql` を実行
+3. `supabase/fix_ranking_trigger.sql` を実行（トリガー無限ループ修正）
+
+#### トリガーエラー修正（stack depth limit exceeded）
+登録時にエラーが発生する場合は：
+1. `supabase/fix_ranking_trigger.sql` を実行
+2. `supabase/fix_ranking_function.sql` を実行（推奨）
 
 3. 環境変数を設定
 

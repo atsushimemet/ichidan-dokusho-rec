@@ -161,10 +161,13 @@ function RankingManagementPage() {
       setIsLoading(true);
       addDebugLog('ランキング管理画面初期化開始');
       
-      // 今週の開始日を計算
+      // 今週の開始日を計算（月曜日基準）
       const now = new Date();
       const monday = new Date(now);
-      monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+      // 日曜日=0, 月曜日=1, ...土曜日=6
+      const dayOfWeek = now.getDay();
+      const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // 日曜日の場合は6日前、それ以外は(dayOfWeek-1)日前
+      monday.setDate(now.getDate() - daysToSubtract);
       const weekStart = monday.toISOString().split('T')[0];
       setCurrentWeekStart(weekStart);
       addDebugLog(`対象週設定: ${weekStart}`);
@@ -478,14 +481,6 @@ function RankingManagementPage() {
                   showDebugConsole={showDebugConsole}
                   currentEntity="rankings"
                   hasDebugFeature={true}
-                  onToggleAllVisibility={toggleAllVisibility}
-                  allVisibilityLabel={
-                    books.length === 0 
-                      ? '表示切り替え' 
-                      : books.filter(book => book.is_visible).length < books.length / 2 
-                        ? '全て表示にする' 
-                        : '全て非表示にする'
-                  }
                 />
               </div>
             </div>
@@ -506,39 +501,53 @@ function RankingManagementPage() {
 
           {/* デバッグコンソール */}
           {showDebugConsole && (
-            <Card variant="default" className="mb-6">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold text-ios-gray-800">🔧 デバッグコンソール</h2>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-xs text-ios-gray-500">状態: {showDebugConsole ? 'ON' : 'OFF'}</span>
-                    <Button
-                      variant="outline"
-                      onClick={() => setDebugLogs([])}
-                      className="text-xs"
-                    >
-                      ログクリア
-                    </Button>
-                  </div>
+            <Card variant="default" className="p-6 mb-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-bold text-ios-gray-800">🔧 デバッグコンソール</h3>
+                <div className="flex space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setDebugLogs([])}
+                    title="ログクリア"
+                  >
+                    🗑️
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const logText = debugLogs.join('\n');
+                      navigator.clipboard?.writeText(logText).then(() => {
+                        alert('ログをクリップボードにコピーしました');
+                      });
+                    }}
+                    title="ログコピー"
+                  >
+                    📋
+                  </Button>
                 </div>
-                <div className="bg-ios-gray-900 text-ios-gray-100 p-4 rounded-lg font-mono text-sm max-h-80 overflow-y-auto">
-                  {debugLogs.length === 0 ? (
-                    <div className="text-ios-gray-400">
-                      <div>ログはありません</div>
-                      <div className="text-xs mt-2">ページロード時: {new Date().toLocaleTimeString()}</div>
+              </div>
+              
+              <div className="bg-black text-green-400 font-mono text-sm p-4 rounded-lg h-64 overflow-y-auto">
+                {debugLogs.length === 0 ? (
+                  <div className="text-gray-500">ログがありません。ランキング書籍の操作を行うとここにログが表示されます。</div>
+                ) : (
+                  debugLogs.map((log, index) => (
+                    <div key={index} className="mb-1">
+                      {log}
                     </div>
-                  ) : (
-                    debugLogs.map((log, index) => (
-                      <div key={index} className="mb-1">
-                        {log}
-                      </div>
-                    ))
-                  )}
-                </div>
-                <div className="mt-4 text-xs text-ios-gray-500">
-                  <p>💡 ヒント: ランキング書籍の登録・更新・削除の詳細ログが表示されます</p>
-                  <p>🐛 エラーが発生した場合は、ここでSupabase接続状況などを確認できます</p>
-                </div>
+                  ))
+                )}
+              </div>
+              
+              <div className="mt-4 text-sm text-ios-gray-600">
+                <p><strong>使い方:</strong></p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>ランキング書籍の追加・編集・削除を行うとログが表示されます</li>
+                  <li>エラーが発生した場合の詳細情報も確認できます</li>
+                  <li>ログはクリップボードにコピーして保存できます</li>
+                </ul>
               </div>
             </Card>
           )}

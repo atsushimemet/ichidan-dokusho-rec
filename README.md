@@ -51,7 +51,13 @@ npm install
 1. [Supabase](https://supabase.com/)でプロジェクトを作成
 2. SQLエディタで以下のファイルを順番に実行
    - `supabase/schema.sql` （基本スキーマ）
-   - `supabase/migration_add_ranking_books.sql` （ランキング機能）
+   - `supabase/migration_add_ranking_books_v2.sql` （ランキング機能 - ASIN対応版）
+
+#### 既存環境でのマイグレーション更新
+既にランキング機能を実装済みの場合は、以下の手順でASIN対応版に更新：
+1. `supabase/rollback_ranking_books.sql` を実行（既存データは削除されます）
+2. `supabase/migration_add_ranking_books_v2.sql` を実行
+
 3. 環境変数を設定
 
 ### 4. 環境変数の設定

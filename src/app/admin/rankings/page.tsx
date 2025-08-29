@@ -6,14 +6,15 @@ import { supabase } from '@/lib/supabase';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Link from 'next/link';
+import AsinImagePreview from '@/components/AsinImagePreview';
 
 interface RankingForm {
   title: string;
   author: string;
-  genre_tags: string[];
+  genre_tags: string;
   amazon_link: string;
+  asin: string;
   summary_link: string;
-  cover_image_url: string;
   description: string;
   page_count: string;
   price: string;
@@ -119,10 +120,10 @@ export default function RankingManagementPage() {
   const [form, setForm] = useState<RankingForm>({
     title: '',
     author: '',
-    genre_tags: [],
+    genre_tags: '',
     amazon_link: '',
+    asin: '',
     summary_link: '',
-    cover_image_url: '',
     description: '',
     page_count: '',
     price: '',
@@ -209,10 +210,10 @@ export default function RankingManagementPage() {
       const bookData = {
         title: form.title,
         author: form.author,
-        genre_tags: form.genre_tags,
+        genre_tags: form.genre_tags ? form.genre_tags.split(',').map(tag => tag.trim()).filter(tag => tag) : [],
         amazon_link: form.amazon_link,
+        asin: form.asin || null,
         summary_link: form.summary_link || null,
-        cover_image_url: form.cover_image_url || null,
         description: form.description || null,
         page_count: form.page_count ? parseInt(form.page_count) : null,
         price: form.price ? parseFloat(form.price) : null,
@@ -233,10 +234,10 @@ export default function RankingManagementPage() {
       setForm({
         title: '',
         author: '',
-        genre_tags: [],
+        genre_tags: '',
         amazon_link: '',
+        asin: '',
         summary_link: '',
-        cover_image_url: '',
         description: '',
         page_count: '',
         price: '',
@@ -420,24 +421,26 @@ export default function RankingManagementPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-ios-gray-700 mb-2">
+                      ASIN <span className="text-xs text-gray-500">(Amazon Standard Identification Number)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={form.asin}
+                      onChange={(e) => setForm({ ...form, asin: e.target.value.toUpperCase() })}
+                      className="w-full px-3 py-2 border border-ios-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      placeholder="例: B09XXXXXX"
+                      maxLength={20}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-ios-gray-700 mb-2">
                       要約リンク
                     </label>
                     <input
                       type="url"
                       value={form.summary_link}
                       onChange={(e) => setForm({ ...form, summary_link: e.target.value })}
-                      className="w-full px-3 py-2 border border-ios-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-ios-gray-700 mb-2">
-                      表紙画像URL
-                    </label>
-                    <input
-                      type="url"
-                      value={form.cover_image_url}
-                      onChange={(e) => setForm({ ...form, cover_image_url: e.target.value })}
                       className="w-full px-3 py-2 border border-ios-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                     />
                   </div>
@@ -468,20 +471,35 @@ export default function RankingManagementPage() {
                   </div>
                 </div>
 
+                {/* ASIN画像プレビュー */}
+                {form.asin && (
+                  <div>
+                    <label className="block text-sm font-medium text-ios-gray-700 mb-2">
+                      表紙プレビュー
+                    </label>
+                    <AsinImagePreview 
+                      asin={form.asin} 
+                      alt={form.title || 'Book cover'} 
+                      className="w-32 h-40 mx-auto"
+                      size="M"
+                    />
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-sm font-medium text-ios-gray-700 mb-2">
                     ジャンルタグ（カンマ区切り）
                   </label>
-                  <input
-                    type="text"
-                    value={form.genre_tags.join(', ')}
-                    onChange={(e) => setForm({ 
-                      ...form, 
-                      genre_tags: e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag)
-                    })}
+                  <textarea
+                    value={form.genre_tags}
+                    onChange={(e) => setForm({ ...form, genre_tags: e.target.value })}
                     className="w-full px-3 py-2 border border-ios-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                     placeholder="例: ビジネス, 自己啓発, 経済"
+                    rows={2}
                   />
+                  <p className="text-xs text-gray-500 mt-1">
+                    カンマ（,）で区切って複数のジャンルを入力してください
+                  </p>
                 </div>
 
                 <div>

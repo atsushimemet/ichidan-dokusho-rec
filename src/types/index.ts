@@ -101,8 +101,8 @@ export interface RankingBook {
   author: string;
   genre_tags: string[];
   amazon_link: string;
+  asin: string | null;
   summary_link: string | null;
-  cover_image_url: string | null;
   description: string | null;
   page_count: number | null;
   price: number | null;

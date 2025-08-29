@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { RankingBook } from '@/types';
 import { supabase } from '@/lib/supabase';
+import AsinImagePreview from './AsinImagePreview';
 
 interface RankingSliderProps {
   title: string;
@@ -114,20 +115,12 @@ export default function RankingSlider({ title, subtitle }: RankingSliderProps) {
                 <div className="bg-white rounded-2xl shadow-ios hover:shadow-ios-lg transition-all duration-300 overflow-hidden flex flex-col h-[500px] border border-orange-100">
                   {/* 書籍画像 */}
                   <div className="w-full h-40 bg-gradient-to-br from-orange-50 to-yellow-50 flex items-center justify-center overflow-hidden">
-                    {book.cover_image_url ? (
-                      <img
-                        src={book.cover_image_url}
-                        alt={book.title}
-                        className="w-24 h-32 object-cover rounded-lg"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                          target.parentElement!.innerHTML = `
-                            <div class="flex items-center justify-center w-full h-full bg-ios-gray-200 text-ios-gray-500">
-                              <span class="text-sm">画像が読み込めません</span>
-                            </div>
-                          `;
-                        }}
+                    {book.asin ? (
+                      <AsinImagePreview 
+                        asin={book.asin} 
+                        alt={book.title} 
+                        className="w-24 h-32"
+                        size="M"
                       />
                     ) : (
                       <div className="flex items-center justify-center w-full h-full bg-ios-gray-200 text-ios-gray-400">

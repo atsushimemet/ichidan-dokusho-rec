@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { RankingBook, RankingSource } from '@/types';
-import { createClient } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Link from 'next/link';
@@ -162,7 +162,7 @@ export default function RankingManagementPage() {
   };
 
   const loadRankingBooks = async (weekStart: string) => {
-    const supabase = createClient();
+    // supabaseクライアントは既にインポート済み
     const { data, error } = await supabase
       .from('ranking_books')
       .select('*')
@@ -177,7 +177,7 @@ export default function RankingManagementPage() {
   };
 
   const loadRankingSources = async () => {
-    const supabase = createClient();
+    // supabaseクライアントは既にインポート済み
     const { data, error } = await supabase
       .from('ranking_sources')
       .select('*')
@@ -203,7 +203,7 @@ export default function RankingManagementPage() {
       setIsSubmitting(true);
       setError(null);
 
-      const supabase = createClient();
+      // supabaseクライアントは既にインポート済み
 
       // データを準備
       const bookData = {
@@ -261,7 +261,7 @@ export default function RankingManagementPage() {
     }
 
     try {
-      const supabase = createClient();
+      // supabaseクライアントは既にインポート済み
       const { error } = await supabase
         .from('ranking_books')
         .delete()
@@ -280,7 +280,7 @@ export default function RankingManagementPage() {
 
   const toggleVisibility = async (id: string, currentVisibility: boolean) => {
     try {
-      const supabase = createClient();
+      // supabaseクライアントは既にインポート済み
       const { error } = await supabase
         .from('ranking_books')
         .update({ is_visible: !currentVisibility })

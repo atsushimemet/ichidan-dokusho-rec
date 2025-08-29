@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { RankingBook } from '@/types';
-import { createClient } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 
 interface RankingSliderProps {
   title: string;
@@ -21,7 +21,7 @@ export default function RankingSlider({ title, subtitle }: RankingSliderProps) {
         setLoading(true);
         setError(null);
         
-        const supabase = createClient();
+        // supabaseクライアントは既にインポート済み
         
         // 現在の週の開始日を取得
         const now = new Date();

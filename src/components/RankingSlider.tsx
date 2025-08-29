@@ -87,7 +87,7 @@ export default function RankingSlider({ title, subtitle }: RankingSliderProps) {
   }
 
   return (
-    <div className="py-16 bg-gradient-to-br from-orange-50 via-white to-yellow-50">
+    <div className="py-16 bg-gradient-to-br from-ios-gray-50 via-white to-ios-blue/5">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-3 mb-4">
@@ -104,17 +104,12 @@ export default function RankingSlider({ title, subtitle }: RankingSliderProps) {
             {books.map((book, index) => (
               <div
                 key={book.id}
-                className="flex-shrink-0 w-64 snap-start hover-lift relative"
+                className="flex-shrink-0 w-64 snap-start hover-lift"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                {/* ランキング順位のバッジ */}
-                <div className="absolute -top-2 -left-2 z-10 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold shadow-lg">
-                  {index + 1}
-                </div>
-                
-                <div className="bg-white rounded-2xl shadow-ios hover:shadow-ios-lg transition-all duration-300 overflow-hidden flex flex-col h-[500px] border border-orange-100">
+                <div className="bg-white rounded-2xl shadow-ios hover:shadow-ios-lg transition-all duration-300 overflow-hidden flex flex-col h-[500px]">
                   {/* 書籍画像 */}
-                  <div className="w-full h-40 bg-gradient-to-br from-orange-50 to-yellow-50 flex items-center justify-center overflow-hidden">
+                  <div className="w-full h-40 bg-gradient-to-br from-ios-blue/10 to-ios-purple/10 flex items-center justify-center overflow-hidden">
                     {book.asin ? (
                       <AsinImagePreview 
                         asin={book.asin} 

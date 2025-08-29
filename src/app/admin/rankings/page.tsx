@@ -355,39 +355,38 @@ function RankingManagementPage() {
     <ProtectedRoute>
       <div className="min-h-screen bg-gradient-to-br from-ios-blue/5 via-white to-ios-purple/5 px-4 py-8">
         <div className="max-w-7xl mx-auto">
-          {/* 管理ナビゲーション */}
+          {/* ヘッダー */}
           <div className="mb-8">
-            <ManagementSelector currentEntity="rankings" />
-          </div>
-
-          {/* ページヘッダー */}
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-3xl font-bold text-ios-gray-800">🏆 ランキング管理</h1>
-              <div className="hidden md:block text-ios-gray-600">
-                今週のランキング書籍を管理
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <h1 className="text-3xl font-bold text-ios-gray-800">🏆 ランキング管理</h1>
+                <p className="text-ios-gray-600 mt-2">
+                  今週のランキング書籍を管理
+                </p>
+                <p className="text-sm text-ios-gray-500 mt-1">
+                  対象週: {currentWeekStart} 〜
+                </p>
               </div>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-ios-gray-600">
-                対象週: {currentWeekStart} 〜
-              </span>
-              <AdminActionsDropdown 
-                onToggleForm={() => {
-                  if (showForm) {
-                    cancelEdit();
-                  } else {
-                    setEditingBook(null);
-                    setShowForm(true);
-                    setError(null);
-                    setSuccessMessage(null);
-                  }
-                }}
-                showForm={showForm}
-                currentEntity="rankings"
-                hasDebugFeature={false}
-              />
+              
+              <div className="flex items-center space-x-2">
+                <ManagementSelector currentEntity="rankings" compact />
+                
+                <AdminActionsDropdown 
+                  onToggleForm={() => {
+                    if (showForm) {
+                      cancelEdit();
+                    } else {
+                      setEditingBook(null);
+                      setShowForm(true);
+                      setError(null);
+                      setSuccessMessage(null);
+                    }
+                  }}
+                  showForm={showForm}
+                  currentEntity="rankings"
+                  hasDebugFeature={false}
+                />
+              </div>
             </div>
           </div>
 

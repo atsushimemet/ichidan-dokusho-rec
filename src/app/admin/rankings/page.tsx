@@ -143,10 +143,6 @@ function RankingManagementPage() {
   const [showDebugConsole, setShowDebugConsole] = useState(true);
   const [debugLogs, setDebugLogs] = useState<string[]>([]);
 
-  useEffect(() => {
-    initializePage();
-  }, []);
-
   // デバッグログ機能
   const addDebugLog = (message: string) => {
     const timestamp = new Date().toLocaleTimeString('ja-JP');
@@ -154,6 +150,11 @@ function RankingManagementPage() {
     setDebugLogs(prev => [logMessage, ...prev].slice(0, 50)); // 最新50件まで保持
     console.log(logMessage);
   };
+
+  useEffect(() => {
+    addDebugLog('ランキング管理画面をロードしました');
+    initializePage();
+  }, []);
 
   const initializePage = async () => {
     try {
@@ -503,6 +504,45 @@ function RankingManagementPage() {
             </div>
           )}
 
+          {/* デバッグコンソール */}
+          {showDebugConsole && (
+            <Card variant="default" className="mb-6">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold text-ios-gray-800">🔧 デバッグコンソール</h2>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs text-ios-gray-500">状態: {showDebugConsole ? 'ON' : 'OFF'}</span>
+                    <Button
+                      variant="outline"
+                      onClick={() => setDebugLogs([])}
+                      className="text-xs"
+                    >
+                      ログクリア
+                    </Button>
+                  </div>
+                </div>
+                <div className="bg-ios-gray-900 text-ios-gray-100 p-4 rounded-lg font-mono text-sm max-h-80 overflow-y-auto">
+                  {debugLogs.length === 0 ? (
+                    <div className="text-ios-gray-400">
+                      <div>ログはありません</div>
+                      <div className="text-xs mt-2">ページロード時: {new Date().toLocaleTimeString()}</div>
+                    </div>
+                  ) : (
+                    debugLogs.map((log, index) => (
+                      <div key={index} className="mb-1">
+                        {log}
+                      </div>
+                    ))
+                  )}
+                </div>
+                <div className="mt-4 text-xs text-ios-gray-500">
+                  <p>💡 ヒント: ランキング書籍の登録・更新・削除の詳細ログが表示されます</p>
+                  <p>🐛 エラーが発生した場合は、ここでSupabase接続状況などを確認できます</p>
+                </div>
+              </div>
+            </Card>
+          )}
+
           {/* 新規・編集フォーム */}
           {showForm && (
             <Card variant="default" className="mb-8">
@@ -810,39 +850,6 @@ function RankingManagementPage() {
               </div>
             </Card>
           </>
-        )}
-
-        {/* デバッグコンソール */}
-        {showDebugConsole && (
-          <Card variant="default" className="mt-8">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-ios-gray-800">🔧 デバッグコンソール</h2>
-                <Button
-                  variant="outline"
-                  onClick={() => setDebugLogs([])}
-                  className="text-xs"
-                >
-                  ログクリア
-                </Button>
-              </div>
-              <div className="bg-ios-gray-900 text-ios-gray-100 p-4 rounded-lg font-mono text-sm max-h-80 overflow-y-auto">
-                {debugLogs.length === 0 ? (
-                  <div className="text-ios-gray-400">ログはありません</div>
-                ) : (
-                  debugLogs.map((log, index) => (
-                    <div key={index} className="mb-1">
-                      {log}
-                    </div>
-                  ))
-                )}
-              </div>
-              <div className="mt-4 text-xs text-ios-gray-500">
-                <p>💡 ヒント: ランキング書籍の登録・更新・削除の詳細ログが表示されます</p>
-                <p>🐛 エラーが発生した場合は、ここでSupabase接続状況などを確認できます</p>
-              </div>
-            </div>
-          </Card>
         )}
       </div>
     </div>

@@ -140,14 +140,25 @@ function RankingManagementPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingBook, setEditingBook] = useState<RankingBook | null>(null);
   const [currentWeekStart, setCurrentWeekStart] = useState<string>('');
+  const [showDebugConsole, setShowDebugConsole] = useState(true);
+  const [debugLogs, setDebugLogs] = useState<string[]>([]);
 
   useEffect(() => {
     initializePage();
   }, []);
 
+  // デバッグログ機能
+  const addDebugLog = (message: string) => {
+    const timestamp = new Date().toLocaleTimeString('ja-JP');
+    const logMessage = `[${timestamp}] ${message}`;
+    setDebugLogs(prev => [logMessage, ...prev].slice(0, 50)); // 最新50件まで保持
+    console.log(logMessage);
+  };
+
   const initializePage = async () => {
     try {
       setIsLoading(true);
+      addDebugLog('ランキング管理画面初期化開始');
       
       // 今週の開始日を計算
       const now = new Date();
@@ -155,13 +166,16 @@ function RankingManagementPage() {
       monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
       const weekStart = monday.toISOString().split('T')[0];
       setCurrentWeekStart(weekStart);
+      addDebugLog(`対象週設定: ${weekStart}`);
 
       await Promise.all([
         loadRankingBooks(weekStart),
         loadRankingSources()
       ]);
+      addDebugLog('ランキング管理画面初期化完了');
     } catch (err) {
       console.error('初期化エラー:', err);
+      addDebugLog(`初期化エラー: ${err instanceof Error ? err.message : '不明なエラー'}`);
       setError('データの初期化に失敗しました');
     } finally {
       setIsLoading(false);
@@ -169,39 +183,58 @@ function RankingManagementPage() {
   };
 
   const loadRankingBooks = async (weekStart: string) => {
-    // supabaseクライアントは既にインポート済み
-    const { data, error } = await supabase
-      .from('ranking_books')
-      .select('*')
-      .eq('week_start_date', weekStart)
-      .order('created_at', { ascending: false });
+    addDebugLog(`ランキング書籍読み込み開始: 週=${weekStart}`);
+    try {
+      // supabaseクライアントは既にインポート済み
+      const { data, error } = await supabase
+        .from('ranking_books')
+        .select('*')
+        .eq('week_start_date', weekStart)
+        .order('created_at', { ascending: false });
 
-    if (error) {
+      if (error) {
+        addDebugLog(`ランキング書籍読み込みエラー: ${error.message}`);
+        throw error;
+      }
+
+      addDebugLog(`ランキング書籍読み込み成功: ${data?.length || 0}件`);
+      setBooks(data || []);
+    } catch (error) {
+      addDebugLog(`ランキング書籍読み込み失敗: ${error instanceof Error ? error.message : '不明なエラー'}`);
       throw error;
     }
-
-    setBooks(data || []);
   };
 
   const loadRankingSources = async () => {
-    // supabaseクライアントは既にインポート済み
-    const { data, error } = await supabase
-      .from('ranking_sources')
-      .select('*')
-      .eq('is_active', true)
-      .order('display_order');
+    addDebugLog('ランキング元読み込み開始');
+    try {
+      // supabaseクライアントは既にインポート済み
+      const { data, error } = await supabase
+        .from('ranking_sources')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order');
 
-    if (error) {
+      if (error) {
+        addDebugLog(`ランキング元読み込みエラー: ${error.message}`);
+        throw error;
+      }
+
+      addDebugLog(`ランキング元読み込み成功: ${data?.length || 0}件`);
+      setSources(data || []);
+    } catch (error) {
+      addDebugLog(`ランキング元読み込み失敗: ${error instanceof Error ? error.message : '不明なエラー'}`);
       throw error;
     }
-
-    setSources(data || []);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    addDebugLog(`フォーム送信開始: ${editingBook ? '編集' : '新規追加'}`);
+    
     if (!form.title || !form.author || !form.amazon_link || !form.ranking_source) {
+      addDebugLog('バリデーションエラー: 必須項目が未入力');
       setError('必須項目を入力してください');
       return;
     }
@@ -209,8 +242,19 @@ function RankingManagementPage() {
     try {
       setIsSubmitting(true);
       setError(null);
+      addDebugLog('データ保存処理開始');
 
-      // supabaseクライアントは既にインポート済み
+      // Supabase設定確認
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      
+      addDebugLog(`Supabase設定確認: URL=${supabaseUrl ? 'あり' : 'なし'}, Key=${supabaseAnonKey ? 'あり' : 'なし'}`);
+      
+      if (!supabaseUrl || !supabaseAnonKey || supabaseUrl === 'your_supabase_url' || supabaseUrl === 'https://placeholder.supabase.co') {
+        addDebugLog('Supabase未設定エラー');
+        setError('Supabaseが設定されていません。環境変数を確認してください。');
+        return;
+      }
 
       // データを準備
       const bookData = {
@@ -227,24 +271,31 @@ function RankingManagementPage() {
         week_start_date: currentWeekStart
       };
 
+      addDebugLog(`保存データ: ${JSON.stringify(bookData, null, 2)}`);
+
       let result;
       if (editingBook) {
         // 更新
+        addDebugLog(`書籍更新処理: ID=${editingBook.id}`);
         result = await supabase
           .from('ranking_books')
           .update(bookData)
           .eq('id', editingBook.id);
       } else {
         // 新規追加
+        addDebugLog('書籍新規追加処理');
         result = await supabase
           .from('ranking_books')
           .insert([bookData]);
       }
 
       if (result.error) {
+        addDebugLog(`データベースエラー: ${result.error.message}`);
         throw result.error;
       }
 
+      addDebugLog(`データ保存成功: ${editingBook ? '更新' : '追加'}`);
+      
       // 成功メッセージ
       setSuccessMessage(editingBook ? 'ランキング書籍を更新しました' : 'ランキング書籍を追加しました');
       
@@ -256,9 +307,11 @@ function RankingManagementPage() {
 
     } catch (err) {
       console.error('保存エラー:', err);
-      setError('書籍の保存に失敗しました');
+      addDebugLog(`保存エラー: ${err instanceof Error ? err.message : '不明なエラー'}`);
+      setError(`書籍の保存に失敗しました: ${err instanceof Error ? err.message : '不明なエラー'}`);
     } finally {
       setIsSubmitting(false);
+      addDebugLog('フォーム送信処理終了');
     }
   };
 
@@ -267,6 +320,7 @@ function RankingManagementPage() {
       return;
     }
 
+    addDebugLog(`書籍削除開始: ID=${id}`);
     try {
       // supabaseクライアントは既にインポート済み
       const { error } = await supabase
@@ -275,17 +329,22 @@ function RankingManagementPage() {
         .eq('id', id);
 
       if (error) {
+        addDebugLog(`削除エラー: ${error.message}`);
         throw error;
       }
 
+      addDebugLog('書籍削除成功');
+      setSuccessMessage('ランキング書籍を削除しました');
       await loadRankingBooks(currentWeekStart);
     } catch (err) {
       console.error('削除エラー:', err);
+      addDebugLog(`削除失敗: ${err instanceof Error ? err.message : '不明なエラー'}`);
       setError('書籍の削除に失敗しました');
     }
   };
 
   const toggleVisibility = async (id: string, currentVisibility: boolean) => {
+    addDebugLog(`表示状態切り替え開始: ID=${id}, 現在=${currentVisibility ? '表示' : '非表示'}`);
     try {
       // supabaseクライアントは既にインポート済み
       const { error } = await supabase
@@ -294,13 +353,44 @@ function RankingManagementPage() {
         .eq('id', id);
 
       if (error) {
+        addDebugLog(`表示状態更新エラー: ${error.message}`);
         throw error;
       }
 
+      addDebugLog('表示状態更新成功');
       await loadRankingBooks(currentWeekStart);
     } catch (err) {
       console.error('表示状態更新エラー:', err);
+      addDebugLog(`表示状態更新失敗: ${err instanceof Error ? err.message : '不明なエラー'}`);
       setError('表示状態の更新に失敗しました');
+    }
+  };
+
+  // 一括表示切り替え機能
+  const toggleAllVisibility = async () => {
+    const visibleCount = books.filter(book => book.is_visible).length;
+    const shouldShowAll = visibleCount < books.length / 2; // 半分以下が表示中なら全て表示
+    
+    addDebugLog(`一括表示切り替え開始: ${shouldShowAll ? '全て表示' : '全て非表示'}`);
+    
+    try {
+      const { error } = await supabase
+        .from('ranking_books')
+        .update({ is_visible: shouldShowAll })
+        .eq('week_start_date', currentWeekStart);
+
+      if (error) {
+        addDebugLog(`一括表示切り替えエラー: ${error.message}`);
+        throw error;
+      }
+
+      addDebugLog('一括表示切り替え成功');
+      setSuccessMessage(shouldShowAll ? '全ての書籍を表示しました' : '全ての書籍を非表示にしました');
+      await loadRankingBooks(currentWeekStart);
+    } catch (err) {
+      console.error('一括表示切り替えエラー:', err);
+      addDebugLog(`一括表示切り替え失敗: ${err instanceof Error ? err.message : '不明なエラー'}`);
+      setError('一括表示切り替えに失敗しました');
     }
   };
 
@@ -382,9 +472,19 @@ function RankingManagementPage() {
                       setSuccessMessage(null);
                     }
                   }}
+                  onToggleDebug={() => setShowDebugConsole(!showDebugConsole)}
                   showForm={showForm}
+                  showDebugConsole={showDebugConsole}
                   currentEntity="rankings"
-                  hasDebugFeature={false}
+                  hasDebugFeature={true}
+                  onToggleAllVisibility={toggleAllVisibility}
+                  allVisibilityLabel={
+                    books.length === 0 
+                      ? '表示切り替え' 
+                      : books.filter(book => book.is_visible).length < books.length / 2 
+                        ? '全て表示にする' 
+                        : '全て非表示にする'
+                  }
                 />
               </div>
             </div>
@@ -710,6 +810,39 @@ function RankingManagementPage() {
               </div>
             </Card>
           </>
+        )}
+
+        {/* デバッグコンソール */}
+        {showDebugConsole && (
+          <Card variant="default" className="mt-8">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-ios-gray-800">🔧 デバッグコンソール</h2>
+                <Button
+                  variant="outline"
+                  onClick={() => setDebugLogs([])}
+                  className="text-xs"
+                >
+                  ログクリア
+                </Button>
+              </div>
+              <div className="bg-ios-gray-900 text-ios-gray-100 p-4 rounded-lg font-mono text-sm max-h-80 overflow-y-auto">
+                {debugLogs.length === 0 ? (
+                  <div className="text-ios-gray-400">ログはありません</div>
+                ) : (
+                  debugLogs.map((log, index) => (
+                    <div key={index} className="mb-1">
+                      {log}
+                    </div>
+                  ))
+                )}
+              </div>
+              <div className="mt-4 text-xs text-ios-gray-500">
+                <p>💡 ヒント: ランキング書籍の登録・更新・削除の詳細ログが表示されます</p>
+                <p>🐛 エラーが発生した場合は、ここでSupabase接続状況などを確認できます</p>
+              </div>
+            </div>
+          </Card>
         )}
       </div>
     </div>

@@ -3,8 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { RankingBook, RankingSource } from '@/types';
 import { supabase } from '@/lib/supabase';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+import ManagementSelector from '@/components/admin/ManagementSelector';
+import { AdminActionsDropdown } from '@/components/ui/DropdownMenu';
 import Link from 'next/link';
 import AsinImagePreview from '@/components/AsinImagePreview';
 
@@ -114,7 +118,7 @@ function DuplicateCheckSummary({ books }: { books: RankingBook[] }) {
   );
 }
 
-export default function RankingManagementPage() {
+function RankingManagementPage() {
   const [books, setBooks] = useState<RankingBook[]>([]);
   const [sources, setSources] = useState<RankingSource[]>([]);
   const [form, setForm] = useState<RankingForm>({
@@ -132,7 +136,9 @@ export default function RankingManagementPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [editingBook, setEditingBook] = useState<RankingBook | null>(null);
   const [currentWeekStart, setCurrentWeekStart] = useState<string>('');
 
   useEffect(() => {
@@ -221,32 +227,32 @@ export default function RankingManagementPage() {
         week_start_date: currentWeekStart
       };
 
-      // データベースに保存
-      const { error } = await supabase
-        .from('ranking_books')
-        .insert([bookData]);
-
-      if (error) {
-        throw error;
+      let result;
+      if (editingBook) {
+        // 更新
+        result = await supabase
+          .from('ranking_books')
+          .update(bookData)
+          .eq('id', editingBook.id);
+      } else {
+        // 新規追加
+        result = await supabase
+          .from('ranking_books')
+          .insert([bookData]);
       }
 
+      if (result.error) {
+        throw result.error;
+      }
+
+      // 成功メッセージ
+      setSuccessMessage(editingBook ? 'ランキング書籍を更新しました' : 'ランキング書籍を追加しました');
+      
       // フォームをリセット
-      setForm({
-        title: '',
-        author: '',
-        genre_tags: '',
-        amazon_link: '',
-        asin: '',
-        summary_link: '',
-        description: '',
-        page_count: '',
-        price: '',
-        ranking_source: ''
-      });
+      cancelEdit();
 
       // データを再読み込み
       await loadRankingBooks(currentWeekStart);
-      setShowForm(false);
 
     } catch (err) {
       console.error('保存エラー:', err);
@@ -298,67 +304,122 @@ export default function RankingManagementPage() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-yellow-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-          <p className="text-lg text-ios-gray-600">読み込み中...</p>
-        </div>
-      </div>
-    );
-  }
+  // URLパラメータからフォーム表示状態を判定
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const formParam = params.get('form');
+    if (formParam === 'new') {
+      setShowForm(true);
+    }
+  }, []);
+
+  // 編集開始
+  const startEdit = (book: RankingBook) => {
+    setEditingBook(book);
+    setForm({
+      title: book.title,
+      author: book.author,
+      genre_tags: book.genre_tags.join(', '),
+      amazon_link: book.amazon_link,
+      asin: book.asin || '',
+      summary_link: book.summary_link || '',
+      description: book.description || '',
+      page_count: book.page_count ? String(book.page_count) : '',
+      price: book.price ? String(book.price) : '',
+      ranking_source: book.ranking_source
+    });
+    setShowForm(true);
+  };
+
+  // 編集取消
+  const cancelEdit = () => {
+    setEditingBook(null);
+    setForm({
+      title: '',
+      author: '',
+      genre_tags: '',
+      amazon_link: '',
+      asin: '',
+      summary_link: '',
+      description: '',
+      page_count: '',
+      price: '',
+      ranking_source: ''
+    });
+    setShowForm(false);
+    setError(null);
+    setSuccessMessage(null);
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-yellow-50 px-4 py-8">
-      <div className="max-w-7xl mx-auto">
-        {/* ヘッダー */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-3">
-              <span className="text-3xl">🏆</span>
-              <h1 className="text-3xl font-bold text-ios-gray-800">ランキング管理</h1>
-            </div>
+    <ProtectedRoute>
+      <div className="min-h-screen bg-gradient-to-br from-ios-blue/5 via-white to-ios-purple/5 px-4 py-8">
+        <div className="max-w-7xl mx-auto">
+          {/* 管理ナビゲーション */}
+          <div className="mb-8">
+            <ManagementSelector currentEntity="rankings" />
+          </div>
+
+          {/* ページヘッダー */}
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
             <div className="flex items-center space-x-4">
+              <h1 className="text-3xl font-bold text-ios-gray-800">🏆 ランキング管理</h1>
+              <div className="hidden md:block text-ios-gray-600">
+                今週のランキング書籍を管理
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-2">
               <span className="text-sm text-ios-gray-600">
                 対象週: {currentWeekStart} 〜
               </span>
-              <Link href="/admin">
-                <Button variant="outline">
-                  ← 管理画面に戻る
-                </Button>
-              </Link>
+              <AdminActionsDropdown 
+                onToggleForm={() => {
+                  if (showForm) {
+                    cancelEdit();
+                  } else {
+                    setEditingBook(null);
+                    setShowForm(true);
+                    setError(null);
+                    setSuccessMessage(null);
+                  }
+                }}
+                showForm={showForm}
+                currentEntity="rankings"
+                hasDebugFeature={false}
+              />
             </div>
           </div>
-          <p className="text-ios-gray-600">
-            今週のランキング書籍を管理します。各書店の第1位書籍を登録してください。
-          </p>
-        </div>
 
-        {/* エラーメッセージ */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-            <p className="text-red-600 font-medium">❌ {error}</p>
-          </div>
-        )}
+          {/* エラー・成功メッセージ */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <p className="text-red-600 font-medium">❌ {error}</p>
+            </div>
+          )}
+          
+          {successMessage && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+              <p className="text-green-600 font-medium">✅ {successMessage}</p>
+            </div>
+          )}
 
-        {/* 新規追加ボタン */}
-        <div className="mb-6">
-          <Button
-            variant="primary"
-            onClick={() => setShowForm(!showForm)}
-            className="flex items-center space-x-2"
-          >
-            <span>{showForm ? '➖' : '➕'}</span>
-            <span>{showForm ? 'フォームを閉じる' : '新しいランキング書籍を追加'}</span>
-          </Button>
-        </div>
-
-        {/* 新規追加フォーム */}
-        {showForm && (
-          <Card variant="default" className="mb-8">
-            <div className="p-6">
-              <h2 className="text-xl font-bold text-ios-gray-800 mb-4">新しいランキング書籍を追加</h2>
+          {/* 新規・編集フォーム */}
+          {showForm && (
+            <Card variant="default" className="mb-8">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold text-ios-gray-800">
+                    {editingBook ? 'ランキング書籍を編集' : '新しいランキング書籍を追加'}
+                  </h2>
+                  <Button
+                    variant="outline"
+                    onClick={cancelEdit}
+                    className="text-gray-600"
+                  >
+                    ✕ 閉じる
+                  </Button>
+                </div>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -518,7 +579,7 @@ export default function RankingManagementPage() {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => setShowForm(false)}
+                    onClick={cancelEdit}
                   >
                     キャンセル
                   </Button>
@@ -527,7 +588,7 @@ export default function RankingManagementPage() {
                     variant="primary"
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? '保存中...' : '保存'}
+                    {isSubmitting ? '保存中...' : (editingBook ? '更新' : '追加')}
                   </Button>
                 </div>
               </form>
@@ -535,93 +596,128 @@ export default function RankingManagementPage() {
           </Card>
         )}
 
-        {/* 重複チェック結果 */}
-        {books.length > 0 && (
-          <Card variant="default" className="mb-6">
-            <div className="p-6">
-              <h2 className="text-xl font-bold text-ios-gray-800 mb-4">重複チェック結果</h2>
-              <DuplicateCheckSummary books={books} />
+        {isLoading ? (
+          <Card variant="default">
+            <div className="p-8 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-4"></div>
+              <p className="text-ios-gray-600">読み込み中...</p>
             </div>
           </Card>
-        )}
-
-        {/* 書籍リスト */}
-        <Card variant="default">
-          <div className="p-6">
-            <h2 className="text-xl font-bold text-ios-gray-800 mb-4">
-              今週のランキング書籍 ({books.length}件)
-            </h2>
-            {books.length === 0 ? (
-              <p className="text-ios-gray-600 text-center py-8">
-                まだランキング書籍が登録されていません
-              </p>
-            ) : (
-              <div className="space-y-4">
-                {books.map((book) => (
-                  <div
-                    key={book.id}
-                    className={`border rounded-lg p-4 ${
-                      book.is_visible ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50'
-                    }`}
-                  >
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <h3 className="font-bold text-lg">{book.title}</h3>
-                          <span className={`px-2 py-1 rounded text-xs ${
-                            book.is_visible 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-gray-100 text-gray-800'
-                          }`}>
-                            {book.is_visible ? '表示中' : '非表示'}
-                          </span>
-                        </div>
-                        <p className="text-ios-gray-600 mb-2">著者: {book.author}</p>
-                        <p className="text-sm text-ios-gray-500 mb-2">
-                          ランキング元: {sources.find(s => s.name === book.ranking_source)?.display_name || book.ranking_source}
-                        </p>
-                        {book.genre_tags && book.genre_tags.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mb-2">
-                            {book.genre_tags.map((tag) => (
-                              <span key={tag} className="px-2 py-1 bg-orange-100 text-orange-600 rounded text-xs">
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                        {book.description && (
-                          <p className="text-sm text-ios-gray-600 mb-2">
-                            {book.description.length > 100 
-                              ? `${book.description.substring(0, 100)}...` 
-                              : book.description}
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex flex-col space-y-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => toggleVisibility(book.id, book.is_visible)}
-                        >
-                          {book.is_visible ? '非表示にする' : '表示する'}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDelete(book.id)}
-                          className="text-red-600 border-red-300 hover:bg-red-50"
-                        >
-                          削除
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+        ) : (
+          <>
+            {/* 重複チェック結果 */}
+            {books.length > 0 && (
+              <Card variant="default" className="mb-6">
+                <div className="p-6">
+                  <h2 className="text-xl font-bold text-ios-gray-800 mb-4">重複チェック結果</h2>
+                  <DuplicateCheckSummary books={books} />
+                </div>
+              </Card>
             )}
-          </div>
-        </Card>
+
+            {/* 書籍リスト */}
+            <Card variant="default">
+              <div className="p-6">
+                <h2 className="text-xl font-bold text-ios-gray-800 mb-4">
+                  今週のランキング書籍 ({books.length}件)
+                </h2>
+                {books.length === 0 ? (
+                  <div className="text-center py-8">
+                    <div className="text-6xl mb-4">📚</div>
+                    <p className="text-ios-gray-600 text-lg mb-4">
+                      まだランキング書籍が登録されていません
+                    </p>
+                    <Button
+                      variant="primary"
+                      onClick={() => {
+                        setEditingBook(null);
+                        setShowForm(true);
+                      }}
+                    >
+                      最初のランキング書籍を追加
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {books.map((book) => (
+                      <div
+                        key={book.id}
+                        className={`border rounded-lg p-4 ${
+                          book.is_visible ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50'
+                        }`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <h3 className="font-bold text-lg">{book.title}</h3>
+                              <span className={`px-2 py-1 rounded text-xs ${
+                                book.is_visible 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-gray-100 text-gray-800'
+                              }`}>
+                                {book.is_visible ? '表示中' : '非表示'}
+                              </span>
+                            </div>
+                            <p className="text-ios-gray-600 mb-2">著者: {book.author}</p>
+                            <p className="text-sm text-ios-gray-500 mb-2">
+                              ランキング元: {sources.find(s => s.name === book.ranking_source)?.display_name || book.ranking_source}
+                            </p>
+                            {book.genre_tags && book.genre_tags.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mb-2">
+                                {book.genre_tags.map((tag) => (
+                                  <span key={tag} className="px-2 py-1 bg-orange-100 text-orange-600 rounded text-xs">
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                            {book.description && (
+                              <p className="text-sm text-ios-gray-600 mb-2">
+                                {book.description.length > 100 
+                                  ? `${book.description.substring(0, 100)}...` 
+                                  : book.description}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex flex-col space-y-2 ml-4">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => startEdit(book)}
+                            >
+                              編集
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => toggleVisibility(book.id, book.is_visible)}
+                            >
+                              {book.is_visible ? '非表示' : '表示'}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDelete(book.id)}
+                              className="text-red-600 border-red-300 hover:bg-red-50"
+                            >
+                              削除
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </Card>
+          </>
+        )}
       </div>
     </div>
-  );
+  </ProtectedRoute>
+);
+}
+
+export default function AdminRankingsPage() {
+  return <RankingManagementPage />;
 }

@@ -27,6 +27,7 @@ export default function ManagementSelector({
     if (pathname === '/admin') return 'books';
     if (pathname.startsWith('/admin/stores')) return 'stores';
     if (pathname.startsWith('/admin/archives')) return 'archives';
+    if (pathname.startsWith('/admin/rankings')) return 'rankings';
     
     return undefined;
   };
@@ -113,6 +114,7 @@ interface ManagementStatsProps {
   booksCount?: number;
   storesCount?: number;
   archivesCount?: number;
+  rankingsCount?: number;
   isLoading?: boolean;
 }
 
@@ -120,6 +122,7 @@ export function ManagementStats({
   booksCount = 0, 
   storesCount = 0, 
   archivesCount = 0, 
+  rankingsCount = 0,
   isLoading = false 
 }: ManagementStatsProps) {
   const stats = [
@@ -127,6 +130,11 @@ export function ManagementStats({
       entity: MANAGEMENT_ENTITIES.books, 
       count: booksCount,
       label: '登録書籍'
+    },
+    { 
+      entity: MANAGEMENT_ENTITIES.rankings, 
+      count: rankingsCount,
+      label: 'ランキング書籍'
     },
     { 
       entity: MANAGEMENT_ENTITIES.stores, 
@@ -141,7 +149,7 @@ export function ManagementStats({
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       {stats.map((stat) => (
         <Link key={stat.entity.type} href={stat.entity.path}>
           <Card 

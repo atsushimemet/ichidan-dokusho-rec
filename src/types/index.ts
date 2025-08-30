@@ -124,8 +124,20 @@ export interface RankingSource {
   created_at: string;
 }
 
+// 紹介者型定義
+export interface Introducer {
+  id: string;
+  name: string;
+  profile_url: string | null;
+  description: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  created_by: string | null;
+}
+
 // 管理対象の共通型定義
-export type ManagementEntityType = 'books' | 'stores' | 'archives' | 'rankings';
+export type ManagementEntityType = 'books' | 'stores' | 'archives' | 'rankings' | 'introducers';
 
 export interface ManagementEntityConfig {
   type: ManagementEntityType;
@@ -169,5 +181,13 @@ export const MANAGEMENT_ENTITIES: Record<ManagementEntityType, ManagementEntityC
     description: '今週のランキング書籍を管理',
     path: '/admin/rankings',
     color: 'orange'
+  },
+  introducers: {
+    type: 'introducers',
+    name: '紹介者管理',
+    icon: '👤',
+    description: '書籍の紹介者・レビュアーを管理',
+    path: '/admin/introducers',
+    color: 'indigo'
   }
 };

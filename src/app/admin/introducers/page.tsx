@@ -7,6 +7,7 @@ import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import ManagementSelector from '@/components/admin/ManagementSelector';
+import { AdminActionsDropdown } from '@/components/ui/DropdownMenu';
 
 import { supabase } from '@/lib/supabase';
 import { Introducer } from '@/types';
@@ -463,72 +464,69 @@ export default function AdminIntroducersPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-ios-gray-50">
-        <div className="container mx-auto px-4 py-8">
+      <div className="min-h-screen bg-gradient-to-br from-ios-blue/5 via-white to-ios-purple/5 px-4 py-8">
+        <div className="max-w-7xl mx-auto">
           {/* ヘッダー */}
           <div className="mb-8">
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-              <div className="flex items-center space-x-4">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
                 <h1 className="text-3xl font-bold text-ios-gray-800">紹介者管理</h1>
-                <div className="hidden md:block text-ios-gray-600">
+                <p className="text-ios-gray-600 mt-2">
                   書籍の紹介者・レビュアーを管理
-                </div>
+                </p>
               </div>
               
               <div className="flex items-center space-x-2">
                 <ManagementSelector currentEntity="introducers" compact />
                 
-                <Link href="/admin/tags">
-                  <Button variant="secondary" size="sm" className="px-3 w-10" title="タグマスター管理">
-                    🏷️
-                  </Button>
-                </Link>
-                
-                <Link href="/admin/mappings">
-                  <Button variant="secondary" size="sm" className="px-3 w-10" title="質問マッピング管理">
-                    🔗
-                  </Button>
-                </Link>
-                
-                <Link href="/">
-                  <Button variant="outline" size="sm" className="px-3 w-10" title="ホームに戻る">
-                    🏠
-                  </Button>
-                </Link>
+                <AdminActionsDropdown
+                  onToggleForm={() => setShowForm(!showForm)}
+                  onToggleDebug={() => setShowDebugConsole(!showDebugConsole)}
+                  showForm={showForm}
+                  showDebugConsole={showDebugConsole}
+                  currentEntity="introducers"
+                />
               </div>
             </div>
-            
-            <ManagementSelector currentEntity="introducers" />
           </div>
 
           {/* エラー・成功メッセージ */}
           {error && (
-            <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-red-700">{error}</p>
+            <div className="bg-ios-red/10 border border-ios-red/30 rounded-lg p-4 mb-6">
+              <p className="text-ios-red font-medium">❌ {error}</p>
             </div>
           )}
-          
+
           {successMessage && (
-            <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
-              <p className="text-green-700">{successMessage}</p>
+            <div className="bg-ios-green/10 border border-ios-green/30 rounded-lg p-4 mb-6">
+              <p className="text-ios-green font-medium">✅ {successMessage}</p>
             </div>
           )}
 
           {/* 自動保存ステータス */}
           {autoSaveMessage && (
-            <div className={`mb-4 p-3 rounded-lg text-sm ${
-              autoSaveStatus === 'saving' ? 'bg-blue-100 text-blue-700' :
-              autoSaveStatus === 'saved' ? 'bg-green-100 text-green-700' :
-              autoSaveStatus === 'error' ? 'bg-red-100 text-red-700' : ''
+            <div className={`fixed top-4 right-4 z-50 max-w-sm p-4 rounded-lg shadow-lg border ${
+              autoSaveStatus === 'saving' 
+                ? 'bg-ios-blue/10 border-ios-blue/30 text-ios-blue' 
+                : autoSaveStatus === 'saved'
+                ? 'bg-ios-green/10 border-ios-green/30 text-ios-green'
+                : 'bg-ios-red/10 border-ios-red/30 text-ios-red'
             }`}>
-              {autoSaveMessage}
+              <div className="flex items-center space-x-2">
+                {autoSaveStatus === 'saving' && (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+                )}
+                {autoSaveStatus === 'saved' && <span>✅</span>}
+                {autoSaveStatus === 'error' && <span>❌</span>}
+                <p className="text-sm font-medium">{autoSaveMessage}</p>
+              </div>
             </div>
           )}
 
           {/* 検索・フィルタ */}
-          <Card className="mb-6">
+          <div className="mb-6">
             <div className="flex flex-wrap gap-4 items-center">
-              <div className="flex-1 min-w-64">
+              <div className="flex-1 max-w-md">
                 <Input
                   type="text"
                   placeholder="紹介者名や説明で検索..."
@@ -548,21 +546,15 @@ export default function AdminIntroducersPage() {
                   <option value="inactive">非アクティブ</option>
                 </select>
               </div>
-              <Button
-                onClick={() => setShowForm(true)}
-                variant="primary"
-              >
-                + 新規紹介者
-              </Button>
             </div>
-          </Card>
+          </div>
 
           {/* 新規作成・編集フォーム */}
           {showForm && (
-            <Card className="mb-6">
-              <h3 className="text-xl font-bold mb-4">
+            <Card className="mb-8 p-6">
+              <h2 className="text-xl font-bold text-ios-gray-800 mb-4">
                 {editingIntroducer ? '紹介者編集' : '新規紹介者作成'}
-              </h3>
+              </h2>
               
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
@@ -613,12 +605,19 @@ export default function AdminIntroducersPage() {
                   </p>
                 </div>
 
-                <div className="flex space-x-3">
-                  <Button type="submit" variant="primary">
-                    {editingIntroducer ? '更新' : '作成'}
-                  </Button>
-                  <Button type="button" variant="secondary" onClick={handleCancel}>
+                <div className="flex justify-end space-x-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleCancel}
+                  >
                     キャンセル
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                  >
+                    {editingIntroducer ? '更新' : '作成'}
                   </Button>
                 </div>
               </form>
@@ -626,12 +625,11 @@ export default function AdminIntroducersPage() {
           )}
 
           {/* 紹介者一覧 */}
-          <Card>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold">
+          <Card variant="default">
+            <div className="p-6">
+              <h2 className="text-xl font-bold text-ios-gray-800 mb-4">
                 紹介者一覧 ({filteredIntroducers.length}件)
-              </h3>
-            </div>
+              </h2>
 
             {isLoading ? (
               <div className="text-center py-8">
@@ -726,50 +724,60 @@ export default function AdminIntroducersPage() {
                 </table>
               </div>
             )}
+            </div>
           </Card>
 
           {/* デバッグコンソール */}
-          {showDebugConsole && debugLogs.length > 0 && (
-            <Card className="mt-6">
+          {showDebugConsole && (
+            <Card variant="default" className="p-6 mb-6">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-bold">デバッグログ</h3>
+                <h3 className="text-lg font-bold text-ios-gray-800">🔧 デバッグコンソール</h3>
                 <div className="flex space-x-2">
                   <Button
-                    onClick={() => setDebugLogs([])}
-                    variant="secondary"
-                    size="sm"
-                  >
-                    クリア
-                  </Button>
-                  <Button
-                    onClick={() => setShowDebugConsole(false)}
                     variant="outline"
                     size="sm"
+                    onClick={() => setDebugLogs([])}
+                    title="ログクリア"
                   >
-                    非表示
+                    🗑️
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const logText = debugLogs.join('\n');
+                      navigator.clipboard?.writeText(logText).then(() => {
+                        alert('ログをクリップボードにコピーしました');
+                      });
+                    }}
+                    title="ログコピー"
+                  >
+                    📋
                   </Button>
                 </div>
               </div>
-              <div className="bg-ios-gray-900 text-green-400 p-4 rounded-lg font-mono text-xs max-h-64 overflow-y-auto">
-                {debugLogs.map((log, index) => (
-                  <div key={index} className="mb-1">
-                    {log}
-                  </div>
-                ))}
+              
+              <div className="bg-black text-green-400 font-mono text-sm p-4 rounded-lg h-64 overflow-y-auto">
+                {debugLogs.length === 0 ? (
+                  <div className="text-gray-500">ログがありません。紹介者の操作を行うとここにログが表示されます。</div>
+                ) : (
+                  debugLogs.map((log, index) => (
+                    <div key={index} className="mb-1">
+                      {log}
+                    </div>
+                  ))
+                )}
+              </div>
+              
+              <div className="mt-4 text-xs text-ios-gray-500">
+                <h4 className="font-medium mb-2">💡 デバッグ情報の見方:</h4>
+                <ul className="space-y-1 ml-4">
+                  <li>• 紹介者の追加・編集・削除を行うとログが表示されます</li>
+                  <li>• Supabaseとの通信状況を確認できます</li>
+                  <li>• エラーが発生した場合の詳細情報が表示されます</li>
+                </ul>
               </div>
             </Card>
-          )}
-
-          {!showDebugConsole && (
-            <div className="mt-6 text-center">
-              <Button
-                onClick={() => setShowDebugConsole(true)}
-                variant="outline"
-                size="sm"
-              >
-                デバッグログを表示
-              </Button>
-            </div>
           )}
         </div>
       </div>

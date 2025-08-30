@@ -137,8 +137,11 @@ interface AdminActionsDropdownProps {
   onToggleDebug?: () => void;
   showForm: boolean;
   showDebugConsole?: boolean;
-  currentEntity?: 'books' | 'stores' | 'archives';
+  currentEntity?: 'books' | 'stores' | 'archives' | 'rankings';
   hasDebugFeature?: boolean;
+  // ランキング管理専用機能
+  onToggleAllVisibility?: () => void;
+  allVisibilityLabel?: string;
 }
 
 export function AdminActionsDropdown({ 
@@ -147,12 +150,15 @@ export function AdminActionsDropdown({
   showForm, 
   showDebugConsole = false,
   currentEntity = 'books',
-  hasDebugFeature = true
+  hasDebugFeature = true,
+  onToggleAllVisibility,
+  allVisibilityLabel
 }: AdminActionsDropdownProps) {
   const entityConfig = {
     books: { icon: '📚', label: '書籍', addLabel: '新しい書籍を追加' },
     stores: { icon: '🏪', label: '店舗', addLabel: '新しい店舗を追加' },
-    archives: { icon: '📰', label: 'アーカイブ', addLabel: '新しい記事を追加' }
+    archives: { icon: '📰', label: 'アーカイブ', addLabel: '新しい記事を追加' },
+    rankings: { icon: '🏆', label: 'ランキング書籍', addLabel: '新しいランキング書籍を追加' }
   };
 
   const config = entityConfig[currentEntity];
@@ -174,6 +180,17 @@ export function AdminActionsDropdown({
       label: showDebugConsole ? 'デバッグコンソールを非表示' : 'デバッグコンソールを表示',
       icon: '🔧',
       onClick: onToggleDebug,
+      variant: 'secondary'
+    });
+  }
+
+  // ランキング管理専用の一括表示切り替え機能
+  if (currentEntity === 'rankings' && onToggleAllVisibility && allVisibilityLabel) {
+    items.push({
+      type: 'button',
+      label: allVisibilityLabel,
+      icon: '👁️',
+      onClick: onToggleAllVisibility,
       variant: 'secondary'
     });
   }

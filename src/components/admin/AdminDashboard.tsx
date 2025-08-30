@@ -11,6 +11,7 @@ interface DashboardStats {
   books: number;
   stores: number;
   archives: number;
+  rankings: number;
   tags: number;
   mappings: number;
 }
@@ -20,6 +21,7 @@ export default function AdminDashboard() {
     books: 0,
     stores: 0,
     archives: 0,
+    rankings: 0,
     tags: 0,
     mappings: 0
   });
@@ -44,6 +46,7 @@ export default function AdminDashboard() {
           books: 25,
           stores: 12,
           archives: 8,
+          rankings: 11,
           tags: 15,
           mappings: 18
         });
@@ -51,10 +54,11 @@ export default function AdminDashboard() {
       }
 
       // 各テーブルのカウントを並列で取得
-      const [booksResult, storesResult, archivesResult, tagsResult, mappingsResult] = await Promise.all([
+      const [booksResult, storesResult, archivesResult, rankingsResult, tagsResult, mappingsResult] = await Promise.all([
         supabase.from('books').select('id', { count: 'exact', head: true }),
         supabase.from('stores').select('id', { count: 'exact', head: true }),
         supabase.from('archives').select('id', { count: 'exact', head: true }),
+        supabase.from('ranking_books').select('id', { count: 'exact', head: true }).eq('is_visible', true),
         supabase.from('genre_tags').select('id', { count: 'exact', head: true }).eq('is_active', true),
         supabase.from('question_mappings').select('id', { count: 'exact', head: true })
       ]);
@@ -63,12 +67,13 @@ export default function AdminDashboard() {
         books: booksResult.count || 0,
         stores: storesResult.count || 0,
         archives: archivesResult.count || 0,
+        rankings: rankingsResult.count || 0,
         tags: tagsResult.count || 0,
         mappings: mappingsResult.count || 0
       });
 
       // エラーチェック
-      const errors = [booksResult.error, storesResult.error, archivesResult.error, tagsResult.error, mappingsResult.error].filter(Boolean);
+      const errors = [booksResult.error, storesResult.error, archivesResult.error, rankingsResult.error, tagsResult.error, mappingsResult.error].filter(Boolean);
       if (errors.length > 0) {
         console.warn('一部の統計データ取得でエラーが発生:', errors);
       }
@@ -82,6 +87,7 @@ export default function AdminDashboard() {
         books: 0,
         stores: 0,
         archives: 0,
+        rankings: 0,
         tags: 0,
         mappings: 0
       });
@@ -110,6 +116,7 @@ export default function AdminDashboard() {
           booksCount={stats.books}
           storesCount={stats.stores}
           archivesCount={stats.archives}
+          rankingsCount={stats.rankings}
           isLoading={isLoading}
         />
 
@@ -188,11 +195,18 @@ export default function AdminDashboard() {
         {/* クイックアクション */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-ios-gray-800 mb-6">クイックアクション</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Link href="/admin?form=new">
               <Button variant="primary" className="w-full p-4 h-auto flex flex-col items-center space-y-2">
                 <span className="text-2xl">📚</span>
                 <span>新しい書籍を追加</span>
+              </Button>
+            </Link>
+            
+            <Link href="/admin/rankings">
+              <Button variant="secondary" className="w-full p-4 h-auto flex flex-col items-center space-y-2 bg-gradient-to-r from-orange-50 to-yellow-50 border-orange-200 text-orange-600 hover:bg-gradient-to-r hover:from-orange-100 hover:to-yellow-100">
+                <span className="text-2xl">🏆</span>
+                <span>ランキング書籍を追加</span>
               </Button>
             </Link>
             

@@ -94,8 +94,38 @@ export interface Archive {
   updated_at: string;
 }
 
+// ランキング書籍型定義
+export interface RankingBook {
+  id: string;
+  title: string;
+  author: string;
+  genre_tags: string[];
+  amazon_link: string;
+  asin: string | null;
+  summary_link: string | null;
+  description: string | null;
+  page_count: number | null;
+  price: number | null;
+  ranking_source: string;
+  is_visible: boolean;
+  week_start_date: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// ランキング元型定義
+export interface RankingSource {
+  id: string;
+  name: string;
+  display_name: string;
+  category: string | null;
+  is_active: boolean;
+  display_order: number;
+  created_at: string;
+}
+
 // 管理対象の共通型定義
-export type ManagementEntityType = 'books' | 'stores' | 'archives';
+export type ManagementEntityType = 'books' | 'stores' | 'archives' | 'rankings';
 
 export interface ManagementEntityConfig {
   type: ManagementEntityType;
@@ -131,5 +161,13 @@ export const MANAGEMENT_ENTITIES: Record<ManagementEntityType, ManagementEntityC
     description: '関連記事・コンテンツを管理',
     path: '/admin/archives',
     color: 'purple'
+  },
+  rankings: {
+    type: 'rankings',
+    name: 'ランキング管理',
+    icon: '🏆',
+    description: '今週のランキング書籍を管理',
+    path: '/admin/rankings',
+    color: 'orange'
   }
 };

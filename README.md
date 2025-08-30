@@ -22,12 +22,14 @@
 
 ### ユーザー向け機能
 - 🏠 **ホームページ**: システムの概要と利用開始
+- 🏆 **今週のランキング**: 主要書店・オンライン書店のランキング1位書籍を横スクロール表示
 - ❓ **質問回答**: 3つの質問（目的・ジャンル・難易度）
 - 📊 **レコメンド結果**: スコア付きで最大10冊の書籍を表示
 - 🔗 **外部リンク**: Amazon購入リンク・要約リンク
 
 ### 管理者向け機能
 - 📚 **書籍管理**: 書籍の追加・編集・削除
+- 🏆 **ランキング管理**: 週次ランキング書籍の登録・重複チェック
 - 🏷️ **タグ管理**: ジャンルタグの設定
 - 📈 **難易度設定**: 初級・中級・上級の3段階
 
@@ -47,7 +49,21 @@ npm install
 ### 3. Supabaseプロジェクトの設定
 
 1. [Supabase](https://supabase.com/)でプロジェクトを作成
-2. SQLエディタで `supabase/schema.sql` を実行
+2. SQLエディタで以下のファイルを順番に実行
+   - `supabase/schema.sql` （基本スキーマ）
+   - `supabase/migration_add_ranking_books_v2.sql` （ランキング機能 - ASIN対応版）
+
+#### 既存環境でのマイグレーション更新
+既にランキング機能を実装済みの場合は、以下の手順でASIN対応版に更新：
+1. `supabase/rollback_ranking_books.sql` を実行（既存データは削除されます）
+2. `supabase/migration_add_ranking_books_v2.sql` を実行
+3. `supabase/fix_ranking_trigger.sql` を実行（トリガー無限ループ修正）
+
+#### トリガーエラー修正（stack depth limit exceeded）
+登録時にエラーが発生する場合は：
+1. `supabase/fix_ranking_trigger.sql` を実行
+2. `supabase/fix_ranking_function.sql` を実行（推奨）
+
 3. 環境変数を設定
 
 ### 4. 環境変数の設定

@@ -4,6 +4,7 @@ import ScrollAnimatedSection from "@/components/ScrollAnimatedSection";
 import CountUpNumber from "@/components/CountUpNumber";
 import FloatingElements from "@/components/FloatingElements";
 import BookSlider from "@/components/BookSlider";
+import RankingSlider from "@/components/RankingSlider";
 import StoreSlider from "@/components/StoreSlider";
 import ArchiveSlider from "@/components/ArchiveSlider";
 
@@ -48,6 +49,14 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Ranking Slider Section */}
+      <ScrollAnimatedSection animationType="fade-in">
+        <RankingSlider 
+          title="今週のランキング"
+          subtitle="主要書店・オンライン書店で話題の書籍をお届けします"
+        />
+      </ScrollAnimatedSection>
 
       {/* Book Slider Section */}
       <ScrollAnimatedSection animationType="fade-in">

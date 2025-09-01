@@ -29,13 +29,13 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- 既存のランキング書籍で08-25や08-26になっているデータを修正
--- 2024年9月1日に登録された書籍は2024-09-02週に属するべき
+-- 既存のランキング書籍で08-25になっているデータを修正
+-- 2025年9月1日（日本時間）に登録された書籍は2025-09-01週に属するべき
 UPDATE ranking_books 
-SET week_start_date = '2024-09-02'
-WHERE week_start_date IN ('2024-08-25', '2024-08-26')
-  AND created_at >= '2024-09-01'
-  AND created_at < '2024-09-02';
+SET week_start_date = '2025-09-01'
+WHERE week_start_date = '2025-08-25'
+  AND created_at >= '2025-09-01 00:00:00'
+  AND created_at < '2025-09-02 00:00:00';
 
 -- 確認用：更新されたレコード数を表示
 DO $$

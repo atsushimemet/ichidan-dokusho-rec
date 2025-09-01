@@ -11,6 +11,7 @@ import ManagementSelector from '@/components/admin/ManagementSelector';
 import { AdminActionsDropdown } from '@/components/ui/DropdownMenu';
 import Link from 'next/link';
 import AsinImagePreview from '@/components/AsinImagePreview';
+import { getWeekStartDate } from '@/utils/dateUtils';
 
 interface RankingForm {
   title: string;
@@ -162,13 +163,8 @@ function RankingManagementPage() {
       addDebugLog('ランキング管理画面初期化開始');
       
       // 今週の開始日を計算（月曜日基準）
-      const now = new Date();
-      const monday = new Date(now);
-      // 日曜日=0, 月曜日=1, ...土曜日=6
-      const dayOfWeek = now.getDay();
-      const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // 日曜日の場合は6日前、それ以外は(dayOfWeek-1)日前
-      monday.setDate(now.getDate() - daysToSubtract);
-      const weekStart = monday.toISOString().split('T')[0];
+      // 日曜日は翌週の開始週として扱う
+      const weekStart = getWeekStartDate();
       setCurrentWeekStart(weekStart);
       addDebugLog(`対象週設定: ${weekStart}`);
 

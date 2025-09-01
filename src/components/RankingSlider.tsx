@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { RankingBook } from '@/types';
 import { supabase } from '@/lib/supabase';
 import AsinImagePreview from './AsinImagePreview';
+import { getWeekStartDate } from '@/utils/dateUtils';
 
 interface RankingSliderProps {
   title: string;
@@ -25,10 +26,8 @@ export default function RankingSlider({ title, subtitle }: RankingSliderProps) {
         // supabaseクライアントは既にインポート済み
         
         // 現在の週の開始日を取得
-        const now = new Date();
-        const monday = new Date(now);
-        monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-        const weekStartDate = monday.toISOString().split('T')[0];
+        // 日曜日は翌週の開始週として扱う
+        const weekStartDate = getWeekStartDate();
         
         // 今週のランキング書籍を取得（表示可能なもののみ）
         const { data, error: fetchError } = await supabase

@@ -1,31 +1,17 @@
 -- 週の開始日計算の修正
--- 日曜日を翌週の開始週として扱うように変更
+-- 日本時間基準でISO週計算（月曜日開始、日曜日は前週扱い）
 
 CREATE OR REPLACE FUNCTION get_week_start_date(input_date DATE DEFAULT CURRENT_DATE)
 RETURNS DATE AS $$
 DECLARE
   day_of_week INTEGER;
-  date_of_month INTEGER;
 BEGIN
   -- 曜日を取得（0=日曜日, 1=月曜日, ..., 6=土曜日）
   day_of_week := EXTRACT(dow FROM input_date)::integer;
-  date_of_month := EXTRACT(day FROM input_date)::integer;
   
-  -- 月末・月初の特別処理
-  -- 土曜日・日曜日が月の最初の2日間にある場合、次の月曜日を週開始とする
-  IF (day_of_week = 0 OR day_of_week = 6) AND date_of_month <= 2 THEN
-    -- 次の月曜日を計算
-    IF day_of_week = 0 THEN
-      -- 日曜日なら翌日（月曜日）
-      RETURN input_date + 1;
-    ELSE
-      -- 土曜日なら翌々日（月曜日）
-      RETURN input_date + 2;
-    END IF;
-  ELSE
-    -- 通常の週計算（月曜日基準）
-    RETURN input_date - ((day_of_week + 6) % 7);
-  END IF;
+  -- ISO週計算（月曜日開始、日曜日は前週扱い）
+  -- 月曜日=0, 火曜日=1, ..., 日曜日=6として計算
+  RETURN input_date - ((day_of_week + 6) % 7);
 END;
 $$ LANGUAGE plpgsql;
 

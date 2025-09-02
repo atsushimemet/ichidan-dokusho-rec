@@ -1,0 +1,291 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { Quiz } from '@/types';
+
+interface QuizWithMemo extends Quiz {
+  memo?: {
+    title: string;
+  };
+}
+
+export default function TodayQuizPage() {
+  const [quizzes, setQuizzes] = useState<QuizWithMemo[]>([]);
+  const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
+  const [userAnswer, setUserAnswer] = useState('');
+  const [showResult, setShowResult] = useState(false);
+  const [result, setResult] = useState<{
+    isCorrect: boolean;
+    correctAnswer: string;
+    message: string;
+  } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
+  // 仮のユーザーID（実際の実装では認証システムから取得）
+  const userId = 'temp-user-id';
+
+  useEffect(() => {
+    fetchTodayQuizzes();
+  }, []);
+
+  const fetchTodayQuizzes = async () => {
+    try {
+      const response = await fetch(`/api/quizzes?userId=${userId}&today=true`);
+      const data = await response.json();
+      
+      if (response.ok) {
+        setQuizzes(data.quizzes);
+      } else {
+        console.error('Error fetching quizzes:', data.error);
+      }
+    } catch (error) {
+      console.error('Error fetching quizzes:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const submitAnswer = async () => {
+    if (!userAnswer.trim()) {
+      alert('回答を入力してください');
+      return;
+    }
+
+    const currentQuiz = quizzes[currentQuizIndex];
+    setSubmitting(true);
+
+    try {
+      const response = await fetch(`/api/quizzes/${currentQuiz.id}/answer`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userAnswer: userAnswer.trim(),
+          userId
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        setResult({
+          isCorrect: data.isCorrect,
+          correctAnswer: data.correctAnswer,
+          message: data.message
+        });
+        setShowResult(true);
+      } else {
+        alert(`エラー: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Error submitting answer:', error);
+      alert('回答の送信に失敗しました');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const nextQuiz = () => {
+    if (currentQuizIndex < quizzes.length - 1) {
+      setCurrentQuizIndex(currentQuizIndex + 1);
+      setUserAnswer('');
+      setShowResult(false);
+      setResult(null);
+    } else {
+      // すべてのクイズが完了
+      alert('今日のクイズが完了しました！お疲れさまでした。');
+      window.location.href = '/memos';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">クイズを読み込み中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (quizzes.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="max-w-md mx-auto text-center bg-white rounded-lg shadow-md p-8">
+          <div className="text-gray-400 mb-4">
+            <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">今日のクイズはありません</h2>
+          <p className="text-gray-600 mb-6">
+            メモを作成すると自動でクイズが生成されます
+          </p>
+          <div className="space-y-3">
+            <a
+              href="/memos"
+              className="block w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
+            >
+              メモを作成する
+            </a>
+            <a
+              href="/"
+              className="block w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 transition-colors"
+            >
+              ホームに戻る
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const currentQuiz = quizzes[currentQuizIndex];
+  const progress = ((currentQuizIndex + 1) / quizzes.length) * 100;
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-2xl mx-auto px-4 py-8">
+        {/* プログレスバー */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-2xl font-bold text-gray-900">🧠 今日のクイズ</h1>
+            <span className="text-sm text-gray-600">
+              {currentQuizIndex + 1} / {quizzes.length}
+            </span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+        </div>
+
+        {/* クイズカード */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <div className="mb-4">
+            <div className="flex items-center space-x-2 mb-2">
+              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                currentQuiz.type === 'cloze' 
+                  ? 'bg-blue-100 text-blue-800' 
+                  : 'bg-green-100 text-green-800'
+              }`}>
+                {currentQuiz.type === 'cloze' ? '穴埋め問題' : 'True/False問題'}
+              </span>
+              {currentQuiz.memo && (
+                <span className="text-xs text-gray-500">
+                  出典: {currentQuiz.memo.title}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">問題</h2>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <p className="text-gray-800 whitespace-pre-wrap leading-relaxed">
+                {currentQuiz.stem}
+              </p>
+            </div>
+          </div>
+
+          {!showResult ? (
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="answer" className="block text-sm font-medium text-gray-700 mb-2">
+                  あなたの回答
+                </label>
+                {currentQuiz.type === 'cloze' ? (
+                  <input
+                    type="text"
+                    id="answer"
+                    value={userAnswer}
+                    onChange={(e) => setUserAnswer(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="回答を入力してください"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !submitting) {
+                        submitAnswer();
+                      }
+                    }}
+                  />
+                ) : (
+                  <div className="space-y-2">
+                    <label className="flex items-center space-x-3 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="tfAnswer"
+                        value="True"
+                        checked={userAnswer === 'True'}
+                        onChange={(e) => setUserAnswer(e.target.value)}
+                        className="w-4 h-4 text-blue-600"
+                      />
+                      <span className="text-gray-700">True（正しい）</span>
+                    </label>
+                    <label className="flex items-center space-x-3 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="tfAnswer"
+                        value="False"
+                        checked={userAnswer === 'False'}
+                        onChange={(e) => setUserAnswer(e.target.value)}
+                        className="w-4 h-4 text-blue-600"
+                      />
+                      <span className="text-gray-700">False（間違い）</span>
+                    </label>
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={submitAnswer}
+                disabled={submitting || !userAnswer.trim()}
+                className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {submitting ? '回答を送信中...' : '回答する'}
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className={`rounded-lg p-4 ${
+                result?.isCorrect ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
+              }`}>
+                <div className="flex items-center space-x-2 mb-2">
+                  <span className={`text-lg ${result?.isCorrect ? 'text-green-600' : 'text-red-600'}`}>
+                    {result?.isCorrect ? '✅' : '❌'}
+                  </span>
+                  <span className={`font-semibold ${result?.isCorrect ? 'text-green-800' : 'text-red-800'}`}>
+                    {result?.message}
+                  </span>
+                </div>
+                <div className="text-sm text-gray-700">
+                  <p><strong>あなたの回答:</strong> {userAnswer}</p>
+                  <p><strong>正解:</strong> {result?.correctAnswer}</p>
+                </div>
+              </div>
+              <button
+                onClick={nextQuiz}
+                className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors"
+              >
+                {currentQuizIndex < quizzes.length - 1 ? '次の問題へ' : '完了'}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* ナビゲーション */}
+        <div className="text-center">
+          <a
+            href="/memos"
+            className="text-blue-600 hover:text-blue-800 text-sm"
+          >
+            メモ一覧に戻る
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}

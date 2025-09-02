@@ -33,18 +33,29 @@ export default function Home() {
           </div>
 
           {/* CTAボタン */}
-          <div className="space-y-4">
-            <Link
-              href="/questions"
-              className="group inline-flex items-center gap-3 bg-ios-blue text-white text-lg md:text-xl px-8 md:px-12 py-4 md:py-5 rounded-full hover:bg-ios-blue/90 transition-all duration-500 ease-out hover:scale-105 shadow-lg hover:shadow-xl"
-            >
-              <span className="group-hover:translate-x-1 transition-transform duration-300">質問に答えて本を探す</span>
-              <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </Link>
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Link
+                href="/questions"
+                className="group inline-flex items-center gap-3 bg-ios-blue text-white text-lg md:text-xl px-8 md:px-12 py-4 md:py-5 rounded-full hover:bg-ios-blue/90 transition-all duration-500 ease-out hover:scale-105 shadow-lg hover:shadow-xl"
+              >
+                <span className="group-hover:translate-x-1 transition-transform duration-300">質問に答えて本を探す</span>
+                <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </Link>
+              <Link
+                href="/memos"
+                className="group inline-flex items-center gap-3 bg-green-600 text-white text-lg md:text-xl px-8 md:px-12 py-4 md:py-5 rounded-full hover:bg-green-700 transition-all duration-500 ease-out hover:scale-105 shadow-lg hover:shadow-xl"
+              >
+                <span className="group-hover:translate-x-1 transition-transform duration-300">📝 読書メモ＆クイズ</span>
+                <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </Link>
+            </div>
             <p className="text-sm text-ios-gray-500 font-light">
-              所要時間: 約30秒
+              本を探す: 約30秒 | メモ作成: 約2分
             </p>
           </div>
         </div>

@@ -163,7 +163,7 @@ function RankingManagementPage() {
       addDebugLog('ランキング管理画面初期化開始');
       
       // 今週の開始日を計算（月曜日基準）
-      // 日曜日は翌週の開始週として扱う
+      // 日曜日は前週扱い（ISO週標準）
       const weekStart = getWeekStartDate();
       setCurrentWeekStart(weekStart);
       addDebugLog(`対象週設定: ${weekStart}`);

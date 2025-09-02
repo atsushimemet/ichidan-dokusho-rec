@@ -6,13 +6,20 @@
  * @returns 週の開始日（月曜日）のISO文字列（YYYY-MM-DD形式）
  */
 export function getWeekStartDate(date: Date = new Date()): string {
-  // 日本時間での日付文字列を取得
-  const jstDateStr = date.toLocaleString('en-CA', {timeZone: 'Asia/Tokyo'}).split(',')[0];
-  const jstDate = new Date(jstDateStr + 'T00:00:00');
+  // 日本時間での日付を確実に取得
+  const jstDate = new Date(date.toLocaleString('sv-SE', {timeZone: 'Asia/Tokyo'}));
   const dayOfWeek = jstDate.getDay();
   
-  // ISO週計算（月曜日=0, 火曜日=1, ..., 日曜日=6）
-  const daysToSubtract = (dayOfWeek + 6) % 7;
+  // ISO週計算（月曜日開始、日曜日は前週扱い）
+  let daysToSubtract;
+  if (dayOfWeek === 0) {
+    // 日曜日は前週の月曜日（6日前）
+    daysToSubtract = 6;
+  } else {
+    // 月曜日〜土曜日はその週の月曜日
+    daysToSubtract = dayOfWeek - 1;
+  }
+  
   const monday = new Date(jstDate);
   monday.setDate(jstDate.getDate() - daysToSubtract);
   

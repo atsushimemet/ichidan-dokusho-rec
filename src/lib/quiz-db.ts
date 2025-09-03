@@ -321,18 +321,27 @@ export class QuizService {
 // 回答関連の操作
 export class AttemptService {
   static async create(attemptData: Omit<Attempt, 'id' | 'answered_at'>): Promise<Attempt | null> {
-    const { data, error } = await supabase
-      .from('attempts')
-      .insert([attemptData])
-      .select()
-      .single();
+    console.log('AttemptService.create - attemptData:', attemptData);
+    
+    try {
+      const { data, error } = await supabase
+        .from('attempts')
+        .insert([attemptData])
+        .select()
+        .single();
 
-    if (error) {
-      console.error('Error creating attempt:', error);
+      if (error) {
+        console.error('Error creating attempt:', error);
+        console.error('Attempt data:', attemptData);
+        return null;
+      }
+
+      console.log('Attempt created successfully:', data);
+      return data;
+    } catch (err) {
+      console.error('Exception in AttemptService.create:', err);
       return null;
     }
-
-    return data;
   }
 
   static async findByQuizId(quizId: string): Promise<Attempt[]> {

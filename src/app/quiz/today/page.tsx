@@ -88,6 +88,8 @@ export default function TodayQuizPage() {
 
       const data = await response.json();
       
+      console.log('Answer API response:', { status: response.status, data });
+      
       if (response.ok) {
         setResult({
           isCorrect: data.isCorrect,
@@ -96,7 +98,9 @@ export default function TodayQuizPage() {
         });
         setShowResult(true);
       } else {
-        alert(`エラー: ${data.error}`);
+        console.error('Answer API error:', data);
+        const errorMessage = data.details ? `${data.error}: ${data.details}` : data.error;
+        alert(`エラー: ${errorMessage}`);
       }
     } catch (error) {
       console.error('Error submitting answer:', error);

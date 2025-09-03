@@ -28,6 +28,7 @@ export default function ManagementSelector({
     if (pathname.startsWith('/admin/stores')) return 'stores';
     if (pathname.startsWith('/admin/archives')) return 'archives';
     if (pathname.startsWith('/admin/rankings')) return 'rankings';
+    if (pathname.startsWith('/admin/introducers')) return 'introducers';
     
     return undefined;
   };
@@ -115,6 +116,7 @@ interface ManagementStatsProps {
   storesCount?: number;
   archivesCount?: number;
   rankingsCount?: number;
+  introducersCount?: number;
   isLoading?: boolean;
 }
 
@@ -123,6 +125,7 @@ export function ManagementStats({
   storesCount = 0, 
   archivesCount = 0, 
   rankingsCount = 0,
+  introducersCount = 0,
   isLoading = false 
 }: ManagementStatsProps) {
   const stats = [
@@ -145,6 +148,11 @@ export function ManagementStats({
       entity: MANAGEMENT_ENTITIES.archives, 
       count: archivesCount,
       label: '登録記事'
+    },
+    { 
+      entity: MANAGEMENT_ENTITIES.introducers, 
+      count: introducersCount,
+      label: '登録紹介者'
     }
   ];
 

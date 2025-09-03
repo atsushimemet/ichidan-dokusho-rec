@@ -12,6 +12,7 @@ interface DashboardStats {
   stores: number;
   archives: number;
   rankings: number;
+  introducers: number;
   tags: number;
   mappings: number;
 }
@@ -22,6 +23,7 @@ export default function AdminDashboard() {
     stores: 0,
     archives: 0,
     rankings: 0,
+    introducers: 0,
     tags: 0,
     mappings: 0
   });
@@ -47,6 +49,7 @@ export default function AdminDashboard() {
           stores: 12,
           archives: 8,
           rankings: 11,
+          introducers: 8,
           tags: 15,
           mappings: 18
         });
@@ -54,11 +57,12 @@ export default function AdminDashboard() {
       }
 
       // 各テーブルのカウントを並列で取得
-      const [booksResult, storesResult, archivesResult, rankingsResult, tagsResult, mappingsResult] = await Promise.all([
+      const [booksResult, storesResult, archivesResult, rankingsResult, introducersResult, tagsResult, mappingsResult] = await Promise.all([
         supabase.from('books').select('id', { count: 'exact', head: true }),
         supabase.from('stores').select('id', { count: 'exact', head: true }),
         supabase.from('archives').select('id', { count: 'exact', head: true }),
         supabase.from('ranking_books').select('id', { count: 'exact', head: true }).eq('is_visible', true),
+        supabase.from('introducers').select('id', { count: 'exact', head: true }).eq('is_active', true),
         supabase.from('genre_tags').select('id', { count: 'exact', head: true }).eq('is_active', true),
         supabase.from('question_mappings').select('id', { count: 'exact', head: true })
       ]);
@@ -68,12 +72,13 @@ export default function AdminDashboard() {
         stores: storesResult.count || 0,
         archives: archivesResult.count || 0,
         rankings: rankingsResult.count || 0,
+        introducers: introducersResult.count || 0,
         tags: tagsResult.count || 0,
         mappings: mappingsResult.count || 0
       });
 
       // エラーチェック
-      const errors = [booksResult.error, storesResult.error, archivesResult.error, rankingsResult.error, tagsResult.error, mappingsResult.error].filter(Boolean);
+      const errors = [booksResult.error, storesResult.error, archivesResult.error, rankingsResult.error, introducersResult.error, tagsResult.error, mappingsResult.error].filter(Boolean);
       if (errors.length > 0) {
         console.warn('一部の統計データ取得でエラーが発生:', errors);
       }
@@ -88,6 +93,7 @@ export default function AdminDashboard() {
         stores: 0,
         archives: 0,
         rankings: 0,
+        introducers: 0,
         tags: 0,
         mappings: 0
       });
@@ -117,6 +123,7 @@ export default function AdminDashboard() {
           storesCount={stats.stores}
           archivesCount={stats.archives}
           rankingsCount={stats.rankings}
+          introducersCount={stats.introducers}
           isLoading={isLoading}
         />
 
@@ -221,6 +228,15 @@ export default function AdminDashboard() {
               <Button variant="secondary" className="w-full p-4 h-auto flex flex-col items-center space-y-2">
                 <span className="text-2xl">📰</span>
                 <span>新しい記事を追加</span>
+              </Button>
+            </Link>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <Link href="/admin/introducers">
+              <Button variant="secondary" className="w-full p-4 h-auto flex flex-col items-center space-y-2 bg-gradient-to-r from-indigo-50 to-purple-50 border-indigo-200 text-indigo-600 hover:bg-gradient-to-r hover:from-indigo-100 hover:to-purple-100">
+                <span className="text-2xl">👤</span>
+                <span>紹介者を管理</span>
               </Button>
             </Link>
           </div>

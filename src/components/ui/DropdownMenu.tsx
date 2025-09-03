@@ -137,7 +137,7 @@ interface AdminActionsDropdownProps {
   onToggleDebug?: () => void;
   showForm: boolean;
   showDebugConsole?: boolean;
-  currentEntity?: 'books' | 'stores' | 'archives' | 'rankings';
+  currentEntity?: 'books' | 'stores' | 'archives' | 'rankings' | 'introducers';
   hasDebugFeature?: boolean;
   // ランキング管理専用機能
   onToggleAllVisibility?: () => void;
@@ -158,7 +158,8 @@ export function AdminActionsDropdown({
     books: { icon: '📚', label: '書籍', addLabel: '新しい書籍を追加' },
     stores: { icon: '🏪', label: '店舗', addLabel: '新しい店舗を追加' },
     archives: { icon: '📰', label: 'アーカイブ', addLabel: '新しい記事を追加' },
-    rankings: { icon: '🏆', label: 'ランキング書籍', addLabel: '新しいランキング書籍を追加' }
+    rankings: { icon: '🏆', label: 'ランキング書籍', addLabel: '新しいランキング書籍を追加' },
+    introducers: { icon: '👤', label: '紹介者', addLabel: '新しい紹介者を追加' }
   };
 
   const config = entityConfig[currentEntity];

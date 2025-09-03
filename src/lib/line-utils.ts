@@ -64,24 +64,20 @@ export function createQuizNotificationMessage(quizId: string, userId: string, qu
   const typeText = quizType === 'cloze' ? '穴埋め問題' : 'True/False問題';
 
   return {
-    type: 'template',
+    type: 'template' as const,
     altText: `📚 復習クイズの時間です！${typeText}が待っています。`,
     template: {
-      type: 'buttons',
-      thumbnailImageUrl: `${baseUrl}/quiz-notification-image.jpg`, // 通知用画像
-      imageAspectRatio: 'rectangle',
-      imageSize: 'cover',
-      imageBackgroundColor: '#4F46E5',
+      type: 'buttons' as const,
       title: '📚 復習クイズの時間です！',
       text: `${typeText}が1問準備されています。\n継続的な学習で記憶を定着させましょう！`,
       actions: [
         {
-          type: 'uri',
+          type: 'uri' as const,
           label: 'クイズに挑戦する',
           uri: quizUrl
         },
         {
-          type: 'uri',
+          type: 'uri' as const,
           label: 'メモを確認する',
           uri: `${baseUrl}/memos`
         }
@@ -96,24 +92,24 @@ export function createWelcomeMessage() {
   
   return [
     {
-      type: 'text',
+      type: 'text' as const,
       text: '📚 読書メモ&クイズシステムへようこそ！\n\nこのシステムでは：\n✅ 読書メモを作成\n✅ 自動でクイズを生成\n✅ 復習通知を受信\n\nで効果的な学習をサポートします！'
     },
     {
-      type: 'template',
+      type: 'template' as const,
       altText: 'さっそく始めてみましょう！',
       template: {
-        type: 'buttons',
+        type: 'buttons' as const,
         title: 'さっそく始めてみましょう！',
         text: 'メモを作成すると自動でクイズが生成され、復習通知が届きます。',
         actions: [
           {
-            type: 'uri',
+            type: 'uri' as const,
             label: 'メモを作成する',
             uri: `${baseUrl}/memos`
           },
           {
-            type: 'uri',
+            type: 'uri' as const,
             label: '今日のクイズを見る',
             uri: `${baseUrl}/quiz/today`
           }
@@ -128,20 +124,20 @@ export function createSettingsMessage(userId: string) {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://your-domain.com';
   
   return {
-    type: 'template',
+    type: 'template' as const,
     altText: '通知設定を変更できます',
     template: {
-      type: 'buttons',
+      type: 'buttons' as const,
       title: '⚙️ 設定',
       text: '通知時間や頻度をカスタマイズできます。',
       actions: [
         {
-          type: 'uri',
+          type: 'uri' as const,
           label: '設定を変更する',
           uri: `${baseUrl}/settings?userId=${userId}`
         },
         {
-          type: 'uri',
+          type: 'uri' as const,
           label: '学習統計を見る',
           uri: `${baseUrl}/stats?userId=${userId}`
         }

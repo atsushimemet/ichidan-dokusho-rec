@@ -116,7 +116,7 @@ async function handleMessage(event: MessageEvent) {
       case 'へるぷ':
       case 'help':
         replyMessage = {
-          type: 'text',
+          type: 'text' as const,
           text: `📚 読書メモ&クイズシステムの使い方\n\n` +
                 `1️⃣ Webサイトでメモを作成\n` +
                 `2️⃣ 自動でクイズが生成されます\n` +
@@ -135,15 +135,15 @@ async function handleMessage(event: MessageEvent) {
       case 'とうけい':
       case 'stats':
         replyMessage = {
-          type: 'template',
+          type: 'template' as const,
           altText: '学習統計を確認できます',
           template: {
-            type: 'buttons',
+            type: 'buttons' as const,
             title: '📊 学習統計',
             text: 'あなたの学習進捗を確認しましょう',
             actions: [
               {
-                type: 'uri',
+                type: 'uri' as const,
                 label: '詳細を見る',
                 uri: `${process.env.NEXT_PUBLIC_BASE_URL}/stats?userId=${userId}`
               }
@@ -156,15 +156,15 @@ async function handleMessage(event: MessageEvent) {
       case 'きょうのくいず':
       case 'quiz':
         replyMessage = {
-          type: 'template',
+          type: 'template' as const,
           altText: '今日のクイズに挑戦しましょう！',
           template: {
-            type: 'buttons',
+            type: 'buttons' as const,
             title: '🧠 今日のクイズ',
             text: '今日の復習クイズに挑戦しましょう！',
             actions: [
               {
-                type: 'uri',
+                type: 'uri' as const,
                 label: 'クイズを開始',
                 uri: `${process.env.NEXT_PUBLIC_BASE_URL}/quiz/today`
               }
@@ -177,15 +177,15 @@ async function handleMessage(event: MessageEvent) {
       case 'めも':
       case 'memo':
         replyMessage = {
-          type: 'template',
+          type: 'template' as const,
           altText: '読書メモを作成しましょう',
           template: {
-            type: 'buttons',
+            type: 'buttons' as const,
             title: '📝 読書メモ',
             text: '新しいメモを作成すると自動でクイズが生成されます',
             actions: [
               {
-                type: 'uri',
+                type: 'uri' as const,
                 label: 'メモを作成',
                 uri: `${process.env.NEXT_PUBLIC_BASE_URL}/memos`
               }
@@ -197,7 +197,7 @@ async function handleMessage(event: MessageEvent) {
       default:
         // デフォルトメッセージ
         replyMessage = {
-          type: 'text',
+          type: 'text' as const,
           text: `メッセージありがとうございます！\n\n` +
                 `利用可能なコマンド:\n` +
                 `📝「メモ」- メモ作成\n` +
@@ -217,7 +217,7 @@ async function handleMessage(event: MessageEvent) {
     
     // エラー時の返信
     const errorMessage = {
-      type: 'text',
+      type: 'text' as const,
       text: '申し訳ございませんが、一時的にエラーが発生しています。しばらくしてから再度お試しください。'
     };
     

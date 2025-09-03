@@ -73,9 +73,13 @@ export default function MemosPage() {
           if (confirm('クイズが生成されました！今すぐ挑戦しますか？')) {
             window.location.href = '/quiz/today';
           }
+        } else if (data.quizError) {
+          console.warn('Quiz generation failed:', data.quizError);
         }
       } else {
-        alert(`エラー: ${data.error}`);
+        console.error('API Error:', data);
+        const errorMessage = data.details ? `${data.error}: ${data.details}` : data.error;
+        alert(`エラー: ${errorMessage}`);
       }
     } catch (error) {
       console.error('Error creating memo:', error);

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { MemoService, QuizService } from '@/lib/quiz-db';
 import { generateQuizFromMemo } from '@/lib/quiz-generator';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();

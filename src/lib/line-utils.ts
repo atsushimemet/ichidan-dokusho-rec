@@ -3,8 +3,8 @@ import CryptoJS from 'crypto-js';
 
 // LINE Bot設定
 const config: ClientConfig = {
-  channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN || '',
-  channelSecret: process.env.LINE_CHANNEL_SECRET || '',
+  channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN || 'dummy-token',
+  channelSecret: process.env.LINE_CHANNEL_SECRET || 'dummy-secret',
 };
 
 export const lineClient = new Client(config);
@@ -149,6 +149,12 @@ export function createSettingsMessage(userId: string) {
 // Push通知を送信
 export async function sendPushNotification(userId: string, message: any): Promise<boolean> {
   try {
+    // 環境変数チェック
+    if (!process.env.LINE_CHANNEL_ACCESS_TOKEN || process.env.LINE_CHANNEL_ACCESS_TOKEN === 'dummy-token') {
+      console.error('LINE_CHANNEL_ACCESS_TOKEN is not configured');
+      return false;
+    }
+
     await lineClient.pushMessage(userId, message);
     return true;
   } catch (error) {

@@ -1,26 +1,13 @@
-import kuromoji from 'kuromoji';
 import { QuizGenerationResult, QuizType, MemoAnalysis } from '@/types';
 
-// 形態素解析器のインスタンス
-let tokenizer: kuromoji.Tokenizer<kuromoji.IpadicFeatures> | null = null;
+// 簡易版：形態素解析なしでクイズ生成
+// 本格的な形態素解析は後で実装
+let isInitialized = false;
 
-// 形態素解析器の初期化
+// 初期化（ダミー）
 export async function initializeTokenizer(): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (tokenizer) {
-      resolve();
-      return;
-    }
-
-    kuromoji.builder({ dicPath: '/dict' }).build((err, _tokenizer) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-      tokenizer = _tokenizer;
-      resolve();
-    });
-  });
+  isInitialized = true;
+  return Promise.resolve();
 }
 
 // 助詞・助動詞・記号を除外する
@@ -29,36 +16,53 @@ function isContentWord(feature: string): boolean {
   return !excludeCategories.some(category => feature.includes(category));
 }
 
-// メモテキストを分析する
+// メモテキストを分析する（簡易版）
 export function analyzeMemo(text: string): MemoAnalysis {
-  if (!tokenizer) {
+  if (!isInitialized) {
     throw new Error('Tokenizer not initialized. Call initializeTokenizer() first.');
   }
 
   // 文に分割（句点で区切る）
   const sentences = text.split(/[。！？]/).filter(s => s.trim().length > 0);
   
-  // 形態素解析
-  const tokens = tokenizer.tokenize(text);
+  // 簡易的な名詞抽出（正規表現ベース）
+  const nounPattern = /[一-龯][一-龯]+/g; // 漢字2文字以上
+  const katakanaPattern = /[ア-ン][ア-ン]+/g; // カタカナ2文字以上
   
-  // 名詞を抽出
   const nounMap = new Map<string, { count: number; positions: number[] }>();
   
-  tokens.forEach((token, index) => {
-    if (token.part_of_speech.startsWith('名詞') && 
-        isContentWord(token.part_of_speech) && 
-        token.surface_form.length > 1) {
-      
-      const surface = token.surface_form;
-      if (nounMap.has(surface)) {
-        const existing = nounMap.get(surface)!;
+  // 漢字の名詞を抽出
+  let match;
+  let position = 0;
+  while ((match = nounPattern.exec(text)) !== null) {
+    const word = match[0];
+    if (word.length >= 2 && word.length <= 10) { // 2-10文字の名詞
+      if (nounMap.has(word)) {
+        const existing = nounMap.get(word)!;
         existing.count++;
-        existing.positions.push(index);
+        existing.positions.push(position);
       } else {
-        nounMap.set(surface, { count: 1, positions: [index] });
+        nounMap.set(word, { count: 1, positions: [position] });
       }
     }
-  });
+    position++;
+  }
+
+  // カタカナの名詞も追加
+  katakanaPattern.lastIndex = 0;
+  while ((match = katakanaPattern.exec(text)) !== null) {
+    const word = match[0];
+    if (word.length >= 2 && word.length <= 10) {
+      if (nounMap.has(word)) {
+        const existing = nounMap.get(word)!;
+        existing.count++;
+        existing.positions.push(position);
+      } else {
+        nounMap.set(word, { count: 1, positions: [position] });
+      }
+    }
+    position++;
+  }
 
   // 名詞を配列に変換
   const nouns = Array.from(nounMap.entries()).map(([word, data]) => ({
@@ -68,9 +72,9 @@ export function analyzeMemo(text: string): MemoAnalysis {
   }));
 
   // 最長の名詞を取得
-  const longestNoun = nouns.reduce((longest, current) => 
+  const longestNoun = nouns.length > 0 ? nouns.reduce((longest, current) => 
     current.word.length > longest.word.length ? current : longest
-  ).word || '';
+  ).word : '';
 
   // 頻出名詞を取得（出現回数でソート）
   const frequentNouns = nouns
@@ -229,8 +233,8 @@ export async function generateQuizFromMemo(
   preferredType?: QuizType
 ): Promise<QuizGenerationResult> {
   try {
-    // 形態素解析器が初期化されていない場合は初期化
-    if (!tokenizer) {
+    // 初期化チェック
+    if (!isInitialized) {
       await initializeTokenizer();
     }
 

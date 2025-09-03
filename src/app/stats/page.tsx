@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 interface UserStats {
@@ -47,7 +47,7 @@ interface UserStats {
   }>;
 }
 
-export default function StatsPage() {
+function StatsContent() {
   const searchParams = useSearchParams();
   const userId = searchParams.get('userId');
   const lineUserId = searchParams.get('lineUserId');
@@ -350,5 +350,20 @@ export default function StatsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function StatsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">統計情報を読み込み中...</p>
+        </div>
+      </div>
+    }>
+      <StatsContent />
+    </Suspense>
   );
 }

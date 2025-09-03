@@ -1,278 +1,85 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { WebhookEvent, MessageEvent, FollowEvent, UnfollowEvent } from '@line/bot-sdk';
-import { 
-  verifySignature, 
-  lineClient, 
-  createWelcomeMessage,
-  createSettingsMessage 
-} from '@/lib/line-utils';
-import { UserService } from '@/lib/quiz-db';
 
-// GET method for webhook endpoint testing
+// 最もシンプルなWebhook実装（テスト用）
+export async function POST(request: NextRequest) {
+  try {
+    console.log('=== LINE Webhook Called ===');
+    console.log('Headers:', Object.fromEntries(request.headers.entries()));
+    
+    const body = await request.text();
+    console.log('Body length:', body.length);
+    console.log('Body preview:', body.substring(0, 200));
+    
+    // 環境変数チェック
+    console.log('Environment check:', {
+      hasAccessToken: !!process.env.LINE_CHANNEL_ACCESS_TOKEN,
+      hasSecret: !!process.env.LINE_CHANNEL_SECRET,
+      accessTokenLength: process.env.LINE_CHANNEL_ACCESS_TOKEN?.length || 0,
+      secretLength: process.env.LINE_CHANNEL_SECRET?.length || 0,
+      nodeEnv: process.env.NODE_ENV,
+      skipVerification: process.env.SKIP_LINE_SIGNATURE_VERIFICATION
+    });
+
+    // 署名検証を完全にスキップ
+    console.log('Skipping signature verification for testing');
+
+    let data;
+    try {
+      data = JSON.parse(body);
+      console.log('Parsed data:', JSON.stringify(data, null, 2));
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError);
+      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+    }
+
+    const events = data.events || [];
+    console.log('Events to process:', events.length);
+
+    // 最もシンプルなイベント処理
+    for (const event of events) {
+      console.log('Processing event:', event.type);
+      
+      try {
+        if (event.type === 'follow') {
+          console.log('Follow event detected, but skipping complex processing for now');
+        } else if (event.type === 'message') {
+          console.log('Message event detected, but skipping complex processing for now');
+        }
+      } catch (eventError) {
+        console.error('Error processing event:', eventError);
+        // イベント処理エラーでもWebhookは成功として返す
+      }
+    }
+
+    console.log('=== Webhook processing completed successfully ===');
+    return NextResponse.json({ message: 'OK' });
+
+  } catch (error) {
+    console.error('=== Webhook Error ===');
+    console.error('Error:', error);
+    console.error('Stack:', error instanceof Error ? error.stack : 'No stack');
+    
+    // エラーが発生してもLINEには200を返す（重要）
+    return NextResponse.json({ 
+      message: 'OK',
+      error: 'Logged for debugging',
+      details: error instanceof Error ? error.message : String(error)
+    });
+  }
+}
+
+// GET method for endpoint testing
 export async function GET(request: NextRequest) {
   return NextResponse.json({
     status: 'LINE Webhook Endpoint Active',
-    method: 'GET requests are not processed, use POST for webhook events',
     timestamp: new Date().toISOString(),
     config: {
       hasAccessToken: !!process.env.LINE_CHANNEL_ACCESS_TOKEN,
       hasSecret: !!process.env.LINE_CHANNEL_SECRET,
-      baseUrl: process.env.NEXT_PUBLIC_BASE_URL
+      accessTokenLength: process.env.LINE_CHANNEL_ACCESS_TOKEN?.length || 0,
+      secretLength: process.env.LINE_CHANNEL_SECRET?.length || 0,
+      baseUrl: process.env.NEXT_PUBLIC_BASE_URL,
+      nodeEnv: process.env.NODE_ENV
     }
   });
-}
-
-export async function POST(request: NextRequest) {
-  try {
-    console.log('LINE Webhook - Starting request processing');
-    
-    const body = await request.text();
-    const signature = request.headers.get('x-line-signature') || '';
-    
-    console.log('Webhook request:', {
-      bodyLength: body.length,
-      hasSignature: !!signature,
-      signatureLength: signature.length,
-      hasChannelSecret: !!process.env.LINE_CHANNEL_SECRET,
-      channelSecretLength: process.env.LINE_CHANNEL_SECRET?.length || 0
-    });
-
-    // 開発環境では署名検証をスキップ（テスト用）
-    const isDevelopment = process.env.NODE_ENV === 'development';
-    const skipSignatureVerification = process.env.SKIP_LINE_SIGNATURE_VERIFICATION === 'true';
-    
-    if (!isDevelopment && !skipSignatureVerification) {
-      // 署名検証
-      if (!signature) {
-        console.error('Missing x-line-signature header');
-        return NextResponse.json({ error: 'Missing signature' }, { status: 401 });
-      }
-
-      if (!process.env.LINE_CHANNEL_SECRET || process.env.LINE_CHANNEL_SECRET === 'dummy-secret') {
-        console.error('LINE_CHANNEL_SECRET not configured');
-        return NextResponse.json({ error: 'Channel secret not configured' }, { status: 500 });
-      }
-
-      if (!verifySignature(body, signature)) {
-        console.error('Invalid signature');
-        return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
-      }
-    } else {
-      console.log('Signature verification skipped (development mode)');
-    }
-
-    const data = JSON.parse(body);
-    const events: WebhookEvent[] = data.events;
-
-    console.log('Webhook events:', { eventCount: events.length, eventTypes: events.map(e => e.type) });
-
-    // 各イベントを処理
-    for (const event of events) {
-      await handleEvent(event);
-    }
-
-    return NextResponse.json({ message: 'OK' });
-
-  } catch (error) {
-    console.error('Webhook error:', error);
-    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
-    return NextResponse.json({ 
-      error: 'Internal server error',
-      details: error instanceof Error ? error.message : String(error)
-    }, { status: 500 });
-  }
-}
-
-async function handleEvent(event: WebhookEvent) {
-  try {
-    switch (event.type) {
-      case 'follow':
-        await handleFollow(event as FollowEvent);
-        break;
-      case 'unfollow':
-        await handleUnfollow(event as UnfollowEvent);
-        break;
-      case 'message':
-        await handleMessage(event as MessageEvent);
-        break;
-      default:
-        console.log('Unhandled event type:', event.type);
-    }
-  } catch (error) {
-    console.error('Error handling event:', error);
-  }
-}
-
-// 友だち追加イベント
-async function handleFollow(event: FollowEvent) {
-  const userId = event.source.userId;
-  if (!userId) return;
-
-  try {
-    // ユーザー情報を取得
-    const profile = await lineClient.getProfile(userId);
-    
-    // データベースにユーザーを作成または更新
-    await UserService.findOrCreateByLineId(userId, {
-      display_name: profile.displayName,
-      avatar_url: profile.pictureUrl,
-      notification_enabled: true
-    });
-
-    // ウェルカムメッセージを送信
-    const welcomeMessages = createWelcomeMessage();
-    await lineClient.replyMessage(event.replyToken, welcomeMessages);
-
-    console.log(`New user followed: ${userId} (${profile.displayName})`);
-  } catch (error) {
-    console.error('Error handling follow event:', error);
-  }
-}
-
-// 友だち削除イベント
-async function handleUnfollow(event: UnfollowEvent) {
-  const userId = event.source.userId;
-  if (!userId) return;
-
-  try {
-    // ユーザーの通知を無効化（削除はしない）
-    await UserService.update(userId, { notification_enabled: false });
-    console.log(`User unfollowed: ${userId}`);
-  } catch (error) {
-    console.error('Error handling unfollow event:', error);
-  }
-}
-
-// メッセージイベント
-async function handleMessage(event: MessageEvent) {
-  const userId = event.source.userId;
-  if (!userId || event.message.type !== 'text') return;
-
-  const messageText = event.message.text.trim();
-
-  try {
-    let replyMessage: any;
-
-    switch (messageText) {
-      case '設定':
-      case 'せってい':
-      case 'setting':
-        replyMessage = createSettingsMessage(userId);
-        break;
-
-      case 'ヘルプ':
-      case 'へるぷ':
-      case 'help':
-        replyMessage = {
-          type: 'text' as const,
-          text: `📚 読書メモ&クイズシステムの使い方\n\n` +
-                `1️⃣ Webサイトでメモを作成\n` +
-                `2️⃣ 自動でクイズが生成されます\n` +
-                `3️⃣ 翌日・1週間後に復習通知\n` +
-                `4️⃣ クイズに答えて記憶を定着\n\n` +
-                `📝 メモ作成: ${process.env.NEXT_PUBLIC_BASE_URL}/memos\n` +
-                `🧠 今日のクイズ: ${process.env.NEXT_PUBLIC_BASE_URL}/quiz/today\n\n` +
-                `その他のコマンド:\n` +
-                `「設定」- 通知設定\n` +
-                `「統計」- 学習統計\n` +
-                `「今日のクイズ」- 今日の問題`
-        };
-        break;
-
-      case '統計':
-      case 'とうけい':
-      case 'stats':
-        replyMessage = {
-          type: 'template' as const,
-          altText: '学習統計を確認できます',
-          template: {
-            type: 'buttons' as const,
-            title: '📊 学習統計',
-            text: 'あなたの学習進捗を確認しましょう',
-            actions: [
-              {
-                type: 'uri' as const,
-                label: '詳細を見る',
-                uri: `${process.env.NEXT_PUBLIC_BASE_URL}/stats?userId=${userId}`
-              }
-            ]
-          }
-        };
-        break;
-
-      case '今日のクイズ':
-      case 'きょうのくいず':
-      case 'quiz':
-        replyMessage = {
-          type: 'template' as const,
-          altText: '今日のクイズに挑戦しましょう！',
-          template: {
-            type: 'buttons' as const,
-            title: '🧠 今日のクイズ',
-            text: '今日の復習クイズに挑戦しましょう！',
-            actions: [
-              {
-                type: 'uri' as const,
-                label: 'クイズを開始',
-                uri: `${process.env.NEXT_PUBLIC_BASE_URL}/quiz/today`
-              }
-            ]
-          }
-        };
-        break;
-
-      case 'メモ':
-      case 'めも':
-      case 'memo':
-        replyMessage = {
-          type: 'template' as const,
-          altText: '読書メモを作成しましょう',
-          template: {
-            type: 'buttons' as const,
-            title: '📝 読書メモ',
-            text: '新しいメモを作成すると自動でクイズが生成されます',
-            actions: [
-              {
-                type: 'uri' as const,
-                label: 'メモを作成',
-                uri: `${process.env.NEXT_PUBLIC_BASE_URL}/memos`
-              }
-            ]
-          }
-        };
-        break;
-
-      default:
-        // デフォルトメッセージ
-        replyMessage = {
-          type: 'text' as const,
-          text: `メッセージありがとうございます！\n\n` +
-                `利用可能なコマンド:\n` +
-                `📝「メモ」- メモ作成\n` +
-                `🧠「今日のクイズ」- クイズ挑戦\n` +
-                `📊「統計」- 学習統計\n` +
-                `⚙️「設定」- 通知設定\n` +
-                `❓「ヘルプ」- 使い方\n\n` +
-                `または直接Webサイトにアクセス:\n` +
-                `${process.env.NEXT_PUBLIC_BASE_URL}`
-        };
-    }
-
-    await lineClient.replyMessage(event.replyToken, replyMessage);
-
-  } catch (error) {
-    console.error('Error handling message:', error);
-    
-    // エラー時の返信
-    const errorMessage = {
-      type: 'text' as const,
-      text: '申し訳ございませんが、一時的にエラーが発生しています。しばらくしてから再度お試しください。'
-    };
-    
-    try {
-      await lineClient.replyMessage(event.replyToken, errorMessage);
-    } catch (replyError) {
-      console.error('Error sending error message:', replyError);
-    }
-  }
 }

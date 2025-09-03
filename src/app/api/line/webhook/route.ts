@@ -8,19 +8,63 @@ import {
 } from '@/lib/line-utils';
 import { UserService } from '@/lib/quiz-db';
 
+// GET method for webhook endpoint testing
+export async function GET(request: NextRequest) {
+  return NextResponse.json({
+    status: 'LINE Webhook Endpoint Active',
+    method: 'GET requests are not processed, use POST for webhook events',
+    timestamp: new Date().toISOString(),
+    config: {
+      hasAccessToken: !!process.env.LINE_CHANNEL_ACCESS_TOKEN,
+      hasSecret: !!process.env.LINE_CHANNEL_SECRET,
+      baseUrl: process.env.NEXT_PUBLIC_BASE_URL
+    }
+  });
+}
+
 export async function POST(request: NextRequest) {
   try {
+    console.log('LINE Webhook - Starting request processing');
+    
     const body = await request.text();
     const signature = request.headers.get('x-line-signature') || '';
+    
+    console.log('Webhook request:', {
+      bodyLength: body.length,
+      hasSignature: !!signature,
+      signatureLength: signature.length,
+      hasChannelSecret: !!process.env.LINE_CHANNEL_SECRET,
+      channelSecretLength: process.env.LINE_CHANNEL_SECRET?.length || 0
+    });
 
-    // 署名検証
-    if (!verifySignature(body, signature)) {
-      console.error('Invalid signature');
-      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+    // 開発環境では署名検証をスキップ（テスト用）
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    const skipSignatureVerification = process.env.SKIP_LINE_SIGNATURE_VERIFICATION === 'true';
+    
+    if (!isDevelopment && !skipSignatureVerification) {
+      // 署名検証
+      if (!signature) {
+        console.error('Missing x-line-signature header');
+        return NextResponse.json({ error: 'Missing signature' }, { status: 401 });
+      }
+
+      if (!process.env.LINE_CHANNEL_SECRET || process.env.LINE_CHANNEL_SECRET === 'dummy-secret') {
+        console.error('LINE_CHANNEL_SECRET not configured');
+        return NextResponse.json({ error: 'Channel secret not configured' }, { status: 500 });
+      }
+
+      if (!verifySignature(body, signature)) {
+        console.error('Invalid signature');
+        return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+      }
+    } else {
+      console.log('Signature verification skipped (development mode)');
     }
 
     const data = JSON.parse(body);
     const events: WebhookEvent[] = data.events;
+
+    console.log('Webhook events:', { eventCount: events.length, eventTypes: events.map(e => e.type) });
 
     // 各イベントを処理
     for (const event of events) {
@@ -31,7 +75,11 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Webhook error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : String(error)
+    }, { status: 500 });
   }
 }
 

@@ -29,20 +29,28 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const userLineId = lineUserId || userId || '';
+    if (!userLineId) {
+      return NextResponse.json(
+        { error: 'ユーザーIDが無効です' },
+        { status: 400 }
+      );
+    }
+
     // 基本統計を取得
-    const basicStats = await StatsService.getUserStats(user.id);
+    const basicStats = await StatsService.getUserStats(userLineId);
 
     // 期間別統計を取得
-    const periodStats = await AttemptService.getStats(user.id, days);
+    const periodStats = await AttemptService.getStats(userLineId, days);
 
     // 最近の回答履歴を取得
-    const recentAttempts = await AttemptService.findByUserId(user.id, 10);
+    const recentAttempts = await AttemptService.findByUserId(userLineId, 10);
 
     // 日別の回答統計を計算
-    const dailyStats = await calculateDailyStats(user.id, days);
+    const dailyStats = await calculateDailyStats(userLineId, days);
 
     // 週別の継続率を計算
-    const weeklyStats = await calculateWeeklyStats(user.id);
+    const weeklyStats = await calculateWeeklyStats(userLineId);
 
     return NextResponse.json({
       user: {
@@ -75,11 +83,11 @@ export async function GET(request: NextRequest) {
 }
 
 // 日別統計を計算
-async function calculateDailyStats(userId: string, days: number) {
+async function calculateDailyStats(lineUserId: string, days: number) {
   const endDate = new Date();
   const startDate = new Date(endDate.getTime() - days * 24 * 60 * 60 * 1000);
 
-  const attempts = await AttemptService.findByUserId(userId, 1000);
+  const attempts = await AttemptService.findByUserId(lineUserId, 1000);
   const periodAttempts = attempts.filter(attempt => 
     new Date(attempt.answered_at) >= startDate
   );
@@ -113,8 +121,8 @@ async function calculateDailyStats(userId: string, days: number) {
 }
 
 // 週別統計を計算
-async function calculateWeeklyStats(userId: string) {
-  const attempts = await AttemptService.findByUserId(userId, 1000);
+async function calculateWeeklyStats(lineUserId: string) {
+  const attempts = await AttemptService.findByUserId(lineUserId, 1000);
   
   // 過去4週間の統計
   const weeks = [];

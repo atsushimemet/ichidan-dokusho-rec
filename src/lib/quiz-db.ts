@@ -169,24 +169,36 @@ export class QuizService {
     return data;
   }
 
-  static async findByUserId(userId: string, status?: QuizStatus): Promise<Quiz[]> {
-    let query = supabase
-      .from('quizzes')
-      .select('*')
-      .eq('user_id', userId);
+  static async findByUserId(lineUserId: string, status?: QuizStatus): Promise<Quiz[]> {
+    try {
+      // line_user_idから実際のuser.idを取得
+      const user = await UserService.findByLineUserId(lineUserId);
+      if (!user) {
+        console.log('User not found for lineUserId:', lineUserId);
+        return [];
+      }
 
-    if (status) {
-      query = query.eq('status', status);
-    }
+      let query = supabase
+        .from('quizzes')
+        .select('*')
+        .eq('user_id', user.id);
 
-    const { data, error } = await query.order('scheduled_at', { ascending: true });
+      if (status) {
+        query = query.eq('status', status);
+      }
 
-    if (error) {
-      console.error('Error fetching quizzes:', error);
+      const { data, error } = await query.order('scheduled_at', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching quizzes:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (err) {
+      console.error('Exception in findByUserId:', err);
       return [];
     }
-
-    return data || [];
   }
 
   static async findById(id: string): Promise<Quiz | null> {
@@ -204,23 +216,32 @@ export class QuizService {
     return data;
   }
 
-  static async findTodayQuizzes(userId: string): Promise<Quiz[]> {
-    console.log('QuizService.findTodayQuizzes - userId:', userId);
+  static async findTodayQuizzes(lineUserId: string): Promise<Quiz[]> {
+    console.log('QuizService.findTodayQuizzes - lineUserId:', lineUserId);
     
     try {
-      // まず、該当ユーザーの全クイズを確認
+      // まず、line_user_idから実際のuser.idを取得
+      const user = await UserService.findByLineUserId(lineUserId);
+      if (!user) {
+        console.log('User not found for lineUserId:', lineUserId);
+        return [];
+      }
+
+      console.log('Found user:', { id: user.id, line_user_id: user.line_user_id });
+
+      // 該当ユーザーの全クイズを確認
       const { data: allQuizzes, error: allError } = await supabase
         .from('quizzes')
         .select('*')
-        .eq('user_id', userId);
+        .eq('user_id', user.id);
 
       console.log('All user quizzes:', { count: allQuizzes?.length || 0, error: allError });
 
-      // 今日のクイズを取得（より柔軟な条件）
+      // 今日のクイズを取得
       const { data, error } = await supabase
         .from('quizzes')
         .select('*')
-        .eq('user_id', userId)
+        .eq('user_id', user.id)
         .eq('status', 'today');
 
       console.log('Today quizzes query result:', { 
@@ -329,46 +350,68 @@ export class AttemptService {
     return data || [];
   }
 
-  static async findByUserId(userId: string, limit: number = 100): Promise<Attempt[]> {
-    const { data, error } = await supabase
-      .from('attempts')
-      .select('*')
-      .eq('user_id', userId)
-      .order('answered_at', { ascending: false })
-      .limit(limit);
+  static async findByUserId(lineUserId: string, limit: number = 100): Promise<Attempt[]> {
+    try {
+      // line_user_idから実際のuser.idを取得
+      const user = await UserService.findByLineUserId(lineUserId);
+      if (!user) {
+        return [];
+      }
 
-    if (error) {
-      console.error('Error fetching user attempts:', error);
+      const { data, error } = await supabase
+        .from('attempts')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('answered_at', { ascending: false })
+        .limit(limit);
+
+      if (error) {
+        console.error('Error fetching user attempts:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (err) {
+      console.error('Exception in AttemptService.findByUserId:', err);
       return [];
     }
-
-    return data || [];
   }
 
-  static async getStats(userId: string, days: number = 7): Promise<{
+  static async getStats(lineUserId: string, days: number = 7): Promise<{
     totalAttempts: number;
     correctAttempts: number;
     accuracy: number;
   }> {
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
+    try {
+      // line_user_idから実際のuser.idを取得
+      const user = await UserService.findByLineUserId(lineUserId);
+      if (!user) {
+        return { totalAttempts: 0, correctAttempts: 0, accuracy: 0 };
+      }
 
-    const { data, error } = await supabase
-      .from('attempts')
-      .select('is_correct')
-      .eq('user_id', userId)
-      .gte('answered_at', startDate.toISOString());
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
 
-    if (error) {
-      console.error('Error fetching attempt stats:', error);
+      const { data, error } = await supabase
+        .from('attempts')
+        .select('is_correct')
+        .eq('user_id', user.id)
+        .gte('answered_at', startDate.toISOString());
+
+      if (error) {
+        console.error('Error fetching attempt stats:', error);
+        return { totalAttempts: 0, correctAttempts: 0, accuracy: 0 };
+      }
+
+      const totalAttempts = data?.length || 0;
+      const correctAttempts = data?.filter(attempt => attempt.is_correct).length || 0;
+      const accuracy = totalAttempts > 0 ? (correctAttempts / totalAttempts) * 100 : 0;
+
+      return { totalAttempts, correctAttempts, accuracy };
+    } catch (err) {
+      console.error('Exception in getStats:', err);
       return { totalAttempts: 0, correctAttempts: 0, accuracy: 0 };
     }
-
-    const totalAttempts = data?.length || 0;
-    const correctAttempts = data?.filter(attempt => attempt.is_correct).length || 0;
-    const accuracy = totalAttempts > 0 ? (correctAttempts / totalAttempts) * 100 : 0;
-
-    return { totalAttempts, correctAttempts, accuracy };
   }
 }
 
@@ -444,41 +487,66 @@ export class NotificationLogService {
 
 // 統計情報を取得するための関数
 export class StatsService {
-  static async getUserStats(userId: string) {
-    // メモ数
-    const { count: memoCount } = await supabase
-      .from('memos')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId);
+  static async getUserStats(lineUserId: string) {
+    try {
+      // line_user_idから実際のuser.idを取得
+      const user = await UserService.findByLineUserId(lineUserId);
+      if (!user) {
+        return {
+          memoCount: 0,
+          quizCount: 0,
+          totalAttempts: 0,
+          correctAttempts: 0,
+          accuracy: 0,
+          continuityDays: 0
+        };
+      }
 
-    // クイズ数
-    const { count: quizCount } = await supabase
-      .from('quizzes')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId);
+      // メモ数
+      const { count: memoCount } = await supabase
+        .from('memos')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
 
-    // 回答統計
-    const attemptStats = await AttemptService.getStats(userId);
+      // クイズ数
+      const { count: quizCount } = await supabase
+        .from('quizzes')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
 
-    // 継続日数（7日間の回答履歴）
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      // 回答統計
+      const attemptStats = await AttemptService.getStats(lineUserId);
 
-    const { data: recentAttempts } = await supabase
-      .from('attempts')
-      .select('answered_at')
-      .eq('user_id', userId)
-      .gte('answered_at', sevenDaysAgo.toISOString())
-      .order('answered_at', { ascending: false });
+      // 継続日数（7日間の回答履歴）
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-    const continuityDays = this.calculateContinuityDays(recentAttempts || []);
+      const { data: recentAttempts } = await supabase
+        .from('attempts')
+        .select('answered_at')
+        .eq('user_id', user.id)
+        .gte('answered_at', sevenDaysAgo.toISOString())
+        .order('answered_at', { ascending: false });
 
-    return {
-      memoCount: memoCount || 0,
-      quizCount: quizCount || 0,
-      ...attemptStats,
-      continuityDays
-    };
+      const continuityDays = this.calculateContinuityDays(recentAttempts || []);
+
+      return {
+        memoCount: memoCount || 0,
+        quizCount: quizCount || 0,
+        ...attemptStats,
+        continuityDays
+      };
+    } catch (err) {
+      console.error('Exception in getUserStats:', err);
+      return {
+        memoCount: 0,
+        quizCount: 0,
+        totalAttempts: 0,
+        correctAttempts: 0,
+        accuracy: 0,
+        continuityDays: 0
+      };
+    }
   }
 
   private static calculateContinuityDays(attempts: { answered_at: string }[]): number {

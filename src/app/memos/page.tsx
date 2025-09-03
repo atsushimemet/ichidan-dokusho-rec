@@ -15,23 +15,43 @@ export default function MemosPage() {
     title: '',
     text: ''
   });
+  const [debugInfo, setDebugInfo] = useState<any>(null);
+  const [showDebug, setShowDebug] = useState(false);
 
   // 仮のユーザーID（実際の実装では認証システムから取得）
   const userId = 'temp-user-id';
 
   useEffect(() => {
     fetchMemos();
+    fetchDebugInfo();
   }, []);
+
+  const fetchDebugInfo = async () => {
+    try {
+      const response = await fetch(`/api/debug/memos?userId=${userId}`);
+      const data = await response.json();
+      setDebugInfo(data.debug);
+    } catch (error) {
+      console.error('Error fetching debug info:', error);
+    }
+  };
 
   const fetchMemos = async () => {
     try {
+      console.log('Fetching memos for userId:', userId);
       const response = await fetch(`/api/memos?userId=${userId}`);
       const data = await response.json();
       
+      console.log('Memos API response:', { status: response.status, data });
+      
       if (response.ok) {
-        setMemos(data.memos);
+        console.log('Memos fetched successfully:', data.memos?.length || 0);
+        setMemos(data.memos || []);
       } else {
         console.error('Error fetching memos:', data.error);
+        if (data.details) {
+          console.error('Error details:', data.details);
+        }
       }
     } catch (error) {
       console.error('Error fetching memos:', error);
@@ -178,8 +198,40 @@ export default function MemosPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold text-gray-900">保存されたメモ</h2>
-            <span className="text-sm text-gray-500">{memos.length}件のメモ</span>
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-gray-500">{memos.length}件のメモ</span>
+              <button
+                onClick={() => setShowDebug(!showDebug)}
+                className="text-xs text-blue-600 hover:text-blue-800"
+              >
+                {showDebug ? 'デバッグ非表示' : 'デバッグ表示'}
+              </button>
+            </div>
           </div>
+          
+          {/* デバッグ情報 */}
+          {showDebug && debugInfo && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-xs">
+              <h3 className="font-semibold text-yellow-800 mb-2">🔧 デバッグ情報</h3>
+              <div className="space-y-1 text-yellow-700">
+                <div><strong>検索ユーザーID:</strong> {debugInfo.searchUserId}</div>
+                <div><strong>全ユーザー数:</strong> {debugInfo.allUsers?.count || 0}件</div>
+                <div><strong>ユーザー発見:</strong> {debugInfo.foundUser ? '✅' : '❌'}</div>
+                {debugInfo.foundUser && (
+                  <div><strong>実際のユーザーID:</strong> {debugInfo.foundUser.id}</div>
+                )}
+                <div><strong>全メモ数:</strong> {debugInfo.allMemos?.count || 0}件</div>
+                <div><strong>ユーザーのメモ数:</strong> {debugInfo.userMemos?.count || 0}件</div>
+                <div><strong>直接検索結果:</strong> {debugInfo.directSearch?.count || 0}件</div>
+                {debugInfo.allUsers?.error && (
+                  <div className="text-red-600"><strong>ユーザーエラー:</strong> {debugInfo.allUsers.error}</div>
+                )}
+                {debugInfo.allMemos?.error && (
+                  <div className="text-red-600"><strong>メモエラー:</strong> {debugInfo.allMemos.error}</div>
+                )}
+              </div>
+            </div>
+          )}
           
           {memos.length === 0 ? (
             <div className="bg-white rounded-lg shadow-md p-8 text-center">

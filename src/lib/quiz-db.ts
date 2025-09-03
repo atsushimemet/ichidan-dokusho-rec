@@ -91,19 +91,32 @@ export class MemoService {
   }
 
   static async findByUserId(userId: string, limit: number = 50): Promise<Memo[]> {
-    const { data, error } = await supabase
-      .from('memos')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(limit);
+    console.log('MemoService.findByUserId - userId:', userId);
+    
+    try {
+      const { data, error } = await supabase
+        .from('memos')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(limit);
 
-    if (error) {
-      console.error('Error fetching memos:', error);
+      console.log('Memos query result:', { 
+        count: data?.length || 0, 
+        error: error?.message || null,
+        userId 
+      });
+
+      if (error) {
+        console.error('Error fetching memos:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (err) {
+      console.error('Exception in MemoService.findByUserId:', err);
       return [];
     }
-
-    return data || [];
   }
 
   static async findById(id: string): Promise<Memo | null> {

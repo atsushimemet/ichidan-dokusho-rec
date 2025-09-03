@@ -120,25 +120,47 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('GET /api/memos - Starting request processing');
+    
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
     const limit = parseInt(searchParams.get('limit') || '50');
 
+    console.log('Request params:', { userId, limit });
+
     if (!userId) {
+      console.error('Missing userId parameter');
       return NextResponse.json(
         { error: 'ユーザーIDは必須です' },
         { status: 400 }
       );
     }
 
-    const memos = await MemoService.findByUserId(userId, limit);
+    // line_user_idから実際のuser.idを取得
+    console.log('Finding user by line_user_id:', userId);
+    const user = await UserService.findByLineUserId(userId);
+    if (!user) {
+      console.log('User not found, returning empty memos list');
+      return NextResponse.json({ memos: [] });
+    }
+
+    console.log('User found:', { id: user.id, line_user_id: user.line_user_id });
+
+    // 実際のuser.idでメモを検索
+    const memos = await MemoService.findByUserId(user.id, limit);
     
-    return NextResponse.json({ memos });
+    console.log('Memos found:', memos?.length || 0);
+    
+    return NextResponse.json({ memos: memos || [] });
 
   } catch (error) {
     console.error('Error fetching memos:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     return NextResponse.json(
-      { error: 'サーバーエラーが発生しました' },
+      { 
+        error: 'サーバーエラーが発生しました',
+        details: error instanceof Error ? error.message : String(error)
+      },
       { status: 500 }
     );
   }

@@ -205,25 +205,40 @@ export class QuizService {
   }
 
   static async findTodayQuizzes(userId: string): Promise<Quiz[]> {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    console.log('QuizService.findTodayQuizzes - userId:', userId);
+    
+    try {
+      // まず、該当ユーザーの全クイズを確認
+      const { data: allQuizzes, error: allError } = await supabase
+        .from('quizzes')
+        .select('*')
+        .eq('user_id', userId);
 
-    const { data, error } = await supabase
-      .from('quizzes')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('status', 'today')
-      .gte('scheduled_at', today.toISOString())
-      .lt('scheduled_at', tomorrow.toISOString());
+      console.log('All user quizzes:', { count: allQuizzes?.length || 0, error: allError });
 
-    if (error) {
-      console.error('Error fetching today quizzes:', error);
+      // 今日のクイズを取得（より柔軟な条件）
+      const { data, error } = await supabase
+        .from('quizzes')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('status', 'today');
+
+      console.log('Today quizzes query result:', { 
+        count: data?.length || 0, 
+        error: error?.message || null,
+        data: data?.map(q => ({ id: q.id, status: q.status, scheduled_at: q.scheduled_at }))
+      });
+
+      if (error) {
+        console.error('Error fetching today quizzes:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (err) {
+      console.error('Exception in findTodayQuizzes:', err);
       return [];
     }
-
-    return data || [];
   }
 
   static async findScheduledQuizzes(status: QuizStatus, beforeDate?: Date): Promise<Quiz[]> {

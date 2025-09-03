@@ -21,26 +21,45 @@ export default function TodayQuizPage() {
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<any>(null);
+  const [showDebug, setShowDebug] = useState(false);
 
   // 仮のユーザーID（実際の実装では認証システムから取得）
   const userId = 'temp-user-id';
 
   useEffect(() => {
     fetchTodayQuizzes();
+    fetchDebugInfo();
   }, []);
+
+  const fetchDebugInfo = async () => {
+    try {
+      const response = await fetch(`/api/debug/quizzes?userId=${userId}`);
+      const data = await response.json();
+      setDebugInfo(data.debug);
+    } catch (error) {
+      console.error('Error fetching debug info:', error);
+    }
+  };
 
   const fetchTodayQuizzes = async () => {
     try {
+      console.log('Fetching today quizzes for userId:', userId);
       const response = await fetch(`/api/quizzes?userId=${userId}&today=true`);
       const data = await response.json();
       
+      console.log('Quiz API response:', { status: response.status, data });
+      
       if (response.ok) {
-        setQuizzes(data.quizzes);
+        console.log('Quizzes fetched:', data.quizzes?.length || 0);
+        setQuizzes(data.quizzes || []);
       } else {
         console.error('Error fetching quizzes:', data.error);
+        alert(`クイズの取得に失敗しました: ${data.error}`);
       }
     } catch (error) {
       console.error('Error fetching quizzes:', error);
+      alert('クイズの取得中にエラーが発生しました');
     } finally {
       setLoading(false);
     }
@@ -124,12 +143,45 @@ export default function TodayQuizPage() {
           <p className="text-gray-600 mb-6">
             メモを作成すると自動でクイズが生成されます
           </p>
+          
+          {/* デバッグ情報 */}
+          <div className="mb-4">
+            <button
+              onClick={() => setShowDebug(!showDebug)}
+              className="text-sm text-blue-600 hover:text-blue-800"
+            >
+              {showDebug ? 'デバッグ情報を隠す' : 'デバッグ情報を表示'}
+            </button>
+            
+            {showDebug && debugInfo && (
+              <div className="mt-2 p-3 bg-gray-100 rounded text-xs text-gray-700">
+                <div><strong>ユーザーID:</strong> {userId}</div>
+                <div><strong>ユーザー存在:</strong> {debugInfo.user?.found || 0}件</div>
+                <div><strong>全クイズ数:</strong> {debugInfo.allQuizzes?.count || 0}件</div>
+                <div><strong>ユーザーのクイズ数:</strong> {debugInfo.userQuizzes?.count || 0}件</div>
+                <div><strong>メモ数:</strong> {debugInfo.memos?.count || 0}件</div>
+                {debugInfo.user?.error && (
+                  <div className="text-red-600"><strong>ユーザーエラー:</strong> {debugInfo.user.error}</div>
+                )}
+                {debugInfo.allQuizzes?.error && (
+                  <div className="text-red-600"><strong>クイズエラー:</strong> {debugInfo.allQuizzes.error}</div>
+                )}
+              </div>
+            )}
+          </div>
+          
           <div className="space-y-3">
             <a
               href="/memos"
               className="block w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
             >
               メモを作成する
+            </a>
+            <a
+              href="/debug"
+              className="block w-full bg-yellow-600 text-white py-2 px-4 rounded-md hover:bg-yellow-700 transition-colors"
+            >
+              🔧 デバッグページ
             </a>
             <a
               href="/"

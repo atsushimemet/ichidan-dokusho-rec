@@ -42,7 +42,19 @@ export async function GET(request: NextRequest) {
       hasAccessToken: !!process.env.LINE_CHANNEL_ACCESS_TOKEN,
       hasSecret: !!process.env.LINE_CHANNEL_SECRET,
       vercelUrl: process.env.VERCEL_URL,
-      baseUrl: process.env.NEXT_PUBLIC_BASE_URL
+      baseUrl: process.env.NEXT_PUBLIC_BASE_URL,
+      // デバッグ用：実際の値の一部を表示
+      accessTokenPreview: process.env.LINE_CHANNEL_ACCESS_TOKEN ? 
+        process.env.LINE_CHANNEL_ACCESS_TOKEN.substring(0, 10) + '...' : 'NOT_SET',
+      secretPreview: process.env.LINE_CHANNEL_SECRET ? 
+        process.env.LINE_CHANNEL_SECRET.substring(0, 5) + '...' : 'NOT_SET',
+      allLineEnvKeys: Object.keys(process.env).filter(key => key.startsWith('LINE_')),
+      // 環境変数の型確認
+      envTypes: {
+        LINE_CHANNEL_ACCESS_TOKEN: typeof process.env.LINE_CHANNEL_ACCESS_TOKEN,
+        LINE_CHANNEL_SECRET: typeof process.env.LINE_CHANNEL_SECRET,
+        SKIP_LINE_SIGNATURE_VERIFICATION: process.env.SKIP_LINE_SIGNATURE_VERIFICATION
+      }
     }
   });
 }

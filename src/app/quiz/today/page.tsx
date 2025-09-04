@@ -225,36 +225,16 @@ export default function TodayQuizPage() {
                   <p className="text-sm text-blue-700 mb-3">
                     LINEで復習通知を受け取って、学習を継続しましょう。翌日・1週間後に自動でクイズが届きます。
                   </p>
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => {
-                        const botId = process.env.NEXT_PUBLIC_LINE_BOT_ID;
-                        if (!botId) {
-                          alert('LINE Bot IDが設定されていません');
-                          return;
-                        }
-                        const qrUrl = `https://line.me/R/ti/p/@${botId}`;
-                        window.open(qrUrl, '_blank');
-                      }}
-                      className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors text-sm font-medium"
+                  <div className="space-y-2">
+                    <a
+                      href={`https://line.me/R/ti/p/@${process.env.NEXT_PUBLIC_LINE_BOT_ID || 'YOUR_BOT_ID'}`}
+                      className="block w-full bg-green-500 text-white px-4 py-3 rounded-md hover:bg-green-600 transition-colors text-sm font-medium text-center"
                     >
                       📱 LINEで通知を受け取る
-                    </button>
-                    <button
-                      onClick={() => {
-                        const botId = process.env.NEXT_PUBLIC_LINE_BOT_ID;
-                        if (!botId) {
-                          alert('LINE Bot IDが設定されていません');
-                          return;
-                        }
-                        const lineUrl = `https://line.me/R/ti/p/@${botId}`;
-                        navigator.clipboard.writeText(lineUrl);
-                        alert('LINEリンクをコピーしました');
-                      }}
-                      className="bg-gray-500 text-white px-3 py-2 rounded-md hover:bg-gray-600 transition-colors text-sm"
-                    >
-                      📋 リンクをコピー
-                    </button>
+                    </a>
+                    <p className="text-xs text-gray-500 text-center">
+                      ↑ タップするとLINEアプリで友だち追加画面が開きます
+                    </p>
                   </div>
                 </div>
               </div>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifySignature } from '@/lib/line-utils';
+import { verifySignature, createWelcomeMessage, lineClient } from '@/lib/line-utils';
+import { UserService } from '@/lib/quiz-db';
 
 export const dynamic = 'force-dynamic';
 
@@ -77,13 +78,16 @@ async function processWebhookAsync(request: NextRequest) {
         const data = JSON.parse(body);
         console.log('Events:', data.events?.length || 0);
         
-        // イベント処理をシミュレート
+        // イベント処理
         for (const event of data.events || []) {
           console.log('Event type:', event.type);
+          
           if (event.type === 'follow') {
             console.log('Follow event detected');
+            await handleFollowEvent(event);
           } else if (event.type === 'message') {
             console.log('Message event detected');
+            await handleMessageEvent(event);
           }
         }
       } catch (parseError) {
@@ -95,6 +99,44 @@ async function processWebhookAsync(request: NextRequest) {
     
   } catch (error) {
     console.error('Background processing error:', error);
+  }
+}
+
+// 友だち追加イベントの処理
+async function handleFollowEvent(event: any) {
+  try {
+    const lineUserId = event.source.userId;
+    console.log('Processing follow event for user:', lineUserId);
+    
+    // ユーザーを作成または取得
+    const user = await UserService.findOrCreateUser(lineUserId);
+    console.log('User created/found:', { id: user.id, line_user_id: user.line_user_id });
+    
+    // ウェルカムメッセージを送信
+    const welcomeMessages = createWelcomeMessage();
+    for (const message of welcomeMessages) {
+      await lineClient.replyMessage(event.replyToken, message);
+    }
+    
+    console.log('Welcome message sent to user:', lineUserId);
+    
+  } catch (error) {
+    console.error('Error handling follow event:', error);
+  }
+}
+
+// メッセージイベントの処理
+async function handleMessageEvent(event: any) {
+  try {
+    const lineUserId = event.source.userId;
+    const messageText = event.message.text;
+    console.log('Processing message event:', { lineUserId, messageText });
+    
+    // 基本的なメッセージ処理
+    // 今後、クイズ関連のコマンドなどを実装可能
+    
+  } catch (error) {
+    console.error('Error handling message event:', error);
   }
 }
 

@@ -2,81 +2,71 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-// 徹底的にデバッグするWebhook実装
+// 最も安全なWebhook実装
 export async function POST(request: NextRequest) {
-  console.log('=== LINE Webhook POST Called ===');
-  console.log('Timestamp:', new Date().toISOString());
-  
+  // 即座に200を返す（処理は後で）
+  const response = NextResponse.json({ 
+    message: 'OK',
+    timestamp: new Date().toISOString()
+  });
+
+  // バックグラウンドで処理（非同期）
+  processWebhookAsync(request).catch(error => {
+    console.error('Background webhook processing error:', error);
+  });
+
+  return response;
+}
+
+// バックグラウンド処理
+async function processWebhookAsync(request: NextRequest) {
   try {
-    // ヘッダー情報をログ出力
+    console.log('=== Background Webhook Processing ===');
+    console.log('Timestamp:', new Date().toISOString());
+    
+    // ヘッダー情報
     const headers = Object.fromEntries(request.headers.entries());
-    console.log('Request headers:', headers);
+    console.log('Headers received:', Object.keys(headers));
     
-    // 署名ヘッダーの確認
+    // 署名ヘッダー
     const signature = request.headers.get('x-line-signature');
-    console.log('Signature header:', {
-      exists: !!signature,
-      value: signature?.substring(0, 20) + '...' || 'NOT_FOUND'
-    });
+    console.log('Signature:', !!signature);
     
-    // 環境変数の確認
-    console.log('Environment variables:', {
+    // 環境変数確認
+    console.log('Environment:', {
       hasAccessToken: !!process.env.LINE_CHANNEL_ACCESS_TOKEN,
       hasSecret: !!process.env.LINE_CHANNEL_SECRET,
-      skipVerification: process.env.SKIP_LINE_SIGNATURE_VERIFICATION,
-      nodeEnv: process.env.NODE_ENV
+      skipVerification: process.env.SKIP_LINE_SIGNATURE_VERIFICATION
     });
     
-    // リクエストボディの読み取り
-    const body = await request.text();
-    console.log('Request body:', {
-      length: body.length,
-      preview: body.substring(0, 200)
-    });
+    // ボディ読み取り（クローン版を使用）
+    const clonedRequest = request.clone();
+    const body = await clonedRequest.text();
+    console.log('Body length:', body.length);
     
-    // JSONパース
-    let parsedData;
-    try {
-      parsedData = JSON.parse(body);
-      console.log('Parsed JSON:', {
-        hasEvents: !!parsedData.events,
-        eventCount: parsedData.events?.length || 0,
-        eventTypes: parsedData.events?.map((e: any) => e.type) || []
-      });
-    } catch (parseError) {
-      console.error('JSON parse error:', parseError);
-      // JSONパースエラーでも200を返す
-      return NextResponse.json({ 
-        message: 'OK',
-        error: 'json_parse_error',
-        timestamp: new Date().toISOString()
-      });
+    if (body.length > 0) {
+      try {
+        const data = JSON.parse(body);
+        console.log('Events:', data.events?.length || 0);
+        
+        // イベント処理をシミュレート
+        for (const event of data.events || []) {
+          console.log('Event type:', event.type);
+          if (event.type === 'follow') {
+            console.log('Follow event detected');
+          } else if (event.type === 'message') {
+            console.log('Message event detected');
+          }
+        }
+      } catch (parseError) {
+        console.error('JSON parse error in background:', parseError);
+      }
     }
     
-    console.log('=== Webhook processing completed successfully ===');
-    
-    // 常に200 OKを返す（LINEプラットフォーム要件）
-    return NextResponse.json({ 
-      message: 'OK',
-      timestamp: new Date().toISOString(),
-      status: 'success',
-      processed: true
-    });
+    console.log('=== Background processing completed ===');
     
   } catch (error) {
-    console.error('=== Webhook Error ===');
-    console.error('Error details:', {
-      message: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : 'No stack'
-    });
-    
-    // エラーが発生しても必ず200を返す
-    return NextResponse.json({ 
-      message: 'OK',
-      error: 'logged_for_debugging',
-      timestamp: new Date().toISOString(),
-      status: 'error_handled'
-    });
+    console.error('Background processing error:', error);
   }
 }
 
@@ -94,18 +84,7 @@ export async function GET(request: NextRequest) {
       hasSecret: !!process.env.LINE_CHANNEL_SECRET,
       vercelUrl: process.env.VERCEL_URL,
       baseUrl: process.env.NEXT_PUBLIC_BASE_URL,
-      // デバッグ用：実際の値の一部を表示
-      accessTokenPreview: process.env.LINE_CHANNEL_ACCESS_TOKEN ? 
-        process.env.LINE_CHANNEL_ACCESS_TOKEN.substring(0, 10) + '...' : 'NOT_SET',
-      secretPreview: process.env.LINE_CHANNEL_SECRET ? 
-        process.env.LINE_CHANNEL_SECRET.substring(0, 5) + '...' : 'NOT_SET',
-      allLineEnvKeys: Object.keys(process.env).filter(key => key.startsWith('LINE_')),
-      // 環境変数の型確認
-      envTypes: {
-        LINE_CHANNEL_ACCESS_TOKEN: typeof process.env.LINE_CHANNEL_ACCESS_TOKEN,
-        LINE_CHANNEL_SECRET: typeof process.env.LINE_CHANNEL_SECRET,
-        SKIP_LINE_SIGNATURE_VERIFICATION: process.env.SKIP_LINE_SIGNATURE_VERIFICATION
-      }
+      skipVerification: process.env.SKIP_LINE_SIGNATURE_VERIFICATION
     }
   });
 }

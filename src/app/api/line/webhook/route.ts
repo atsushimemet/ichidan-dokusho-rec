@@ -1,21 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { verifySignature } from '@/lib/line-utils';
 
 export const dynamic = 'force-dynamic';
 
 // 最も安全なWebhook実装
 export async function POST(request: NextRequest) {
-  // 即座に200を返す（処理は後で）
-  const response = NextResponse.json({ 
-    message: 'OK',
-    timestamp: new Date().toISOString()
-  });
+  try {
+    // 署名検証（スキップ設定を確認）
+    const skipVerification = process.env.SKIP_LINE_SIGNATURE_VERIFICATION === 'true';
+    
+    if (!skipVerification) {
+      const signature = request.headers.get('x-line-signature');
+      if (!signature) {
+        console.error('Missing x-line-signature header');
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
 
-  // バックグラウンドで処理（非同期）
-  processWebhookAsync(request).catch(error => {
-    console.error('Background webhook processing error:', error);
-  });
+      const body = await request.clone().text();
+      if (!verifySignature(body, signature)) {
+        console.error('Invalid signature');
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      
+      console.log('Signature verification passed');
+    } else {
+      console.log('Signature verification skipped (SKIP_LINE_SIGNATURE_VERIFICATION=true)');
+    }
 
-  return response;
+    // 即座に200を返す（処理は後で）
+    const response = NextResponse.json({ 
+      message: 'OK',
+      timestamp: new Date().toISOString()
+    });
+
+    // バックグラウンドで処理（非同期）
+    processWebhookAsync(request).catch(error => {
+      console.error('Background webhook processing error:', error);
+    });
+
+    return response;
+    
+  } catch (error) {
+    console.error('Webhook error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
 }
 
 // バックグラウンド処理

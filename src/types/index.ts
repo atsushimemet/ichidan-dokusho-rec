@@ -124,8 +124,85 @@ export interface RankingSource {
   created_at: string;
 }
 
+// クイズ機能の型定義
+export interface User {
+  id: string;
+  line_user_id: string | null;
+  email: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+  notification_enabled: boolean;
+  notification_time: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Memo {
+  id: string;
+  user_id: string;
+  title: string;
+  text: string;
+  source_book_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type QuizType = 'cloze' | 'tf';
+export type QuizStatus = 'today' | 'day1' | 'day7' | 'done';
+
+export interface Quiz {
+  id: string;
+  memo_id: string;
+  user_id: string;
+  type: QuizType;
+  stem: string;
+  answer: string;
+  choices: any | null;
+  scheduled_at: string;
+  status: QuizStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Attempt {
+  id: string;
+  quiz_id: string;
+  user_id: string;
+  user_answer: string;
+  is_correct: boolean;
+  answered_at: string;
+}
+
+export type NotificationChannel = 'line';
+export type NotificationStatus = 'sent' | 'failed' | 'delivered';
+
+export interface NotificationLog {
+  id: string;
+  quiz_id: string;
+  user_id: string;
+  channel: NotificationChannel;
+  sent_at: string;
+  status: NotificationStatus;
+  retry_count: number;
+  error_message: string | null;
+}
+
+// クイズ生成関連の型
+export interface QuizGenerationResult {
+  quiz: Omit<Quiz, 'id' | 'created_at' | 'updated_at'>;
+  success: boolean;
+  error?: string;
+}
+
+export interface MemoAnalysis {
+  sentences: string[];
+  nouns: Array<{ word: string; count: number; position: number[] }>;
+  longestNoun: string;
+  frequentNouns: string[];
+}
+
 // 管理対象の共通型定義
-export type ManagementEntityType = 'books' | 'stores' | 'archives' | 'rankings';
+export type ManagementEntityType = 'books' | 'stores' | 'archives' | 'rankings' | 'memos' | 'quizzes';
 
 export interface ManagementEntityConfig {
   type: ManagementEntityType;
@@ -169,5 +246,21 @@ export const MANAGEMENT_ENTITIES: Record<ManagementEntityType, ManagementEntityC
     description: '今週のランキング書籍を管理',
     path: '/admin/rankings',
     color: 'orange'
+  },
+  memos: {
+    type: 'memos',
+    name: 'メモ管理',
+    icon: '📝',
+    description: '読書メモを管理',
+    path: '/admin/memos',
+    color: 'indigo'
+  },
+  quizzes: {
+    type: 'quizzes',
+    name: 'クイズ管理',
+    icon: '🧠',
+    description: '自動生成されたクイズを管理',
+    path: '/admin/quizzes',
+    color: 'pink'
   }
 };

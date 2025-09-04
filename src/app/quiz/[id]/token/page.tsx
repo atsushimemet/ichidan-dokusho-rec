@@ -323,6 +323,22 @@ function TokenQuizContent() {
                   </div>
                 </div>
               </div>
+
+              {/* LINE友だち追加案内（TOKEN版は既にLINE経由なので簡潔に） */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="text-blue-600">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-blue-700">
+                      LINE通知から回答お疲れさまでした！今後も継続的に復習通知をお送りします。
+                    </p>
+                  </div>
+                </div>
+              </div>
               
               <div className="flex space-x-3">
                 <a

@@ -284,7 +284,12 @@ export default function QuizPage() {
                     <div className="flex space-x-2">
                       <button
                         onClick={() => {
-                          const qrUrl = `https://line.me/R/ti/p/@YOUR_LINE_BOT_ID`;
+                          const botId = process.env.NEXT_PUBLIC_LINE_BOT_ID;
+                          if (!botId) {
+                            alert('LINE Bot IDが設定されていません');
+                            return;
+                          }
+                          const qrUrl = `https://line.me/R/ti/p/@${botId}`;
                           window.open(qrUrl, '_blank');
                         }}
                         className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors text-sm font-medium"
@@ -293,7 +298,13 @@ export default function QuizPage() {
                       </button>
                       <button
                         onClick={() => {
-                          navigator.clipboard.writeText('https://line.me/R/ti/p/@YOUR_LINE_BOT_ID');
+                          const botId = process.env.NEXT_PUBLIC_LINE_BOT_ID;
+                          if (!botId) {
+                            alert('LINE Bot IDが設定されていません');
+                            return;
+                          }
+                          const lineUrl = `https://line.me/R/ti/p/@${botId}`;
+                          navigator.clipboard.writeText(lineUrl);
                           alert('LINEリンクをコピーしました');
                         }}
                         className="bg-gray-500 text-white px-3 py-2 rounded-md hover:bg-gray-600 transition-colors text-sm"

@@ -109,7 +109,17 @@ async function handleFollowEvent(event: any) {
     console.log('Processing follow event for user:', lineUserId);
     
     // ユーザーを作成または取得
-    const user = await UserService.findOrCreateUser(lineUserId);
+    const user = await UserService.findOrCreateByLineId(lineUserId, {
+      display_name: `User_${lineUserId.slice(-6)}`,
+      notification_enabled: true,
+      notification_time: '09:00:00'
+    });
+    
+    if (!user) {
+      console.error('Failed to create/find user for:', lineUserId);
+      return;
+    }
+    
     console.log('User created/found:', { id: user.id, line_user_id: user.line_user_id });
     
     // ウェルカムメッセージを送信

@@ -2,29 +2,80 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-// 最もシンプルなWebhook実装
+// 徹底的にデバッグするWebhook実装
 export async function POST(request: NextRequest) {
   console.log('=== LINE Webhook POST Called ===');
+  console.log('Timestamp:', new Date().toISOString());
   
   try {
-    const body = await request.text();
-    console.log('Request body received, length:', body.length);
+    // ヘッダー情報をログ出力
+    const headers = Object.fromEntries(request.headers.entries());
+    console.log('Request headers:', headers);
     
-    // 常に200 OKを返す
+    // 署名ヘッダーの確認
+    const signature = request.headers.get('x-line-signature');
+    console.log('Signature header:', {
+      exists: !!signature,
+      value: signature?.substring(0, 20) + '...' || 'NOT_FOUND'
+    });
+    
+    // 環境変数の確認
+    console.log('Environment variables:', {
+      hasAccessToken: !!process.env.LINE_CHANNEL_ACCESS_TOKEN,
+      hasSecret: !!process.env.LINE_CHANNEL_SECRET,
+      skipVerification: process.env.SKIP_LINE_SIGNATURE_VERIFICATION,
+      nodeEnv: process.env.NODE_ENV
+    });
+    
+    // リクエストボディの読み取り
+    const body = await request.text();
+    console.log('Request body:', {
+      length: body.length,
+      preview: body.substring(0, 200)
+    });
+    
+    // JSONパース
+    let parsedData;
+    try {
+      parsedData = JSON.parse(body);
+      console.log('Parsed JSON:', {
+        hasEvents: !!parsedData.events,
+        eventCount: parsedData.events?.length || 0,
+        eventTypes: parsedData.events?.map((e: any) => e.type) || []
+      });
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError);
+      // JSONパースエラーでも200を返す
+      return NextResponse.json({ 
+        message: 'OK',
+        error: 'json_parse_error',
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    console.log('=== Webhook processing completed successfully ===');
+    
+    // 常に200 OKを返す（LINEプラットフォーム要件）
     return NextResponse.json({ 
       message: 'OK',
       timestamp: new Date().toISOString(),
-      status: 'success'
+      status: 'success',
+      processed: true
     });
     
   } catch (error) {
-    console.error('Webhook error:', error);
+    console.error('=== Webhook Error ===');
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : 'No stack'
+    });
     
-    // エラーが発生しても200を返す（LINEプラットフォーム要件）
+    // エラーが発生しても必ず200を返す
     return NextResponse.json({ 
       message: 'OK',
-      error: 'logged',
-      timestamp: new Date().toISOString()
+      error: 'logged_for_debugging',
+      timestamp: new Date().toISOString(),
+      status: 'error_handled'
     });
   }
 }

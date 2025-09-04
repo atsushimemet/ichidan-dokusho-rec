@@ -57,6 +57,19 @@ export default function Home() {
             <p className="text-sm text-ios-gray-500 font-light">
               本を探す: 約30秒 | メモ作成: 約2分
             </p>
+            
+            {/* 追加のメモ導線（見えない場合のバックアップ） */}
+            <div className="mt-8 text-center">
+              <Link
+                href="/memos"
+                className="inline-flex items-center gap-2 bg-green-100 text-green-800 px-6 py-3 rounded-lg hover:bg-green-200 transition-colors font-medium"
+              >
+                📝 読書メモを作成してクイズを生成する
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </Link>
+            </div>
           </div>
         </div>
       </section>

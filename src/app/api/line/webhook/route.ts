@@ -106,9 +106,29 @@ async function processWebhookAsync(request: NextRequest) {
 async function handleFollowEvent(event: any) {
   try {
     const lineUserId = event.source.userId;
+    console.log('=== FOLLOW EVENT START ===');
     console.log('Processing follow event for user:', lineUserId);
+    console.log('Event details:', JSON.stringify(event, null, 2));
+    
+    // 環境変数の確認
+    console.log('Environment check:', {
+      hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+      hasSupabaseKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      hasLineToken: !!process.env.LINE_CHANNEL_ACCESS_TOKEN
+    });
+    
+    // 既存ユーザーの確認
+    console.log('Checking existing user...');
+    const existingUser = await UserService.findByLineUserId(lineUserId);
+    console.log('Existing user check result:', existingUser ? 'Found' : 'Not found');
     
     // ユーザーを作成または取得
+    console.log('Creating/finding user with data:', {
+      display_name: `User_${lineUserId.slice(-6)}`,
+      notification_enabled: true,
+      notification_time: '09:00:00'
+    });
+    
     const user = await UserService.findOrCreateByLineId(lineUserId, {
       display_name: `User_${lineUserId.slice(-6)}`,
       notification_enabled: true,
@@ -116,22 +136,44 @@ async function handleFollowEvent(event: any) {
     });
     
     if (!user) {
-      console.error('Failed to create/find user for:', lineUserId);
+      console.error('CRITICAL: Failed to create/find user for:', lineUserId);
+      console.error('UserService.findOrCreateByLineId returned null');
       return;
     }
     
-    console.log('User created/found:', { id: user.id, line_user_id: user.line_user_id });
+    console.log('SUCCESS: User created/found:', { 
+      id: user.id, 
+      line_user_id: user.line_user_id,
+      display_name: user.display_name,
+      created_at: user.created_at
+    });
+    
+    // データベースから再確認
+    const verifyUser = await UserService.findByLineUserId(lineUserId);
+    console.log('Database verification:', verifyUser ? 'User exists in DB' : 'User NOT found in DB');
     
     // ウェルカムメッセージを送信
-    const welcomeMessages = createWelcomeMessage();
-    for (const message of welcomeMessages) {
-      await lineClient.replyMessage(event.replyToken, message);
+    try {
+      console.log('Sending welcome messages...');
+      const welcomeMessages = createWelcomeMessage();
+      console.log('Welcome messages created:', welcomeMessages.length, 'messages');
+      
+      for (const message of welcomeMessages) {
+        await lineClient.replyMessage(event.replyToken, message);
+        console.log('Welcome message sent successfully');
+      }
+    } catch (messageError) {
+      console.error('Failed to send welcome message:', messageError);
+      // メッセージ送信失敗はユーザー作成とは独立しているので続行
     }
     
-    console.log('Welcome message sent to user:', lineUserId);
+    console.log('=== FOLLOW EVENT COMPLETED ===');
     
   } catch (error) {
+    console.error('=== FOLLOW EVENT ERROR ===');
     console.error('Error handling follow event:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+    console.error('=== FOLLOW EVENT ERROR END ===');
   }
 }
 

@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       status: 'LINE Bot Configuration Check',
       config,
-      webhookUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/line/webhook`,
+      webhookUrl: `${(process.env.NEXT_PUBLIC_BASE_URL || '').replace(/\/$/, '')}/api/line/webhook`,
       timestamp: new Date().toISOString()
     });
 

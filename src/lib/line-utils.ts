@@ -146,6 +146,14 @@ export function createSettingsMessage(userId: string) {
   };
 }
 
+// テスト完了通知メッセージ
+export function createTestCompletionMessage() {
+  return {
+    type: 'text' as const,
+    text: '🧪 これはテストです\n\nクイズが完了しました！\n通知機能が正常に動作しています。'
+  };
+}
+
 // Push通知を送信
 export async function sendPushNotification(userId: string, message: any): Promise<boolean> {
   try {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { QuizService, AttemptService, UserService } from '@/lib/quiz-db';
 import { getNextStatus } from '@/lib/quiz-generator';
+import { sendPushNotification, createTestCompletionMessage } from '@/lib/line-utils';
 
 export async function POST(
   request: NextRequest,
@@ -97,6 +98,18 @@ export async function POST(
     const updatedQuiz = await QuizService.updateStatus(quiz.id, nextStatus as any, scheduledAt);
 
     console.log('Quiz status updated successfully');
+
+    // クイズ完了後のテスト通知を送信
+    try {
+      if (user.line_user_id) {
+        const testMessage = createTestCompletionMessage();
+        const notificationSent = await sendPushNotification(user.line_user_id, testMessage);
+        console.log('Test completion notification sent:', notificationSent);
+      }
+    } catch (notificationError) {
+      console.error('Failed to send test completion notification:', notificationError);
+      // 通知エラーは処理を停止させない
+    }
 
     return NextResponse.json({
       attempt,

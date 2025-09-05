@@ -1,6 +1,18 @@
 import { Client, ClientConfig, WebhookEvent, MessageEvent, FollowEvent } from '@line/bot-sdk';
 import CryptoJS from 'crypto-js';
 
+// 安全なURL結合のためのユーティリティ関数
+function joinUrl(baseUrl: string, path: string): string {
+  const cleanBase = baseUrl.replace(/\/$/, '');
+  const cleanPath = path.replace(/^\//, '');
+  return `${cleanBase}/${cleanPath}`;
+}
+
+// ベースURLを取得する関数
+function getBaseUrl(): string {
+  return (process.env.NEXT_PUBLIC_BASE_URL || 'https://your-domain.com').replace(/\/$/, '');
+}
+
 // LINE Bot設定
 const config: ClientConfig = {
   channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN || 'dummy-token',
@@ -58,8 +70,8 @@ export function verifyQuizToken(token: string): { quizId: string; userId: string
 // クイズ通知メッセージを作成
 export function createQuizNotificationMessage(quizId: string, userId: string, quizType: 'cloze' | 'tf') {
   const token = generateQuizToken(quizId, userId);
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://your-domain.com';
-  const quizUrl = `${baseUrl}/quiz/${quizId}?token=${token}`;
+  const baseUrl = getBaseUrl();
+  const quizUrl = joinUrl(baseUrl, `quiz/${quizId}?token=${token}`);
 
   const typeText = quizType === 'cloze' ? '穴埋め問題' : 'True/False問題';
 
@@ -79,7 +91,7 @@ export function createQuizNotificationMessage(quizId: string, userId: string, qu
         {
           type: 'uri' as const,
           label: 'メモを確認する',
-          uri: `${baseUrl}/memos`
+          uri: joinUrl(baseUrl, 'memos')
         }
       ]
     }
@@ -88,7 +100,7 @@ export function createQuizNotificationMessage(quizId: string, userId: string, qu
 
 // 友だち追加時のウェルカムメッセージ
 export function createWelcomeMessage() {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://your-domain.com';
+  const baseUrl = getBaseUrl();
   
   return [
     {
@@ -106,12 +118,12 @@ export function createWelcomeMessage() {
           {
             type: 'uri' as const,
             label: 'メモを作成する',
-            uri: `${baseUrl}/memos`
+            uri: joinUrl(baseUrl, 'memos')
           },
           {
             type: 'uri' as const,
             label: '今日のクイズを見る',
-            uri: `${baseUrl}/quiz/today`
+            uri: joinUrl(baseUrl, 'quiz/today')
           }
         ]
       }
@@ -121,7 +133,7 @@ export function createWelcomeMessage() {
 
 // 通知設定メッセージ
 export function createSettingsMessage(userId: string) {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://your-domain.com';
+  const baseUrl = getBaseUrl();
   
   return {
     type: 'template' as const,
@@ -134,12 +146,12 @@ export function createSettingsMessage(userId: string) {
         {
           type: 'uri' as const,
           label: '設定を変更する',
-          uri: `${baseUrl}/settings?userId=${userId}`
+          uri: joinUrl(baseUrl, `settings?userId=${userId}`)
         },
         {
           type: 'uri' as const,
           label: '学習統計を見る',
-          uri: `${baseUrl}/stats?userId=${userId}`
+          uri: joinUrl(baseUrl, `stats?userId=${userId}`)
         }
       ]
     }
@@ -211,7 +223,7 @@ export function createRichMenu() {
         },
         action: {
           type: "uri",
-          uri: `${process.env.NEXT_PUBLIC_BASE_URL}/memos`
+          uri: joinUrl(getBaseUrl(), 'memos')
         }
       },
       {
@@ -223,7 +235,7 @@ export function createRichMenu() {
         },
         action: {
           type: "uri",
-          uri: `${process.env.NEXT_PUBLIC_BASE_URL}/quiz/today`
+          uri: joinUrl(getBaseUrl(), 'quiz/today')
         }
       },
       {
@@ -235,7 +247,7 @@ export function createRichMenu() {
         },
         action: {
           type: "uri",
-          uri: `${process.env.NEXT_PUBLIC_BASE_URL}/stats`
+          uri: joinUrl(getBaseUrl(), 'stats')
         }
       },
       {

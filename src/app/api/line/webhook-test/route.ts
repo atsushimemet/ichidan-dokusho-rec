@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
         supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 30) + '...',
         hasSupabaseKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
       },
-      webhookUrl: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://your-domain.com'}/api/line/webhook`,
+      webhookUrl: `${(process.env.NEXT_PUBLIC_BASE_URL || 'https://your-domain.com').replace(/\/$/, '')}/api/line/webhook`,
       timestamp: new Date().toISOString()
     });
   } catch (error) {

@@ -198,6 +198,35 @@ function RankingManagementPage() {
       }
 
       addDebugLog(`ランキング書籍読み込み成功: ${data?.length || 0}件`);
+      
+      // 重複チェック詳細ログ
+      if (data && data.length > 0) {
+        const amazonLinkGroups = data.reduce((acc, book) => {
+          const key = book.amazon_link;
+          if (!acc[key]) {
+            acc[key] = [];
+          }
+          acc[key].push(book);
+          return acc;
+        }, {} as Record<string, any[]>);
+        
+        const duplicateGroups = Object.entries(amazonLinkGroups).filter(([_, books]) => books.length > 1);
+        
+        if (duplicateGroups.length > 0) {
+          addDebugLog(`重複検出: ${duplicateGroups.length}グループ`);
+          duplicateGroups.forEach(([amazonLink, books]) => {
+            const titles = books.map(b => `${b.title}(${b.is_visible ? '表示' : '非表示'})`).join(', ');
+            addDebugLog(`重複グループ - Amazon: ${amazonLink.substring(0, 50)}... - 書籍: [${titles}]`);
+          });
+        } else {
+          addDebugLog('重複なし: 全ての書籍が異なるAmazonリンクを持っています');
+        }
+        
+        // 表示可能な書籍の統計
+        const visibleBooks = data.filter(book => book.is_visible);
+        addDebugLog(`表示状況: 表示中=${visibleBooks.length}件, 非表示=${data.length - visibleBooks.length}件`);
+      }
+      
       setBooks(data || []);
     } catch (error) {
       addDebugLog(`ランキング書籍読み込み失敗: ${error instanceof Error ? error.message : '不明なエラー'}`);
@@ -391,6 +420,67 @@ function RankingManagementPage() {
       console.error('一括表示切り替えエラー:', err);
       addDebugLog(`一括表示切り替え失敗: ${err instanceof Error ? err.message : '不明なエラー'}`);
       setError('一括表示切り替えに失敗しました');
+    }
+  };
+
+  // 重複を手動で解決する機能
+  const resolveDuplicates = async () => {
+    if (!confirm('重複を自動解決しますか？最新のもの以外は非表示になります。')) {
+      return;
+    }
+
+    addDebugLog('重複解決処理開始');
+    try {
+      // Amazonリンクでグループ化
+      const amazonLinkGroups = books.reduce((acc, book) => {
+        const key = book.amazon_link;
+        if (!acc[key]) {
+          acc[key] = [];
+        }
+        acc[key].push(book);
+        return acc;
+      }, {} as Record<string, RankingBook[]>);
+
+      // 重複があるグループのみを処理
+      const duplicateGroups = Object.entries(amazonLinkGroups).filter(([_, books]) => books.length > 1);
+      
+      if (duplicateGroups.length === 0) {
+        setSuccessMessage('重複は見つかりませんでした');
+        return;
+      }
+
+      addDebugLog(`${duplicateGroups.length}グループの重複を処理中`);
+
+      for (const [amazonLink, duplicateBooks] of duplicateGroups) {
+        // 最新のもの以外を非表示にする
+        const sortedBooks = duplicateBooks.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        const latestBook = sortedBooks[0];
+        const olderBooks = sortedBooks.slice(1);
+
+        // 最新のものを表示
+        await supabase
+          .from('ranking_books')
+          .update({ is_visible: true })
+          .eq('id', latestBook.id);
+
+        // 古いものを非表示
+        for (const book of olderBooks) {
+          await supabase
+            .from('ranking_books')
+            .update({ is_visible: false })
+            .eq('id', book.id);
+        }
+
+        addDebugLog(`解決済み - ${latestBook.title}: 表示1件、非表示${olderBooks.length}件`);
+      }
+
+      addDebugLog('重複解決処理完了');
+      setSuccessMessage(`${duplicateGroups.length}グループの重複を解決しました`);
+      await loadRankingBooks(currentWeekStart);
+    } catch (err) {
+      console.error('重複解決エラー:', err);
+      addDebugLog(`重複解決失敗: ${err instanceof Error ? err.message : '不明なエラー'}`);
+      setError('重複解決に失敗しました');
     }
   };
 
@@ -753,7 +843,17 @@ function RankingManagementPage() {
             {books.length > 0 && (
               <Card variant="default" className="mb-6">
                 <div className="p-6">
-                  <h2 className="text-xl font-bold text-ios-gray-800 mb-4">重複チェック結果</h2>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl font-bold text-ios-gray-800">重複チェック結果</h2>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={resolveDuplicates}
+                      className="text-orange-600 border-orange-300 hover:bg-orange-50"
+                    >
+                      🔧 重複を自動解決
+                    </Button>
+                  </div>
                   <DuplicateCheckSummary books={books} />
                 </div>
               </Card>

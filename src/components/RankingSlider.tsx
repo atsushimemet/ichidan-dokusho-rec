@@ -46,7 +46,35 @@ export default function RankingSlider({ title, subtitle }: RankingSliderProps) {
           return;
         }
         
-        setBooks(data);
+        // 重複排除処理: Amazonリンクが同一の書籍は最新のもののみを表示
+        const deduplicatedBooks = data.reduce((acc, book) => {
+          const existingIndex = acc.findIndex(existing => existing.amazon_link === book.amazon_link);
+          
+          if (existingIndex === -1) {
+            // 新しい書籍を追加
+            acc.push(book);
+          } else {
+            // 既存の書籍と比較して、より新しいものを採用
+            const existing = acc[existingIndex];
+            const bookCreatedAt = new Date(book.created_at);
+            const existingCreatedAt = new Date(existing.created_at);
+            
+            if (bookCreatedAt > existingCreatedAt) {
+              acc[existingIndex] = book; // より新しい書籍で置き換え
+            }
+          }
+          
+          return acc;
+        }, [] as RankingBook[]);
+        
+        console.log(`重複排除前: ${data.length}件, 重複排除後: ${deduplicatedBooks.length}件`);
+        if (data.length !== deduplicatedBooks.length) {
+          console.log('重複排除された書籍:', data.filter(book => 
+            !deduplicatedBooks.some(dedupe => dedupe.id === book.id)
+          ).map(book => book.title));
+        }
+        
+        setBooks(deduplicatedBooks);
         
       } catch (err) {
         console.error('ランキング書籍取得エラー:', err);
